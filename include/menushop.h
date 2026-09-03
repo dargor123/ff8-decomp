@@ -11,6 +11,17 @@ typedef struct {
     u8 unk2;
 } Struct_801E6ACC;
 
+typedef struct {
+    u8 unk0[0xC7];
+} Struct_D_801EB088;
+
+typedef struct {
+    u8 pad000[0x20];
+    s32 *unk20;
+    u8 pad024[0x12];
+    u16 unk36;
+} Struct_801E8B60;
+
 extern u8 D_80077EBC[];
 extern u8 D_801EA3F0[];
 extern u8 D_801EA70C[];
@@ -21,7 +32,7 @@ extern u8 D_801EA170[];
 extern u8 D_801EAA28[];
 extern s32 D_801EAA48[];
 extern s32 D_801EAD68[];
-extern u8 D_801EB088[];
+extern Struct_D_801EB088 D_801EB088;
 extern s32 g_menuColor;
 extern s32 D_80077E70;
 extern s32 func_801E8AB0;

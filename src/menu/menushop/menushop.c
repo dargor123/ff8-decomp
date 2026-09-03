@@ -105,12 +105,9 @@ s32 func_801E5D28(void) {
     }
     
     ptr1 = D_80077EBC;
-    i = 0xC7;
-    ptr2 = D_801EB088;
-    ptr2 += 0xC7;
     
-    for (; i >= 0; i--, ptr2--) {
-        *ptr2 = 0;
+    for (i = 0; i < 0xC8; i++) {
+         D_801EB088.unk0[i] = 0;
     }
 
     for (i = 0; i < 0xC6; i++) {
@@ -121,7 +118,7 @@ s32 func_801E5D28(void) {
         ptr1++;
         
         if (val1 != 0) {
-            D_801EB088[val1] = val2;
+            D_801EB088.unk0[val1] = val2;
         }
     }
 
@@ -393,7 +390,7 @@ INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E8AB0);
  * @param a3 Y position for the display configuration.
  * @param arg5 X position for the display configuration.
  */
-void func_801E8B60(u8 *a0, s32 a1, s32 a2, s32 a3, s32 arg5) {
+void func_801E8B60(Struct_801E8B60 *a0, s32 a1, s32 a2, s32 a3, s32 arg5) {
     g_menuDisplayCfg.iconType = 0;
     g_menuDisplayCfg.iconSubType = 0;
     g_menuDisplayCfg.x = a3;
@@ -403,8 +400,8 @@ void func_801E8B60(u8 *a0, s32 a1, s32 a2, s32 a3, s32 arg5) {
     g_menuDisplayCfg.pageStart = 0;
     g_menuDisplayCfg.pageEnd = 1;
     g_menuDisplayCfg.y = arg5;
-    g_menuDisplayCfg.scrollOffset = *(u16 *)(a0 + 0x36);
-    g_menuDisplayCfg.dataPtr = (s32)(a0 + 0x20);
+    g_menuDisplayCfg.scrollOffset = a0->unk36;
+    g_menuDisplayCfg.dataPtr = &a0->unk20;
     {
         func_801EFBB4(a1, a2, (s32)&func_801E8AB0);
     }
