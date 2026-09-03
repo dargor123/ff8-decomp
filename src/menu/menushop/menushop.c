@@ -1,14 +1,7 @@
 #include "common.h"
-
-extern u8 D_801EA70C[];
-extern u8 D_801F7F98[];
-extern u8 D_801E9B64[];
-extern u8 D_801E9B6C[];
-extern u8 g_menuDisplayCfg[];
-extern s32 g_menuColor;
-extern s32 D_80077E70;
-extern s32 func_801E6EB0;
-extern s32 func_801E8AB0;
+#include "gamestate.h"
+#include "menu.h"
+#include "menushop.h"
 
 /**
  * @brief Look up a shop item byte from a table or item data.
@@ -97,9 +90,75 @@ void func_801E5BA4(s32 a0, s32 a1) {
 
 INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E5C08);
 
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E5D28);
+s32 func_801E5D28(void) {
+    s32 result;
+    u8* ptr1;
+    u8* ptr2;
+    s32 i;
+    s32 val1;
+    s32 val2;
 
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E5DBC);
+    if (g_gameState.mainData.partyLockFlag & 1) {
+        result = g_gameState.mainData.party.dreamGil;
+    } else {
+        result = g_gameState.mainData.party.gil;
+    }
+    
+    ptr1 = D_80077EBC;
+    i = 0xC7;
+    ptr2 = D_801EB088;
+    ptr2 += 0xC7;
+    
+    for (; i >= 0; i--, ptr2--) {
+        *ptr2 = 0;
+    }
+
+    for (i = 0; i < 0xC6; i++) {
+        val1 = *ptr1;
+        ptr1++;
+        
+        val2 = *ptr1;
+        ptr1++;
+        
+        if (val1 != 0) {
+            D_801EB088[val1] = val2;
+        }
+    }
+
+    return result;
+}
+
+void func_801E5DBC(void) {
+    u8 sp[16];
+    s32 counter;
+    s32 i;
+    Struct_801E5DBC *ptr;
+
+    ptr = (Struct_801E5DBC *)D_801EAA28;
+    counter = 0;
+
+    for (i = 0 ; i < 16; i++, ptr++) {
+        if (ptr->unk0 != 0) {
+            if (ptr->unk1 != 0) {
+                sp[counter] = i;
+                counter++;
+            }
+        }
+    }
+
+    ptr = (Struct_801E5DBC *)D_801EAA28;
+
+    for (i = 0; i < counter; i++) {
+        if (i != sp[i]) {
+            ptr[i] = ptr[sp[i]];
+        }
+    }
+
+    for (; i < 16; i++) {
+        ptr[i].unk0 = 0;
+        ptr[i].unk1 = 0;
+    }
+}
 
 void func_801E5E88(void) {
 }
@@ -108,7 +167,42 @@ INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E5E90);
 
 INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E6A68);
 
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E6ACC);
+void func_801E6ACC(void) {
+    Struct_801E6ACC *ptr;
+    s32 result;
+    s32 i;
+    s32 x;
+    s32 y;
+
+    result = func_801F72B4();
+    ptr = (Struct_801E6ACC *)D_801EA3F0;
+    
+    for (i = 0; i < 200; i++) {
+        if (result & 1) {
+            D_801EAD68[i] = (ptr[i].unk0 * 15) / 2;
+        } else {
+            D_801EAD68[i] = ptr[i].unk0 * 10;
+        }
+
+        if (result & 2) {
+            x = ptr[i].unk2 * 10;
+            y = ptr[i].unk0 * x;
+            D_801EAA48[i] = y * 3 / 40;
+        } else {
+            x = ptr[i].unk2 * 10;
+            y = ptr[i].unk0 * x;
+            D_801EAA48[i] = y / 20;
+        }
+        
+        if (D_801EAA48[i] == 0) {
+            D_801EAA48[i] = 1;
+        }
+        if (D_801EAD68[i] == 0) {
+            D_801EAD68[i] = 1;
+        }
+    }
+}
+
 
 INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E6C3C);
 
@@ -116,7 +210,25 @@ INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E6D54);
 
 INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E6E0C);
 
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E6EB0);
+s32 func_801E6EB0(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+    u8 buffer[0x80];
+    s32 msg;
+    s32 temp_s0;
+    s32 temp_s1;
+    s32 temp_v0;
+    s32 result;
+
+    msg = ((s32 *)(g_menuDisplayCfg.dataPtr))[arg2];
+    result = arg1;
+    if (msg != 0) {
+        temp_v0 = (arg4 + 0xA);
+        temp_s0 = g_menuDisplayCfg.x + temp_v0;
+        temp_s1 = g_menuDisplayCfg.y + 5;
+        decodeMessage(msg, buffer, -1);
+        result = func_801F0FEC(arg0, arg1, temp_s0, temp_s1, buffer, 7);
+    }
+    return result;
+}
 
 /**
  * @brief Configure display parameters and invoke callback for shop list rendering.
@@ -133,18 +245,17 @@ INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E6EB0);
  * @param arg5 X position for the display configuration.
  */
 void func_801E6F60(u8 *a0, s32 a1, s32 a2, s32 a3, s32 arg5) {
-    s32 cfg = (s32)g_menuDisplayCfg;
-    *(u8 *)(cfg + 0x10) = 0;
-    *(u8 *)(cfg + 0x11) = 0;
-    *(s16 *)&g_menuDisplayCfg[0] = a3;
-    *(s16 *)(cfg + 0x04) = 0x144;
-    *(s16 *)(cfg + 0x06) = 0x14;
-    *(u8 *)(cfg + 0x13) = 1;
-    *(u8 *)(cfg + 0x16) = 0;
-    *(u8 *)(cfg + 0x17) = 1;
-    *(s16 *)(cfg + 0x02) = arg5;
-    *(s16 *)(cfg + 0x14) = *(u16 *)(a0 + 0x3A);
-    *(s32 *)(cfg + 0x20) = (s32)(a0 + 0x20);
+    g_menuDisplayCfg.iconType = 0;
+    g_menuDisplayCfg.iconSubType = 0;
+    g_menuDisplayCfg.x = a3;
+    g_menuDisplayCfg.w = 0x144;
+    g_menuDisplayCfg.h = 0x14;
+    g_menuDisplayCfg.columnCount = 1;
+    g_menuDisplayCfg.pageStart = 0;
+    g_menuDisplayCfg.pageEnd = 1;
+    g_menuDisplayCfg.y = arg5;
+    g_menuDisplayCfg.scrollOffset = *(u16 *)(a0 + 0x3A);
+    g_menuDisplayCfg.dataPtr = (s32)(a0 + 0x20);
     {
         func_801EFBB4(a1, a2, (s32)&func_801E6EB0);
     }
@@ -162,7 +273,24 @@ INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E7628);
 
 INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E77EC);
 
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E791C);
+void func_801E791C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+    s32 var_v0;
+    MenuDisplayConfig *cfg;
+
+    cfg = &g_menuDisplayCfg;
+
+    var_v0 = arg2;
+    if (arg0 != 0) {
+        var_v0 = func_801F0FEC(arg1, var_v0, arg3 + 0xC, arg4 + 5, arg0, 7);
+    }
+    cfg->iconType = 0;
+    cfg->iconSubType = 0;
+    cfg->x = arg3;
+    cfg->w = 0xDA;
+    cfg->y = (s16) arg4;
+    cfg->h = 0x15;
+    func_801EF9AC(arg1, var_v0, 0x1000, g_menuColor);
+}
 
 INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E79D4);
 
@@ -266,18 +394,17 @@ INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E8AB0);
  * @param arg5 X position for the display configuration.
  */
 void func_801E8B60(u8 *a0, s32 a1, s32 a2, s32 a3, s32 arg5) {
-    s32 cfg = (s32)g_menuDisplayCfg;
-    *(u8 *)(cfg + 0x10) = 0;
-    *(u8 *)(cfg + 0x11) = 0;
-    *(s16 *)&g_menuDisplayCfg[0] = a3;
-    *(s16 *)(cfg + 0x04) = 0x144;
-    *(s16 *)(cfg + 0x06) = 0x14;
-    *(u8 *)(cfg + 0x13) = 1;
-    *(u8 *)(cfg + 0x16) = 0;
-    *(u8 *)(cfg + 0x17) = 1;
-    *(s16 *)(cfg + 0x02) = arg5;
-    *(s16 *)(cfg + 0x14) = *(u16 *)(a0 + 0x36);
-    *(s32 *)(cfg + 0x20) = (s32)(a0 + 0x20);
+    g_menuDisplayCfg.iconType = 0;
+    g_menuDisplayCfg.iconSubType = 0;
+    g_menuDisplayCfg.x = a3;
+    g_menuDisplayCfg.w = 0x144;
+    g_menuDisplayCfg.h = 0x14;
+    g_menuDisplayCfg.columnCount = 1;
+    g_menuDisplayCfg.pageStart = 0;
+    g_menuDisplayCfg.pageEnd = 1;
+    g_menuDisplayCfg.y = arg5;
+    g_menuDisplayCfg.scrollOffset = *(u16 *)(a0 + 0x36);
+    g_menuDisplayCfg.dataPtr = (s32)(a0 + 0x20);
     {
         func_801EFBB4(a1, a2, (s32)&func_801E8AB0);
     }
@@ -326,16 +453,14 @@ INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E90F8);
  */
 void func_801E9554(s32 a0, s32 a1, s32 a2, s32 a3, s32 arg4) {
     s32 result;
-    u8 *cfg;
 
     result = func_801E90F8(a0, a1, a2, a3, arg4);
-    cfg = g_menuDisplayCfg;
-    *(u8 *)(cfg + 0x10) = 0x57;
-    *(u8 *)(cfg + 0x11) = 0;
-    *(s16 *)&g_menuDisplayCfg[0] = a3;
-    *(s16 *)(cfg + 0x04) = 0x150;
-    *(s16 *)(cfg + 0x02) = arg4;
-    *(s16 *)(cfg + 0x06) = 0x26;
+    g_menuDisplayCfg.iconType = 0x57;
+    g_menuDisplayCfg.iconSubType = 0;
+    g_menuDisplayCfg.x = a3;
+    g_menuDisplayCfg.w = 0x150;
+    g_menuDisplayCfg.y = arg4;
+    g_menuDisplayCfg.h = 0x26;
     func_801EF9AC(a1, result, 0x1000, g_menuColor);
 }
 
