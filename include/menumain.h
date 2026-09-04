@@ -56,7 +56,16 @@ typedef struct MenuTask {
     s32 (*drawCb)(struct MenuTask *, s32, s32);   /* 0x0C: (task, ctx, dl) -> dl (func_801F16AC). */
     u16 state;                                    /* 0x10: per-task state word, zeroed on alloc. */
     s8 inUse;                                     /* 0x12: pool slot occupied. */
-    u8 pad13[0x65];
+    u8 pad13[0x15];
+    u32 unk28;
+    u8 *unk2C;
+    u32 unk30;
+    u16 pad34;
+    u16 unk36;
+    u16 unk38;
+    u8 pad3A[0xB];
+    u8 unk45;
+    u8 pad46[0x32];
 } MenuTask; /* 0x78 bytes */
 
 /**

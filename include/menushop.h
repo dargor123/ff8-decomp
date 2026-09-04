@@ -36,7 +36,7 @@ extern Struct_D_801EB088 D_801EB088;
 extern s32 g_menuColor;
 extern s32 D_80077E70;
 extern s32 func_801E8AB0;
-extern s32 func_801E5E90(s32);
-extern s32 func_801E79D4;
+extern void func_801E5E90(void*);
+extern s32 func_801E79D4(void*, s32, s32);
 
 #endif /* MENUSHOP_H */
