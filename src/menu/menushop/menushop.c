@@ -107,11 +107,11 @@ s32 func_801E5D28(void) {
     
     ptr1 = D_80077EBC;
     
-    for (i = 0; i < 0xC8; i++) {
+    for (i = 0; i < ITEM_PRICE_COUNT; i++) {
          D_801EB088.unk0[i] = 0;
     }
 
-    for (i = 0; i < 0xC6; i++) {
+    for (i = 0; i < ITEM_SLOT_COUNT; i++) {
         val1 = *ptr1;
         ptr1++;
         
@@ -126,25 +126,31 @@ s32 func_801E5D28(void) {
     return result;
 }
 
+/**
+ * @brief Compacts the shop item list in place.
+ *
+ * Scans the 16 entries in D_801EAA28 and keeps only entries whose
+ * itemId and visible fields are both non-zero. Valid entries are moved to
+ * the beginning of the table in their original order, while all
+ * remaining entries are cleared.
+ */
 void func_801E5DBC(void) {
-    u8 sp[16];
+    u8 sp[SHOP_ITEM_COUNT];
     s32 counter;
     s32 i;
-    Struct_801E5DBC *ptr;
+    ShopItemVisibility *ptr;
 
-    ptr = (Struct_801E5DBC *)D_801EAA28;
+    ptr = D_801EAA28;
     counter = 0;
 
-    for (i = 0 ; i < 16; i++, ptr++) {
-        if (ptr->unk0 != 0) {
-            if (ptr->unk1 != 0) {
-                sp[counter] = i;
-                counter++;
-            }
+    for (i = 0 ; i < SHOP_ITEM_COUNT; i++, ptr++) {
+        if (ptr->itemId != 0 && ptr->visible != 0) {
+            sp[counter] = i;
+            counter++;
         }
     }
 
-    ptr = (Struct_801E5DBC *)D_801EAA28;
+    ptr = D_801EAA28;
 
     for (i = 0; i < counter; i++) {
         if (i != sp[i]) {
@@ -152,9 +158,9 @@ void func_801E5DBC(void) {
         }
     }
 
-    for (; i < 16; i++) {
-        ptr[i].unk0 = 0;
-        ptr[i].unk1 = 0;
+    for (; i < SHOP_ITEM_COUNT; i++) {
+        ptr[i].itemId = 0;
+        ptr[i].visible = 0;
     }
 }
 
@@ -163,32 +169,66 @@ void func_801E5E88(void) {
 
 INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E5E90);
 
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E6A68);
+/**
+ * @brief Populate shop item visibility data for a shop.
+ *
+ * Copies item IDs from the shop's rarity table and visibility flags from
+ * the shop inventory into the shared visibility table.
+ */
+void func_801E6A68(s32 shopId) {
+    ShopItemVisibility *visibility;
+    ShopItemRarity *rarity;
+    ShopData *shop;
+    s32 i;
 
+    visibility = D_801EAA28;
+
+    rarity = D_801EA170[0];
+    rarity += shopId * 16;
+
+    shop = &D_80077CC8[shopId];
+
+    for (i = 0; i < SHOP_ITEM_COUNT; i++) {
+        visibility->itemId = rarity[i].itemId;
+        visibility->visible = shop->items[i];
+        visibility++;
+    }
+}
+
+/**
+ * @brief Calculates and stores shop buy and sell prices.
+ *
+ * The flags returned by func_801F72B4 determine the price modifiers:
+ * - bit 0 reduces the buy price by 25%.
+ * - bit 1 increases the sell price by 50%.
+ * Buy prices are stored in D_801EAD68, and sell prices in D_801EAA48.
+ * Prices are calculated using integer arithmetic and are clamped to a
+ * minimum value of 1.
+ */
 void func_801E6ACC(void) {
-    Struct_801E6ACC *ptr;
+    ShopItemPrice *itemPrice;
     s32 result;
     s32 i;
     s32 x;
     s32 y;
 
     result = func_801F72B4();
-    ptr = (Struct_801E6ACC *)D_801EA3F0;
+    itemPrice = D_801EA3F0;
     
-    for (i = 0; i < 200; i++) {
+    for (i = 0; i < ITEM_PRICE_COUNT; i++) {
         if (result & 1) {
-            D_801EAD68[i] = (ptr[i].unk0 * 15) / 2;
+            D_801EAD68[i] = (itemPrice[i].basePrice * 15) / 2;
         } else {
-            D_801EAD68[i] = ptr[i].unk0 * 10;
+            D_801EAD68[i] = itemPrice[i].basePrice * 10;
         }
 
         if (result & 2) {
-            x = ptr[i].unk2 * 10;
-            y = ptr[i].unk0 * x;
+            x = itemPrice[i].sellRate * 10;
+            y = itemPrice[i].basePrice * x;
             D_801EAA48[i] = y * 3 / 40;
         } else {
-            x = ptr[i].unk2 * 10;
-            y = ptr[i].unk0 * x;
+            x = itemPrice[i].sellRate * 10;
+            y = itemPrice[i].basePrice * x;
             D_801EAA48[i] = y / 20;
         }
         
