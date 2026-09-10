@@ -108,9 +108,9 @@ void func_801E5C08(s32 gil) {
         g_gameState.mainData.party.gil = gil;
     }
 
-    constPtr = D_80077EBC;
-    p = D_80077EBC;
-    
+    constPtr = (ItemSlot *)D_80077EBC;
+    p = constPtr;
+
     for (i = 0; i < ITEM_SLOT_COUNT; i++, p++) {
         u8 itemId = p->id;
         u8 itemCount = D_801EB088[itemId];
@@ -148,7 +148,7 @@ void func_801E5C08(s32 gil) {
  * @brief Loads the current gil amount and rebuilds the available item counts.
  *
  * Item counts are read from the shop inventory table and stored by item ID.
- * 
+ *
  * @return The current gil amount (dream gil if party is locked, otherwise normal gil).
  */
 s32 func_801E5D28(void) {
@@ -164,9 +164,9 @@ s32 func_801E5D28(void) {
     } else {
         result = g_gameState.mainData.party.gil;
     }
-    
+
     ptr1 = D_80077EBC;
-    
+
     for (i = 0; i < ITEM_PRICE_COUNT; i++) {
         D_801EB088[i] = 0;
     }
@@ -174,10 +174,10 @@ s32 func_801E5D28(void) {
     for (i = 0; i < ITEM_SLOT_COUNT; i++) {
         val1 = *ptr1;
         ptr1++;
-        
+
         val2 = *ptr1;
         ptr1++;
-        
+
         if (val1 != 0) {
             D_801EB088[val1] = val2;
         }
@@ -224,10 +224,440 @@ void func_801E5DBC(void) {
     }
 }
 
-void func_801E5E88(void) {
+void func_801E5E88(u8 arg0) {
 }
 
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E5E90);
+void func_801E5E90(ShopMenuState *s) {
+    u16 btnFlags;
+    u32 cfgFlags;
+    u16 *statePtr;
+    u16 state;
+    u16 state2;
+
+    statePtr = &s->state;
+    btnFlags = g_menuDisplayCfg.inputNew;
+    cfgFlags = g_menuDisplayCfg.inputRepeat;
+    state = s->state;
+block_38:
+    state &= 0xFFFF;
+block_40:
+    switch (state) {
+    case 0:
+        s->unk30 = func_801F6AA4(0x40);
+        s->unk38 = 0;
+        *statePtr = 1;
+        break;
+
+    case 1:
+        s->unk38 += 0x100;
+        if ((s16)s->unk38 >= 0x1000) {
+            s->unk38 = 0x1000;
+            *statePtr = 2;
+        }
+        func_801E5BA4(1, (s8)s->unk42);
+        break;
+
+    case 2:
+        s->unk42 = 0;
+        *statePtr = 3;
+        func_801E5BA4(1, (s8)s->unk42);
+        break;
+
+    case 3:
+        if (btnFlags & 0x2000) {
+            sendSpuCommand(1);
+            s->unk42 = func_80035B28(7, (s8)s->unk42);
+        }
+
+        if (btnFlags & 0x8000) {
+            sendSpuCommand(1);
+            s->unk42 = func_80035B70(7, (s8)s->unk42);
+        }
+
+        func_801E5BA4(1, (s8)s->unk42);
+
+        if (cfgFlags & 0x10) {
+            sendSpuCommand(3);
+            *statePtr = 0x10;
+        }
+
+        if (!(cfgFlags & 0x40)) {
+            break;
+        }
+
+        sendSpuCommand(2);
+
+        if ((s8)s->unk42 == 2) {
+            state = 16;
+            goto block_38;
+        }
+
+        s->unk46 = s->unk42;
+        if (s->unk46 == 0) {
+            s->unk30 = func_801F6AA4(0x42);
+            s->unk47 = 2;
+        } else {
+        block_17c:
+            s->unk30 = func_801F6AA4(0x41);
+            s->unk47 = 0x19;
+        }
+
+    block_190:
+        s->unk40 = s->unk3C[s->unk46] / 8;
+        func_801E5C08(s->gil);
+        s->gil = func_801E5D28();
+        *statePtr = 4;
+        break;
+
+    case 4:
+        s->unk36 = 0xF00;
+        *statePtr = 5;
+        /* fallthrough */
+
+    case 5:
+        s->unk36 -= 0x100;
+        if (((s16)s->unk36 << 0x10) <= 0) {
+            state2 = 6;
+            s->unk36 = 0;
+            goto block_894;
+        }
+        goto block_898;
+
+    case 6: {
+        s32 param;
+        s16 dividend;
+        s32 quotient;
+        s32 rest;
+
+        if (btnFlags != 0) {
+            s->unk4E = 0;
+        }
+
+        param = 0x4A;
+        if (s->unk4E != 0) {
+            s->unk4E--;
+            s->unk30 = func_801F6AA4(param);
+        } else {
+            param = 0x41;
+            if (s->unk46 == 0) {
+                param = 0x42;
+            }
+            s->unk30 = func_801F6AA4(param);
+        }
+
+        dividend = s->unk3C[s->unk46];
+        rest = (s16)(dividend % 8);
+        quotient = dividend / 8;
+        s->unk3C[s->unk46]  = func_801F6768(btnFlags, 8, rest) + quotient * 8;
+
+        s->field_20 = func_801E58A0((s32)s, s->unk46, s->unk3C[s->unk46]);
+
+        if (btnFlags & 0x8000) {
+            state = 7;
+            goto block_38;
+        }
+        if (btnFlags & 0x2000) {
+            state = 9;
+            goto block_38;
+        }
+        func_801E5BA4(0, (s8)s->unk42);
+        func_801E5930(1, s->unk3C[s->unk46], s);
+        if (cfgFlags & 0x10) {
+            sendSpuCommand(3);
+            s->field_20 = 0;
+            s->unk30 = func_801F6AA4(0x40);
+            *statePtr = 14;
+        }
+        if (cfgFlags & 0x40) {
+            if (func_801E583C(s, s->unk46, s->unk3C[s->unk46])) {
+                if (s->unk46 == 1) {
+                    if (s->unk3C[s->unk46] >= 0xC6) {
+                        goto block_774;
+                    }
+                }
+                state = 11;
+                goto block_40;
+            }
+            goto block_774;
+        }
+        break;
+    }
+
+    case 11: {
+        s32 index;
+        u32 price;
+        u32 count;
+
+        index = func_801E5800(s, s->unk46, s->unk3C[s->unk46]);
+        s->unk48 = 1;
+        price = D_801EAD68[index];
+
+        if (s->unk46 == 0) {
+            if (index == 0) {
+                goto block_774;
+            }
+
+            if (s->gil < price) {
+                s32 tmp;
+                sendSpuCommand(5);
+                tmp = func_801F6AA4(0x49);
+                initSfxPlayback(0, tmp);
+                func_801F23D0(0, 0x68, (u8 *)tmp);
+                setSfxPitch(0, 0);
+                startSfxNormal(0);
+                s->unk4C = 0x258;
+                *statePtr = 15;
+                break;
+            }
+
+            if (D_801EB088[index] >= 100) {
+                s32 tmp;
+                sendSpuCommand(5);
+                tmp = func_801F6AA4(0x48);
+                func_801F23D0(0, 0x68, (u8 *)tmp);
+                initSfxPlayback(0, tmp);
+                setSfxPitch(0, 0);
+                startSfxNormal(0);
+                s->unk4C = 0x258;
+                *statePtr = 15;
+                break;
+            }
+
+            count = s->gil / price;
+            if ((s32)count + D_801EB088[index] >= 100) {
+                count = 100 - D_801EB088[index];
+            }
+
+            goto block_4f4;
+        }
+
+        if (index == 0) {
+            goto block_774;
+        }
+
+        count = D_801EB088[index];
+
+    block_4f4:
+        sendSpuCommand(2);
+        s->unk49 = count;
+        s->unk4A = 0x40;
+        if (s->unk46 == 0) {
+            s->unk30 = func_801F6AA4(0x46);
+        } else {
+            s->unk30 = func_801F6AA4(0x47);
+        }
+        *statePtr = 12;
+        break;
+    }
+
+    case 15:
+        s->unk4C -= 1;
+        if (cfgFlags & 0x50) {
+            func_801F7BEC(cfgFlags);
+            s->unk4C = 0;
+        }
+        if ((s16)s->unk4C <= 0) {
+            fadeOutSfxFast(0);
+            *statePtr = 6;
+        }
+        break;
+
+    case 12:
+        func_801E5BA4(0, (s8)s->unk42);
+        func_801E5930(0, s->unk3C[s->unk46], s);
+
+        if (btnFlags & 0x2000) {
+            if ((s8)s->unk48 < (s8)s->unk49) {
+                s->unk48++;
+                sendSpuCommand(1);
+            }
+        }
+
+        if (btnFlags & 0x8000) {
+            if ((s8)s->unk48 >= 2) {
+                s->unk48--;
+                sendSpuCommand(1);
+            }
+        }
+
+        if (btnFlags & 0x4000) {
+            if ((s8)s->unk48 >= 2) {
+                sendSpuCommand(1);
+                s->unk48 -= 10;
+                if (((s8)s->unk48 << 24) <= 0) {
+                    s->unk48 = 1;
+                }
+            }
+        }
+
+        if (btnFlags & 0x1000) {
+            if ((s8)s->unk48 < (s8)s->unk49) {
+                s->unk48 += 0xA;
+                sendSpuCommand(1);
+                if ((s8)s->unk48 > (s8)s->unk49) {
+                    s->unk48 = s->unk49;
+                }
+            }
+        }
+
+        if (cfgFlags & 0x10) {
+            sendSpuCommand(3);
+            *statePtr = 13;
+        }
+
+        if (cfgFlags & 0x40) {
+            s32 index;
+            s32 price;
+            if (s->unk46 == 0) {
+                playSoundEffect(0x14);
+                index = func_801E5800(s, s->unk46, s->unk3C[s->unk46]);
+                price = D_801EAD68[index];
+                price *= (s8)s->unk48;
+                s->gil -= price;
+                D_801EB088[index] += s->unk48;
+            } else {
+                if (s->unk3C[s->unk46] >= 0xC6) {
+                block_774:
+                    sendSpuCommand(5);
+                    break;
+                }
+
+                playSoundEffect(0x14);
+                index = func_801E5800(s, s->unk46, s->unk3C[s->unk46]);
+                price = D_801EAA48[index];
+                price *= (s8)s->unk48;
+                s->gil += price;
+                if (s->gil > 99999999) {
+                    s->gil = 99999999;
+                }
+
+                D_801EB088[index] -= s->unk48;
+            }
+            s->unk4E = 0x3C;
+            *statePtr = 13;
+        }
+        break;
+
+    case 13:
+        func_801E5BA4(0, (s8)s->unk42);
+        func_801E5930(0, s->unk3C[s->unk46], s);
+        s->unk4A = 0;
+        *statePtr = 6;
+        break;
+
+    case 14:
+        func_801E5BA4(0, (s8)s->unk42);
+        s->unk36 += 0x100;
+        if ((s16)s->unk36 < 0x1000) {
+            goto block_898;
+        }
+        s->unk36 = 0x1000;
+        state2 = 3;
+    block_894:
+        *statePtr = state2;
+    block_898:
+        func_801E5BA4(0, (s8)s->unk42);
+        func_801E5930(1, s->unk3C[s->unk46], s);
+        break;
+
+    case 7: {
+        s32 dividend;
+        s32 rest;
+        s32 quotient;
+        func_801E5BA4(0, (s8)s->unk42);
+        func_801E5930(1, s->unk3C[s->unk46], s);
+        s->field_24 = s->field_20;
+        dividend = s->unk3C[s->unk46];
+        rest = (s16)(dividend % 8);
+        quotient = dividend / 8;
+        s->unk41 = quotient;
+        quotient--;
+        if (quotient < 0) {
+            quotient = (u8)s->unk47 - 1;
+        }
+        s->unk3C[s->unk46] = rest + quotient * 8;
+        s->unk40 = quotient;
+        s->field_20 = func_801E58A0((s32)s, s->unk46, s->unk3C[s->unk46]);
+        s->unk3A = -0xE67;
+        sendSpuCommand(1);
+        *statePtr = 8;
+        break;
+    }
+
+    case 8:
+        func_801E5BA4(0, (s8)s->unk42);
+        func_801E5930(1,  s->unk3C[s->unk46], s);
+        s->unk3A += 0x199;
+        if (s->unk3A < 0) {
+            goto block_b10;
+        }
+        goto block_b0c;
+
+    case 9: {
+        s32 dividend;
+        s32 rest;
+        s32 quotient;
+        func_801E5BA4(0, (s8)s->unk42);
+        func_801E5930(1, s->unk3C[s->unk46], s);
+        s->field_24 = s->field_20;
+        dividend = s->unk3C[s->unk46];
+        rest = (s16)(dividend % 8);
+        quotient = dividend / 8;
+        s->unk41 = quotient;
+        quotient++;
+        if (quotient >= (u8)s->unk47) {
+            quotient = 0;
+        }
+        s->unk3C[s->unk46] = rest + quotient * 8;
+        s->unk40 = quotient;
+        s->field_20 = func_801E58A0((s32)s, s->unk46, s->unk3C[s->unk46]);
+        s->unk3A = 0x0E67;
+        sendSpuCommand(1);
+        *statePtr = 10;
+        break;
+    }
+
+    case 10:
+        func_801E5BA4(0, (s8)s->unk42);
+        func_801E5930(1,  s->unk3C[s->unk46], s);
+        s->unk3A -= 0x199;
+        if (s->unk3A <= 0) {
+        block_b0c:
+            s->unk3A = 0;
+            *statePtr = 6;
+        }
+        block_b10:
+        if (cfgFlags & 0x8000) {
+            *statePtr = 7;
+        }
+        if (cfgFlags & 0x2000) {
+            *statePtr = 9;
+        }
+        break;
+
+    case 16:
+        s->unk30 = func_801F6AA4(0x44);
+        *statePtr = 17;
+        /* fallthrough */
+
+    case 17:
+        s->unk38 -= 0x100;
+        if ((s16)s->unk38 << 0x10 <= 0) {
+            s->unk38 = 0;
+            func_801E5C08(s->gil);
+            func_801E5E88(s->unk45);
+            func_801F6888();
+            func_801F7B60();
+            func_801F18FC(s);
+            func_801F0BB0();
+        }
+        func_801E5BA4(1, (s8)s->unk42);
+        break;
+
+    }
+
+    func_801F0948((s16)s->unk38);
+}
 
 /**
  * @brief Populate shop item visibility data for a shop.
@@ -274,7 +704,7 @@ void func_801E6ACC(void) {
 
     result = func_801F72B4();
     itemPrice = D_801EA3F0;
-    
+
     for (i = 0; i < ITEM_PRICE_COUNT; i++) {
         if (result & 1) {
             D_801EAD68[i] = (itemPrice[i].basePrice * 15) / 2;
@@ -291,7 +721,7 @@ void func_801E6ACC(void) {
             y = itemPrice[i].basePrice * x;
             D_801EAA48[i] = y / 20;
         }
-        
+
         if (D_801EAA48[i] == 0) {
             D_801EAA48[i] = 1;
         }
@@ -308,7 +738,7 @@ void func_801E6ACC(void) {
  * If the computed value exceeds 0x80, the item is marked as visible;
  * otherwise, it is hidden. The visibility flags are stored in both the shared
  * D_801EAA28 table and the shop's own inventory.
- * 
+ *
  * @param shopId Index of the shop to update.
  */
 void func_801E6C3C(s32 shopId) {
@@ -323,19 +753,19 @@ void func_801E6C3C(s32 shopId) {
     rarity += shopId * 16;
     shop = &D_80077CC8[shopId];
     bitMask = (func_801F72B4() << 6) & 0x100;
-    
+
     for (i = 0; i< 16; i++, p++) {
         if (p->itemId != 0) {
             s32 aux = rarity[i].rarity;
             s32 val = bitMask + aux;
-            
+
             aux = 0xFF;
             if (val == aux) {
                 val = 0x100;
             }
-            
+
             func_801F6A5C();
-            
+
             aux = 0x80;
             if (val > aux) {
                 aux = 1;
@@ -343,11 +773,11 @@ void func_801E6C3C(s32 shopId) {
             } else {
                 p->visible = 0;
             }
-            
+
             if (val == 0) {
                 p->visible = 0;
             }
-            
+
             shop->items[i] = p->visible;
         }
     }
@@ -446,7 +876,7 @@ s32 func_801E7374(Struct_801E7374* arg0, void *arg1, void* arg2, s32 arg3, s32 a
         arg2 = (void *)func_8002FF34(arg1, arg2, 0x4D, arg3 + 0xD6, arg4, g_menuColor);
         arg2 = (void *)func_801F5EFC((s32)arg1, (s32)arg2, arg3 + 0x1C, arg4, g_menuColor, (s32) (s8) arg0->unk40);
     }
-    
+
     arg2 = (void *)func_801F5F60((s32)arg1, (s32)arg2, g_menuColor, 3);
     return func_801EFBB4((s32)arg1, (s32)arg2, (s32)func_801E6FD8);
 }
@@ -503,9 +933,9 @@ void func_801E791C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
 INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E79D4);
 
 void func_801E7B9C(s32 a0) {
-    MenuTask *temp_s0;
+    ShopMenuState *temp_s0;
 
-    temp_s0 = (MenuTask *)func_801F179C((s32)func_801E5E90, (s32)func_801E79D4);
+    temp_s0 = (ShopMenuState *)func_801F179C((s32)func_801E5E90, (s32)func_801E79D4);
     func_801F1D2C(0, "shop.bin", (s32)D_801EA170);
     func_801F1D2C(0, "price.bin", (s32)D_801EA3F0);
     func_801F1D2C(0, "mitem.bin", (s32)D_801EA70C);
@@ -513,7 +943,7 @@ void func_801E7B9C(s32 a0) {
         temp_s0->unk2C = D_80077EBC;
         temp_s0->unk36 = 0x1000;
         temp_s0->unk30 = 0;
-        temp_s0->unk28 = func_801E5D28();
+        temp_s0->gil = func_801E5D28();
         temp_s0->unk45 = D_801E9B6C[func_801EFFF0()];
         func_801E6D54(temp_s0->unk45);
         func_801E5E90(temp_s0);
