@@ -94,6 +94,6 @@ extern s32 func_801E8AB0;
 extern void func_801E5E90(ShopMenuState*);
 extern s32 func_801E79D4(void*, s32, s32);
 extern s32 func_801EFBB4(s32, s32, s32);
-extern void* func_801E6FD8(void);
+extern s32 func_801E6FD8(s32, s32, s32, s32, s32);
 
 #endif /* MENUSHOP_H */

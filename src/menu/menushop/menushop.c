@@ -850,7 +850,72 @@ void func_801E6F60(u8 *a0, s32 a1, s32 a2, s32 a3, s32 arg5) {
     }
 }
 
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E6FD8);
+s32 func_801E6FD8(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+    MenuDisplayConfig *cfg;
+    ShopMenuState *s;
+    s32 index;
+    s32 price;
+    s32 count;
+    s32 shopItemIdx;
+    s32 xBase;
+    s32 yBase;
+
+    cfg = &g_menuDisplayCfg;
+    shopItemIdx = arg2 * 8 + arg3;
+    xBase = cfg->x + arg4;
+    yBase = cfg->y + arg3 * 13;
+
+    s = (ShopMenuState *)cfg->dataPtr;
+    index = func_801E5800(s, s->unk46, shopItemIdx);
+
+    if (s->unk46 == 1) { // selling
+        price = D_801EAA48[index];
+        count = D_801EB088[index];
+        if (shopItemIdx >= 198) {
+            return arg1;
+        }
+    }
+
+    else { // buying
+        price = D_801EAD68[index];
+        count = D_801EAA28[shopItemIdx].visible;
+    }
+
+    if (index != 0 && count != 0) {
+        s32 color;
+        s32 statName;
+        s32 x;
+        s32 y;
+
+        color = 7;
+        if (s->gil < D_801EAD68[index] && s->unk46 == 0) {
+            color = 1;
+        }
+
+        statName = getStatName(index);
+        arg2 = func_801E5904(index);
+
+        arg1 = func_8002FF34(arg0, arg1, arg2 + 0xDF, xBase + 0xB, yBase + 8, g_menuColor);
+
+        x = xBase + 0x19;
+        y = yBase + 0xA;
+        arg1 = func_801F0FEC(arg0, arg1, x, y, statName, color);
+
+        if (s->unk46 == 0) { // buying
+            x = xBase + 0xF0;
+            arg1 = drawColorByMenuPalette(arg0, arg1, (y << 0x10) | (x & 0xffff), price, color);
+        }
+
+        else { // selling
+            x = xBase + 0xC8;
+            arg1 = drawColorByMenuPalette(arg0, arg1, (y << 0x10) | (x & 0xffff), price, color);
+            x = xBase + 0xF0;
+            arg1 = drawColorByMenuPalette(arg0, arg1, (y << 0x10) | (x & 0xffff), count, color);
+        }
+    }
+
+    return arg1;
+}
 
 s32 func_801E722C(ShopMenuState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     MenuDisplayConfig *cfg;
