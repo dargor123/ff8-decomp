@@ -852,7 +852,46 @@ void func_801E6F60(u8 *a0, s32 a1, s32 a2, s32 a3, s32 arg5) {
 
 INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E6FD8);
 
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E722C);
+s32 func_801E722C(ShopMenuState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+    MenuDisplayConfig *cfg;
+    s32 color;
+
+    cfg = &g_menuDisplayCfg;
+    color = 7;
+
+    if (s->unk46 == 0) {
+        s32 x;
+        s32 y;
+        s32 result;
+        s32 index;
+        s32 count;
+
+        x = 8 + arg3;
+        y = 9 + arg4;
+        result = func_801F0FEC(arg1, arg2, x, y, func_801F6AA4(0x32), color);
+
+        /* FIXME: Keep `x` live here to force `addiu` between `move` and `lbu`. */
+        KEEP_ALIVE(x);
+
+        x = 0x42 + arg3;
+
+        /* FIXME: Keep `s` live here to force allocation to the $v0 register. */
+        KEEP_ALIVE(s);
+
+        index = func_801E5800(s, s->unk46, s->unk3C[s->unk46]);
+        y = 0x16 + arg4;
+        arg2 = drawColorByMenuPalette(arg1, result, (y << 0x10) | (x & 0xFFFF), D_801EB088[index], color);
+    }
+
+    cfg->iconType = 0x57;
+    cfg->iconSubType = 0;
+    cfg->x = arg3;
+    cfg->w = 0x50;
+    cfg->y = arg4;
+    cfg->h = 0x77;
+
+    return func_801EF9AC(arg1, arg2, 0x1000, g_menuColor);
+}
 
 s32 func_801E7374(Struct_801E7374* arg0, void *arg1, void* arg2, s32 arg3, s32 arg4) {
     g_menuDisplayCfg.iconType = 0x4C;
