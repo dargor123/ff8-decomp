@@ -907,7 +907,52 @@ void func_801E7508(Struct_801E7508 *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4
     func_801EF9AC(arg1, arg2, 0x1000, g_menuColor);
 }
 
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E7628);
+s32 func_801E7628(ShopMenuState* s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+    s32 result;
+    s32 x;
+    s32 y;
+    s32 index;
+    s32 color;
+    s32 price;
+    MenuDisplayConfig *cfg;
+
+    color = 7;
+    cfg = &g_menuDisplayCfg;
+    if (s->unk4A == 0) {
+        return arg2;
+    }
+
+    x = arg3 + 0xB;
+    y = arg4 + 9;
+    arg2 = func_801F0FEC(arg1, arg2, x, y, func_801F6AA4(0x37), color);
+
+    y = arg4 + 0x23;
+    arg2 = func_801F0FEC(arg1, arg2, x, y, func_801F6AA4(0x38), color);
+
+    x = arg3 + 0x60;
+    y = arg4 + 0x18;
+    arg2 = drawColorByMenuPalette(arg1, arg2, (y << 0x10) | (x & 0xFFFF), (s8)s->unk48, color);
+
+    y = arg4 + 0x32;
+
+    index = func_801E5800(s, s->unk46, s->unk3C[s->unk46]);
+    if (s->unk46 == 0) {
+        price = D_801EAD68[index];
+    } else {
+        price = D_801EAA48[index];
+    }
+
+    arg2 = drawColorByMenuPalette(arg1, arg2, (y << 0x10) | (x & 0xFFFF), price * (s8)s->unk48, color);
+
+    cfg->iconType = 0x47;
+    cfg->w = 0x68;
+    cfg->iconSubType = 0;
+    cfg->x = arg3;
+    cfg->y = arg4;
+    cfg->h = 0x42;
+
+    return func_801EF9AC(arg1, arg2, 0x1000, g_menuColor);
+}
 
 INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E77EC);
 
