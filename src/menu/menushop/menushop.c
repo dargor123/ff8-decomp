@@ -954,7 +954,59 @@ s32 func_801E7628(ShopMenuState* s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     return func_801EF9AC(arg1, arg2, 0x1000, g_menuColor);
 }
 
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E77EC);
+void func_801E77EC(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+    MenuDisplayConfig *cfg;
+    s32 name;
+    s32 x;
+    s32 y;
+    s32 param1;
+    s32 param2;
+    s32 result;
+
+    result = func_801EFFB8();
+
+    /* FIXME: Keep `arg2` live here to force allocation to the $s2 register. */
+    KEEP_ALIVE(arg2);
+
+    if (result == 0x17) {
+        param1 = 1;
+        param2 = 0x150;
+    } else {
+        param1 = 0;
+        param2 = 0xF4;
+    }
+
+    cfg = &g_menuDisplayCfg;
+
+    if (arg0 >= 0) {
+        name = func_801F6AA4(arg0 + 1);
+    } else {
+        name = func_801F6AA4(0x30);
+    }
+
+    x = (param2 - getGlyphStatusU16(name)) / 2;
+    x += arg3;
+
+    y = 5;
+    y += arg4;
+
+    arg2 = func_801F0FEC(arg1, arg2, x, y, name, 7);
+
+    cfg->iconType = 0x49;
+    cfg->iconSubType = 0;
+    cfg->x = arg3;
+    cfg->y = arg4;
+
+    if (param1 != 0) {
+        cfg->w = 0x150;
+        cfg->h = 0x14;
+    } else {
+        cfg->w = 0xF4;
+        cfg->h = 0x14;
+    }
+
+    func_801EF9AC(arg1, arg2, 0x1000, g_menuColor);
+}
 
 void func_801E791C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     s32 var_v0;
