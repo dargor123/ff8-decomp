@@ -61,8 +61,15 @@ typedef struct {
     u8 unk4[8];
 } Struct_func_801E7CFC; /* 12 bytes */
 
+typedef struct {
+    u8 pad0[4];
+    u8 unk4;
+    u8 pad[7];
+} Struct_func_801E7F4C; /* 12 bytes */
+
 extern ShopData D_80077CC8[SHOP_COUNT]; /**< Shop data table. */
 extern u8 D_80077EBC[ITEM_SLOT_COUNT]; /**< Item slot inventory. */
+extern Struct_func_801E7F4C D_8007C3B8[28];
 extern ShopItemPrice D_801EA3F0[ITEM_PRICE_COUNT]; /**< Item price table. */
 extern u8 D_801EA70C[];
 extern u8 D_801F7F98[];
@@ -75,6 +82,7 @@ extern ShopItemVisibility D_801EAA28[SHOP_ITEM_COUNT]; /**< Shop item visibility
 extern s32 D_801EAA48[ITEM_PRICE_COUNT]; /**< Item sell prices. */
 extern s32 D_801EAD68[ITEM_PRICE_COUNT]; /**< Item buy prices. */
 extern u8 D_801EB088[ITEM_PRICE_COUNT]; /**< Item quantities. */
+extern u8 D_801EB150[8];
 extern s32 D_801EB2E4;
 extern s32 D_801EB2E8;
 extern s32 g_menuColor;

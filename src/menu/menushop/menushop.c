@@ -1378,7 +1378,48 @@ s32 func_801E7E98(s32 arg0, s32 arg1) {
     return 1;
 }
 
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E7F4C);
+s32 func_801E7F4C(s32 arg0, s32 arg1) {
+    s32 count;
+    s32 i;
+    u8* ptr1;
+    u8* ptr2;
+    Struct_func_801E7F4C *ptr3;
+    u8 value;
+
+    count = 0;
+    value = 0xFF;
+    i = 7;
+
+    ptr1 = D_801EB150;
+    ptr1 += 7;
+
+    for (; i >= 0; i--) {
+        *ptr1 = value;
+        ptr1--;
+    }
+
+    ptr2 = D_801EB150;
+    ptr3 = D_8007C3B8;
+
+    if ((0x3F >> arg0) & 1) {
+        for (i = 0; i < 28; i++) {
+            if (arg0 == ptr3[i].unk4) {
+                s32 var_s0;
+                var_s0 = (func_801E7E4C(i) != 0) << 6;
+                if (func_801E7E98(i, arg1) != 0) {
+                    var_s0 |= 0x80;
+                }
+                if (var_s0 != 0) {
+                    *ptr2 = i | var_s0;
+                    ptr2++;
+                    count++;
+                }
+            }
+        }
+    }
+
+    return count;
+}
 
 INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E8058);
 
