@@ -54,6 +54,11 @@ typedef struct {
     u16 unk4E;          /* 0x4E */
 } ShopMenuState;
 
+typedef struct {
+    u16 unk0;
+    u16 pad0[5];
+} Struct_func_801E7CFC;
+
 extern ShopData D_80077CC8[SHOP_COUNT]; /**< Shop data table. */
 extern u8 D_80077EBC[ITEM_SLOT_COUNT]; /**< Item slot inventory. */
 extern ShopItemPrice D_801EA3F0[ITEM_PRICE_COUNT]; /**< Item price table. */
@@ -61,6 +66,8 @@ extern u8 D_801EA70C[];
 extern u8 D_801F7F98[];
 extern u8 D_801E9B64[];
 extern u8 D_801E9B6C[];
+extern Struct_func_801E7CFC D_801E9BA0[];
+extern u8 D_801E9D2C[];
 extern ShopItemRarity D_801EA170[SHOP_COUNT][SHOP_ITEM_COUNT]; /**< Shop item rarity tables. */
 extern ShopItemVisibility D_801EAA28[SHOP_ITEM_COUNT]; /**< Shop item visibility table. */
 extern s32 D_801EAA48[ITEM_PRICE_COUNT]; /**< Item sell prices. */

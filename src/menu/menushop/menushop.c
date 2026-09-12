@@ -1219,7 +1219,18 @@ void func_801E7C8C(s32 a0) {
     }
 }
 
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E7CFC);
+u8* func_801E7CFC(s32 arg0) {
+    Struct_func_801E7CFC *ptr1;
+    u8 *ptr2;
+
+    ptr1 = D_801E9BA0;
+    ptr2 = D_801E9D2C;
+
+    ptr1 += arg0 & -0xc1;
+    ptr2 += ptr1->unk0;
+
+    return ptr2;
+}
 
 INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E7D30);
 
