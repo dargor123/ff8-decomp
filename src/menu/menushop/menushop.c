@@ -1322,7 +1322,12 @@ void func_801E7D30(u8* src, u8* dst) {
  * @param a0 Shop item index.
  * @return Computed price value.
  */
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E7E1C);
+s32 func_801E7E1C(s32 arg0) {
+    Struct_func_801E7CFC* ptr;
+    ptr = D_801E9BA0;
+    ptr += arg0;
+    return  ptr->unk3 * 10;
+}
 
 /**
  * @brief Test if bit a0 is set in D_80077E70.
