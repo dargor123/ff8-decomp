@@ -1421,7 +1421,40 @@ s32 func_801E7F4C(s32 arg0, s32 arg1) {
     return count;
 }
 
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E8058);
+s32 func_801E8058(s32 arg0) {
+    Struct_func_801E7F4C *ptr;
+    s32 temp_s0;
+    s32 temp_s4;
+    s32 ret;
+    s32 i;
+
+    if (D_8007809A & 1) {
+        return 0;
+    }
+
+    ptr = D_8007C3B8;
+    temp_s4 = func_80036EC0() & 0x3F;
+    ret = 0;
+
+    for (i = 0; i < 28; i++) {
+        temp_s0 = 1 << ptr[i].unk4;
+        if (temp_s4 & temp_s0) {
+            s32 val;
+            val = func_801E7E4C(i);
+            if (val) {
+                ret |= temp_s0;
+                continue;
+            } else {
+                val = func_801E7E98(i, arg0);
+                if (val) {
+                    ret |= temp_s0;
+                }
+            }
+        }
+    }
+
+    return ret;
+}
 
 /**
  * @brief Render shop item entry at computed Y position with width 0x24.
