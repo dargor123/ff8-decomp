@@ -73,6 +73,8 @@ extern ShopItemVisibility D_801EAA28[SHOP_ITEM_COUNT]; /**< Shop item visibility
 extern s32 D_801EAA48[ITEM_PRICE_COUNT]; /**< Item sell prices. */
 extern s32 D_801EAD68[ITEM_PRICE_COUNT]; /**< Item buy prices. */
 extern u8 D_801EB088[ITEM_PRICE_COUNT]; /**< Item quantities. */
+extern s32 D_801EB2E4;
+extern s32 D_801EB2E8;
 extern s32 g_menuColor;
 extern s32 D_80077E70;
 extern s32 func_801E8AB0;

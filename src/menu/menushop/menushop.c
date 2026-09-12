@@ -1271,7 +1271,48 @@ u8* func_801E7CFC(s32 arg0) {
     return ptr2;
 }
 
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E7D30);
+void func_801E7D30(u8* src, u8* dst) {
+    u8 buffer[127];
+    u8* bufferPtr;
+    s32 srcVal;
+
+    while (1) {
+        srcVal = *src;
+        src++;
+
+        if (srcVal == 0) {
+            break;
+        }
+
+        bufferPtr = buffer;
+
+        if (srcVal != 0xA) {
+            *dst = srcVal;
+            dst++;
+        } else {
+            srcVal = *src;
+            src++;
+            *buffer = 0;
+
+            switch (srcVal) {
+            case 38:
+                copyString(bufferPtr, getLevelCurveData(D_801EB2E4));
+                break;
+            case 39:
+                copyString(bufferPtr, getCharName(D_801EB2E8));
+                break;
+            }
+
+            while (*bufferPtr != 0) {
+                *dst = *bufferPtr;
+                dst++;
+                bufferPtr++;
+            }
+        }
+    }
+
+    *dst = 0;
+}
 
 /**
  * @brief Compute shop item price from table.
