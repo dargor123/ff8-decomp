@@ -56,9 +56,9 @@ typedef struct {
 
 typedef struct {
     u16 unk0;
-    u8 pad2[1];
+    u8 unk2;
     u8 unk3;
-    u8 pad4[8];
+    u8 unk4[8];
 } Struct_func_801E7CFC; /* 12 bytes */
 
 extern ShopData D_80077CC8[SHOP_COUNT]; /**< Shop data table. */

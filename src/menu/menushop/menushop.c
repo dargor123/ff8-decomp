@@ -1346,7 +1346,37 @@ s32 func_801E7E68(s32 a0, u32 a1) {
     return a1 >= (u32)func_801E7E1C(a0);
 }
 
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E7E98);
+s32 func_801E7E98(s32 arg0, s32 arg1) {
+    Struct_func_801E7CFC *basePtr;
+    u8 *ptr;
+    s32 i;
+
+    if (func_801E7E68(arg0, arg1) == 0) {
+        return 0;
+    }
+
+    basePtr = D_801E9BA0;
+    basePtr += arg0;
+
+    ptr = basePtr->unk4;
+
+    for (i = 0; i < 4; i++) {
+        s32 unk0;
+        s32 unk1;
+
+        unk0 = *ptr;
+        ptr++;
+        unk1 = *ptr;
+        ptr++;
+
+        if (unk0 != 0 && unk1 > D_801EB088[unk0]) {
+            return 0;
+        }
+    }
+
+    g_gameState.mainData.party.unlockedWeapons |= 1 << arg0;
+    return 1;
+}
 
 INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E7F4C);
 
