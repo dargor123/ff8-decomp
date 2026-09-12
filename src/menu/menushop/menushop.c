@@ -786,7 +786,7 @@ void func_801E6C3C(s32 shopId) {
 
 INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E6D54);
 
-void func_801E6E0C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+s32 func_801E6E0C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 result;
 
     result = func_801E5A8C(arg0, arg1, arg2 + 0xC, arg3 + 5, 3, D_801E9B64, 7);
@@ -796,7 +796,7 @@ void func_801E6E0C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     g_menuDisplayCfg.y = arg3;
     g_menuDisplayCfg.w = 0x150;
     g_menuDisplayCfg.h = 0x15;
-    func_801EF9AC(arg0, result, 0x1000, g_menuColor);
+    return func_801EF9AC(arg0, result, 0x1000, g_menuColor);
 }
 
 s32 func_801E6EB0(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
@@ -831,9 +831,9 @@ s32 func_801E6EB0(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
  * @param a1 First callback parameter (passed as a0 to func_801EFBB4).
  * @param a2 Second callback parameter (passed as a1 to func_801EFBB4).
  * @param a3 Y position for the display configuration.
- * @param arg5 X position for the display configuration.
+ * @param a4 X position for the display configuration.
  */
-void func_801E6F60(u8 *a0, s32 a1, s32 a2, s32 a3, s32 arg5) {
+s32 func_801E6F60(ShopMenuState *s, s32 a1, s32 a2, s32 a3, s32 a4) {
     g_menuDisplayCfg.iconType = 0;
     g_menuDisplayCfg.iconSubType = 0;
     g_menuDisplayCfg.x = a3;
@@ -842,12 +842,10 @@ void func_801E6F60(u8 *a0, s32 a1, s32 a2, s32 a3, s32 arg5) {
     g_menuDisplayCfg.columnCount = 1;
     g_menuDisplayCfg.pageStart = 0;
     g_menuDisplayCfg.pageEnd = 1;
-    g_menuDisplayCfg.y = arg5;
-    g_menuDisplayCfg.scrollOffset = *(u16 *)(a0 + 0x3A);
-    g_menuDisplayCfg.dataPtr = (s32)(a0 + 0x20);
-    {
-        func_801EFBB4(a1, a2, (s32)&func_801E6EB0);
-    }
+    g_menuDisplayCfg.y = a4;
+    g_menuDisplayCfg.scrollOffset = s->unk3A;
+    g_menuDisplayCfg.dataPtr = (s32)&s->field_20;
+    return func_801EFBB4(a1, a2, func_801E6EB0);
 }
 
 s32 func_801E6FD8(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
@@ -958,7 +956,7 @@ s32 func_801E722C(ShopMenuState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     return func_801EF9AC(arg1, arg2, 0x1000, g_menuColor);
 }
 
-s32 func_801E7374(Struct_801E7374* arg0, void *arg1, void* arg2, s32 arg3, s32 arg4) {
+s32 func_801E7374(ShopMenuState *arg0, void *arg1, void* arg2, s32 arg3, s32 arg4) {
     g_menuDisplayCfg.iconType = 0x4C;
     g_menuDisplayCfg.iconSubType = 0;
     g_menuDisplayCfg.x = arg3;
@@ -985,7 +983,7 @@ s32 func_801E7374(Struct_801E7374* arg0, void *arg1, void* arg2, s32 arg3, s32 a
     return func_801EFBB4((s32)arg1, (s32)arg2, (s32)func_801E6FD8);
 }
 
-void func_801E7508(Struct_801E7508 *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+s32 func_801E7508(ShopMenuState *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     s32 s6;
     s32 s5;
     s32 v0;
@@ -996,7 +994,7 @@ void func_801E7508(Struct_801E7508 *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4
 
     v0 = s6 << 0x10;
     s5 = arg3 + 0x142;
-    arg2 = drawColorByMenuPalette(arg1, arg2, v0 | (s5 & 0xFFFF), arg0->unk28, 7);
+    arg2 = drawColorByMenuPalette(arg1, arg2, v0 | (s5 & 0xFFFF), arg0->gil, 7);
 
     s6 = arg4 + 8;
     arg2 = func_8002FF34(arg1, arg2, 0xB, arg3 + 0x143, s6, g_menuColor);
@@ -1008,7 +1006,7 @@ void func_801E7508(Struct_801E7508 *arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4
     g_menuDisplayCfg.y = arg4;
     g_menuDisplayCfg.h = 0x17;
 
-    func_801EF9AC(arg1, arg2, 0x1000, g_menuColor);
+    return func_801EF9AC(arg1, arg2, 0x1000, g_menuColor);
 }
 
 s32 func_801E7628(ShopMenuState* s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
@@ -1058,7 +1056,7 @@ s32 func_801E7628(ShopMenuState* s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     return func_801EF9AC(arg1, arg2, 0x1000, g_menuColor);
 }
 
-void func_801E77EC(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+s32 func_801E77EC(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     MenuDisplayConfig *cfg;
     s32 name;
     s32 x;
@@ -1109,7 +1107,7 @@ void func_801E77EC(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
         cfg->h = 0x14;
     }
 
-    func_801EF9AC(arg1, arg2, 0x1000, g_menuColor);
+    return func_801EF9AC(arg1, arg2, 0x1000, g_menuColor);
 }
 
 void func_801E791C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
@@ -1131,7 +1129,52 @@ void func_801E791C(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     func_801EF9AC(arg1, var_v0, 0x1000, g_menuColor);
 }
 
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E79D4);
+s32 func_801E79D4(ShopMenuState *s, s32 arg1, s32 arg2) {
+    s32 result;
+    s32 x;
+    s32 y;
+    s32 val;
+
+    result = getDisplayListHead();
+
+    val = (s16)s->unk36;
+    val = D_801FA3C8[(val < 0 ? -val : val) / 64];
+
+    func_801F1AFC();
+    setMenuColorIntensity((s16)s->unk38);
+
+    x = 0x18;
+    y = 0x1D;
+    arg2 = func_801E6E0C(arg1, arg2, x, y);
+
+    x = 0x18;
+    y = 8;
+    arg2 = func_801E77EC(func_801EFFF0(), arg1, arg2, x, y);
+
+    x = 0x1E;
+    y = 0x33;
+    result = func_801E6F60(s, arg1, result, x, y);
+
+    x = 0x90;
+    y = 0x50;
+    result = func_801E7628(s, arg1, result, x, y);
+
+    x = (val * 0x68 / 0x1000) + 0x118;
+    y = 0x48;
+    result = func_801E722C(s, arg1, result, x, y);
+
+    x = (val * 0x168 / 0x1000) + 0x18;
+    arg2 = func_801E7374(s, (void *)arg1, (void *)arg2, x, y);
+
+    x = (val * 0x168 / 0x1000);
+    x += 0x18;
+    y = 0xC1;
+    arg2 = func_801E7508(s, arg1, arg2, x, y);
+
+    func_801F1B10();
+    storeGpuPacket(result);
+    return arg2;
+}
 
 void func_801E7B9C(s32 a0) {
     ShopMenuState *temp_s0;
@@ -1249,9 +1292,9 @@ INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E8AB0);
  * @param a1 First callback parameter (passed as a0 to func_801EFBB4).
  * @param a2 Second callback parameter (passed as a1 to func_801EFBB4).
  * @param a3 Y position for the display configuration.
- * @param arg5 X position for the display configuration.
+ * @param a4 X position for the display configuration.
  */
-void func_801E8B60(Struct_801E8B60 *a0, s32 a1, s32 a2, s32 a3, s32 arg5) {
+void func_801E8B60(ShopMenuState *s, s32 a1, s32 a2, s32 a3, s32 a4) {
     g_menuDisplayCfg.iconType = 0;
     g_menuDisplayCfg.iconSubType = 0;
     g_menuDisplayCfg.x = a3;
@@ -1260,9 +1303,9 @@ void func_801E8B60(Struct_801E8B60 *a0, s32 a1, s32 a2, s32 a3, s32 arg5) {
     g_menuDisplayCfg.columnCount = 1;
     g_menuDisplayCfg.pageStart = 0;
     g_menuDisplayCfg.pageEnd = 1;
-    g_menuDisplayCfg.y = arg5;
-    g_menuDisplayCfg.scrollOffset = a0->unk36;
-    g_menuDisplayCfg.dataPtr = (s32)&a0->unk20;
+    g_menuDisplayCfg.y = a4;
+    g_menuDisplayCfg.scrollOffset = s->unk36;
+    g_menuDisplayCfg.dataPtr = (s32)&s->field_20;
     {
         func_801EFBB4(a1, a2, (s32)&func_801E8AB0);
     }

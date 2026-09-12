@@ -23,28 +23,6 @@ typedef struct {
 } ShopItemPrice; /* 0x3 = 3 bytes */
 
 typedef struct {
-    u8 pad000[0x20];
-    s32 *unk20; /**< 0x20: pointer to data. */
-    u8 pad024[0x12];
-    u16 unk36; /**< 0x36: scroll offset. */
-} Struct_801E8B60;
-
-typedef struct {
-    u8 pad000[0x3A];
-    s16 unk3A; /**< 0x3A: scroll offset. */
-    u8 pad03D[0x4];
-    u8 unk40; /**< 0x40: page start. */
-    u8 unk41; /**< 0x41: page end. */
-    u8 pad041[0x4];
-    u8 unk46; /**< 0x46: orientation (left if equals 0, right otherwise). */
-} Struct_801E7374;
-
-typedef struct {
-    u8 pad000[0x28];
-    s32 unk28; /**< 0x28: passed to drawColorByMenuPalette as 4th argument. */
-} Struct_801E7508;
-
-typedef struct {
     u8 pad000[0xF];
     u16 state;          /**< 0x10: state machine current state (0-17) */
     u8 pad12[0x8];
@@ -58,15 +36,15 @@ typedef struct {
     u8 pad34[2];        /* 0x34 */
     u16 unk36;          /* 0x36 */
     u16 unk38;          /* 0x38 */
-    s16 unk3A;          /* 0x3A */
+    s16 unk3A;          /**< 0x3A: scroll offset. */
     s16 unk3C[2];       /* 0x3C */
-    u8 unk40;           /**< 0x40: next or previous page */
-    u8 unk41;           /**< 0x41: current page */
+    u8 unk40;           /**< 0x40: page start. */
+    u8 unk41;           /**< 0x41: page end. */
     u8 unk42;           /* 0x42 */
     u8 unk43;           /* 0x43 */
     u8 unk44;           /* 0x44 */
     u8 unk45;           /* 0x45 */
-    u8 unk46;           /* 0x46 */
+    u8 unk46;           /**< 0x46: orientation (left if equals 0, right otherwise). */
     s8 unk47;           /* 0x47 */
     u8 unk48;           /* 0x48 */
     u8 unk49;           /**< 0x49: item count */
@@ -92,7 +70,7 @@ extern s32 g_menuColor;
 extern s32 D_80077E70;
 extern s32 func_801E8AB0;
 extern void func_801E5E90(ShopMenuState*);
-extern s32 func_801E79D4(void*, s32, s32);
+extern s32 func_801E79D4(ShopMenuState*, s32, s32);
 extern s32 func_801EFBB4(s32, s32, s32);
 extern s32 func_801E6FD8(s32, s32, s32, s32, s32);
 
