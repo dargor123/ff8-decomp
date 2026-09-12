@@ -783,8 +783,47 @@ void func_801E6C3C(s32 shopId) {
     }
 }
 
+void func_801E6D54(s32 arg0) {
+    GameState *gs;
+    s32 visited;
+    s32 sum;
 
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop", func_801E6D54);
+    if (arg0 != 0x15) {
+        gs = &g_gameState;
+
+        sum = gs->mainData.fieldCDC;
+
+        visited = gs->shops[arg0].visited;
+
+        sum += gs->mainData.fieldCE2;
+        sum += gs->mainData.fieldCE0;
+        sum &= 0xFFFF;
+        if (sum == 0) {
+            sum = 1;
+        }
+
+        gs->shops[arg0].visited = 1;
+
+        // Dead code
+        visited &= 0xFFFF;
+        if (sum < (u32)visited) {
+            sum += 0x10000;
+        }
+        sum -= visited;
+        // End of dead code
+
+        func_801E6A68(arg0);
+        func_801E6C3C(arg0);
+        func_801E6C3C(arg0);
+        func_801E5DBC();
+        func_801E6ACC();
+
+        /* FIXME: Keep `sum` live here during all function calls (jal), forcing
+           the compiler to allocate more space on the stack to reach desired
+           0x20. */
+        KEEP_ALIVE(sum);
+    }
+}
 
 s32 func_801E6E0C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
     s32 result;
@@ -845,7 +884,7 @@ s32 func_801E6F60(ShopMenuState *s, s32 a1, s32 a2, s32 a3, s32 a4) {
     g_menuDisplayCfg.y = a4;
     g_menuDisplayCfg.scrollOffset = s->unk3A;
     g_menuDisplayCfg.dataPtr = (s32)&s->field_20;
-    return func_801EFBB4(a1, a2, func_801E6EB0);
+    return func_801EFBB4(a1, a2, (s32)func_801E6EB0);
 }
 
 s32 func_801E6FD8(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {

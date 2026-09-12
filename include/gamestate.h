@@ -108,8 +108,8 @@ enum GfId {
  */
 typedef struct {
     /* 0x00 */ u8 items[16];   /**< Flags indicating whether each item is visible in the shop. */
-    /* 0x10 */ u8 visited;     /**< Shop has been visited flag. */
-    /* 0x11 */ u8 pad[3];      /**< Padding. */
+    /* 0x10 */ u16 visited;    /**< Shop has been visited flag. */
+    /* 0x12 */ u8 pad[2];      /**< Padding. */
 } ShopData; /* 0x14 = 20 bytes */
 
 #define SHOP_COUNT 20
@@ -351,7 +351,7 @@ typedef struct {
     /* 0x1F0 */ u8           pad1F0[0x20];                 /**< Battle vars / misc (continued). */
     /* 0x210 */ u32          array210[2];
     /* 0x218 */ u32          array[1];                      /* used in func_8009F52C */
-    /* 0x21C */ u8           pad21C[0x10];                 /**< Battle vars / misc (continued). */  
+    /* 0x21C */ u8           pad21C[0x10];                 /**< Battle vars / misc (continued). */
     /* 0x22C */ u16          fieldD20;                    /**< Unknown (zeroed on save init). */
     /* 0x22E */ u8           partyLockFlag;               /**< Party/menu lock bits (see PARTY_LOCK_*). */
     /* 0x22F */ u8           pad2F[0x10];                 /**< Battle vars / misc (continued). */
