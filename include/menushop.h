@@ -32,15 +32,21 @@ typedef struct {
     s32 field_24;       /**< 0x24 */
     u32 gil;            /**< 0x28: gil */
     u8 *unk2C;          /**< 0x2C: pointer to D_80077EBC */
-    s32 unk30;          /* 0x30 */
-    u8 pad34[2];        /* 0x34 */
+    union {
+        s32 unk30_s32;
+        s16 unk30_s16[2];
+    } union30;          /* 0x30 */
+    s16 unk34;          /* 0x34 */
     u16 unk36;          /* 0x36 */
     u16 unk38;          /* 0x38 */
     s16 unk3A;          /**< 0x3A: scroll offset. */
-    s16 unk3C[2];       /* 0x3C */
+    union {
+        s16 unk3C_s16[2];
+        s8 unk3C_s8[4];
+    } union3C;          /* 0x3C */
     u8 unk40;           /**< 0x40: page start. */
     u8 unk41;           /**< 0x41: page end. */
-    u8 unk42;           /* 0x42 */
+    s8 unk42;           /* 0x42 */
     u8 unk43;           /* 0x43 */
     u8 unk44;           /* 0x44 */
     u8 unk45;           /* 0x45 */
@@ -83,6 +89,7 @@ extern s32 D_801EAA48[ITEM_PRICE_COUNT]; /**< Item sell prices. */
 extern s32 D_801EAD68[ITEM_PRICE_COUNT]; /**< Item buy prices. */
 extern u8 D_801EB088[ITEM_PRICE_COUNT]; /**< Item quantities. */
 extern u8 D_801EB150[8];
+extern s32 D_801EB160;
 extern s32 D_801EB2E4;
 extern s32 D_801EB2E8;
 extern s32 g_menuColor;

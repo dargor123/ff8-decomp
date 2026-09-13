@@ -243,7 +243,7 @@ block_38:
 block_40:
     switch (state) {
     case 0:
-        s->unk30 = func_801F6AA4(0x40);
+        s->union30.unk30_s32 = func_801F6AA4(0x40);
         s->unk38 = 0;
         *statePtr = 1;
         break;
@@ -294,16 +294,16 @@ block_40:
 
         s->unk46 = s->unk42;
         if (s->unk46 == 0) {
-            s->unk30 = func_801F6AA4(0x42);
+            s->union30.unk30_s32 = func_801F6AA4(0x42);
             s->unk47 = 2;
         } else {
         block_17c:
-            s->unk30 = func_801F6AA4(0x41);
+            s->union30.unk30_s32 = func_801F6AA4(0x41);
             s->unk47 = 0x19;
         }
 
     block_190:
-        s->unk40 = s->unk3C[s->unk46] / 8;
+        s->unk40 = s->union3C.unk3C_s16[s->unk46] / 8;
         func_801E5C08(s->gil);
         s->gil = func_801E5D28();
         *statePtr = 4;
@@ -336,21 +336,21 @@ block_40:
         param = 0x4A;
         if (s->unk4E != 0) {
             s->unk4E--;
-            s->unk30 = func_801F6AA4(param);
+            s->union30.unk30_s32 = func_801F6AA4(param);
         } else {
             param = 0x41;
             if (s->unk46 == 0) {
                 param = 0x42;
             }
-            s->unk30 = func_801F6AA4(param);
+            s->union30.unk30_s32 = func_801F6AA4(param);
         }
 
-        dividend = s->unk3C[s->unk46];
+        dividend = s->union3C.unk3C_s16[s->unk46];
         rest = (s16)(dividend % 8);
         quotient = dividend / 8;
-        s->unk3C[s->unk46]  = func_801F6768(btnFlags, 8, rest) + quotient * 8;
+        s->union3C.unk3C_s16[s->unk46]  = func_801F6768(btnFlags, 8, rest) + quotient * 8;
 
-        s->field_20 = func_801E58A0((s32)s, s->unk46, s->unk3C[s->unk46]);
+        s->field_20 = func_801E58A0((s32)s, s->unk46, s->union3C.unk3C_s16[s->unk46]);
 
         if (btnFlags & 0x8000) {
             state = 7;
@@ -361,17 +361,17 @@ block_40:
             goto block_38;
         }
         func_801E5BA4(0, (s8)s->unk42);
-        func_801E5930(1, s->unk3C[s->unk46], s);
+        func_801E5930(1, s->union3C.unk3C_s16[s->unk46], s);
         if (cfgFlags & 0x10) {
             sendSpuCommand(3);
             s->field_20 = 0;
-            s->unk30 = func_801F6AA4(0x40);
+            s->union30.unk30_s32 = func_801F6AA4(0x40);
             *statePtr = 14;
         }
         if (cfgFlags & 0x40) {
-            if (func_801E583C(s, s->unk46, s->unk3C[s->unk46])) {
+            if (func_801E583C(s, s->unk46, s->union3C.unk3C_s16[s->unk46])) {
                 if (s->unk46 == 1) {
-                    if (s->unk3C[s->unk46] >= 0xC6) {
+                    if (s->union3C.unk3C_s16[s->unk46] >= 0xC6) {
                         goto block_774;
                     }
                 }
@@ -388,7 +388,7 @@ block_40:
         u32 price;
         u32 count;
 
-        index = func_801E5800(s, s->unk46, s->unk3C[s->unk46]);
+        index = func_801E5800(s, s->unk46, s->union3C.unk3C_s16[s->unk46]);
         s->unk48 = 1;
         price = D_801EAD68[index];
 
@@ -442,9 +442,9 @@ block_40:
         s->unk49 = count;
         s->unk4A = 0x40;
         if (s->unk46 == 0) {
-            s->unk30 = func_801F6AA4(0x46);
+            s->union30.unk30_s32 = func_801F6AA4(0x46);
         } else {
-            s->unk30 = func_801F6AA4(0x47);
+            s->union30.unk30_s32 = func_801F6AA4(0x47);
         }
         *statePtr = 12;
         break;
@@ -464,7 +464,7 @@ block_40:
 
     case 12:
         func_801E5BA4(0, (s8)s->unk42);
-        func_801E5930(0, s->unk3C[s->unk46], s);
+        func_801E5930(0, s->union3C.unk3C_s16[s->unk46], s);
 
         if (btnFlags & 0x2000) {
             if ((s8)s->unk48 < (s8)s->unk49) {
@@ -510,20 +510,20 @@ block_40:
             s32 price;
             if (s->unk46 == 0) {
                 playSoundEffect(0x14);
-                index = func_801E5800(s, s->unk46, s->unk3C[s->unk46]);
+                index = func_801E5800(s, s->unk46, s->union3C.unk3C_s16[s->unk46]);
                 price = D_801EAD68[index];
                 price *= (s8)s->unk48;
                 s->gil -= price;
                 D_801EB088[index] += s->unk48;
             } else {
-                if (s->unk3C[s->unk46] >= 0xC6) {
+                if (s->union3C.unk3C_s16[s->unk46] >= 0xC6) {
                 block_774:
                     sendSpuCommand(5);
                     break;
                 }
 
                 playSoundEffect(0x14);
-                index = func_801E5800(s, s->unk46, s->unk3C[s->unk46]);
+                index = func_801E5800(s, s->unk46, s->union3C.unk3C_s16[s->unk46]);
                 price = D_801EAA48[index];
                 price *= (s8)s->unk48;
                 s->gil += price;
@@ -540,7 +540,7 @@ block_40:
 
     case 13:
         func_801E5BA4(0, (s8)s->unk42);
-        func_801E5930(0, s->unk3C[s->unk46], s);
+        func_801E5930(0, s->union3C.unk3C_s16[s->unk46], s);
         s->unk4A = 0;
         *statePtr = 6;
         break;
@@ -557,7 +557,7 @@ block_40:
         *statePtr = state2;
     block_898:
         func_801E5BA4(0, (s8)s->unk42);
-        func_801E5930(1, s->unk3C[s->unk46], s);
+        func_801E5930(1, s->union3C.unk3C_s16[s->unk46], s);
         break;
 
     case 7: {
@@ -565,9 +565,9 @@ block_40:
         s32 rest;
         s32 quotient;
         func_801E5BA4(0, (s8)s->unk42);
-        func_801E5930(1, s->unk3C[s->unk46], s);
+        func_801E5930(1, s->union3C.unk3C_s16[s->unk46], s);
         s->field_24 = s->field_20;
-        dividend = s->unk3C[s->unk46];
+        dividend = s->union3C.unk3C_s16[s->unk46];
         rest = (s16)(dividend % 8);
         quotient = dividend / 8;
         s->unk41 = quotient;
@@ -575,9 +575,9 @@ block_40:
         if (quotient < 0) {
             quotient = (u8)s->unk47 - 1;
         }
-        s->unk3C[s->unk46] = rest + quotient * 8;
+        s->union3C.unk3C_s16[s->unk46] = rest + quotient * 8;
         s->unk40 = quotient;
-        s->field_20 = func_801E58A0((s32)s, s->unk46, s->unk3C[s->unk46]);
+        s->field_20 = func_801E58A0((s32)s, s->unk46, s->union3C.unk3C_s16[s->unk46]);
         s->unk3A = -0xE67;
         sendSpuCommand(1);
         *statePtr = 8;
@@ -586,7 +586,7 @@ block_40:
 
     case 8:
         func_801E5BA4(0, (s8)s->unk42);
-        func_801E5930(1,  s->unk3C[s->unk46], s);
+        func_801E5930(1,  s->union3C.unk3C_s16[s->unk46], s);
         s->unk3A += 0x199;
         if (s->unk3A < 0) {
             goto block_b10;
@@ -598,9 +598,9 @@ block_40:
         s32 rest;
         s32 quotient;
         func_801E5BA4(0, (s8)s->unk42);
-        func_801E5930(1, s->unk3C[s->unk46], s);
+        func_801E5930(1, s->union3C.unk3C_s16[s->unk46], s);
         s->field_24 = s->field_20;
-        dividend = s->unk3C[s->unk46];
+        dividend = s->union3C.unk3C_s16[s->unk46];
         rest = (s16)(dividend % 8);
         quotient = dividend / 8;
         s->unk41 = quotient;
@@ -608,9 +608,9 @@ block_40:
         if (quotient >= (u8)s->unk47) {
             quotient = 0;
         }
-        s->unk3C[s->unk46] = rest + quotient * 8;
+        s->union3C.unk3C_s16[s->unk46] = rest + quotient * 8;
         s->unk40 = quotient;
-        s->field_20 = func_801E58A0((s32)s, s->unk46, s->unk3C[s->unk46]);
+        s->field_20 = func_801E58A0((s32)s, s->unk46, s->union3C.unk3C_s16[s->unk46]);
         s->unk3A = 0x0E67;
         sendSpuCommand(1);
         *statePtr = 10;
@@ -619,7 +619,7 @@ block_40:
 
     case 10:
         func_801E5BA4(0, (s8)s->unk42);
-        func_801E5930(1,  s->unk3C[s->unk46], s);
+        func_801E5930(1,  s->union3C.unk3C_s16[s->unk46], s);
         s->unk3A -= 0x199;
         if (s->unk3A <= 0) {
         block_b0c:
@@ -636,7 +636,7 @@ block_40:
         break;
 
     case 16:
-        s->unk30 = func_801F6AA4(0x44);
+        s->union30.unk30_s32 = func_801F6AA4(0x44);
         *statePtr = 17;
         /* fallthrough */
 
@@ -980,7 +980,7 @@ s32 func_801E722C(ShopMenuState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
         /* FIXME: Keep `s` live here to force allocation to the $v0 register. */
         KEEP_ALIVE(s);
 
-        index = func_801E5800(s, s->unk46, s->unk3C[s->unk46]);
+        index = func_801E5800(s, s->unk46, s->union3C.unk3C_s16[s->unk46]);
         y = 0x16 + arg4;
         arg2 = drawColorByMenuPalette(arg1, result, (y << 0x10) | (x & 0xFFFF), D_801EB088[index], color);
     }
@@ -1076,7 +1076,7 @@ s32 func_801E7628(ShopMenuState* s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
 
     y = arg4 + 0x32;
 
-    index = func_801E5800(s, s->unk46, s->unk3C[s->unk46]);
+    index = func_801E5800(s, s->unk46, s->union3C.unk3C_s16[s->unk46]);
     if (s->unk46 == 0) {
         price = D_801EAD68[index];
     } else {
@@ -1225,7 +1225,7 @@ void func_801E7B9C(s32 a0) {
     if (temp_s0 != NULL) {
         temp_s0->unk2C = D_80077EBC;
         temp_s0->unk36 = 0x1000;
-        temp_s0->unk30 = 0;
+        temp_s0->union30.unk30_s32 = 0;
         temp_s0->gil = func_801E5D28();
         temp_s0->unk45 = D_801E9B6C[func_801EFFF0()];
         func_801E6D54(temp_s0->unk45);
