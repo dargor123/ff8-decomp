@@ -421,7 +421,74 @@ s32 func_801E8BD8(ShopMenuState* arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     return arg2;
 }
 
-INCLUDE_ASM("asm/ovl/menushop/nonmatchings/menushop2", func_801E8D84);
+s32 func_801E8D84(ShopMenuState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+    u8 sp18[16];
+    u8 sp28[32];
+    MenuDisplayConfig *cfg;
+    s32 i;
+    Struct_func_801E7CFC *basePtr;
+    u8* ptr;
+    s32 x;
+    s32 y;
+    s32 y2;
+    s32 itemId;
+    s32 numInt;
+    u8 *text;
+
+    if (s->union30.unk30_s16[1] == 0x1000) {
+        return arg2;
+    }
+
+    cfg = &g_menuDisplayCfg;
+    basePtr = D_801E9BA0;
+    basePtr += D_801EB150[(s8)s->unk41] & 0x3F;
+    ptr = basePtr->unk4;
+    x = arg3 + 0xC;
+    y = arg4 + 9;
+
+    for (i = 0; i < 4; i++) {
+        itemId = *ptr;
+        ptr++;
+        numInt = *ptr;
+        ptr++;
+
+        if (itemId) {
+            text = (u8 *)getStatName(itemId);
+            arg2 = func_801F0FEC(arg1, arg2, x, y, (s32)text, 7);
+
+            text = (u8 *)func_801F6AFC(0x32);
+
+            intToDecStringShort(numInt, sp18, ((u8 *)getMenuString(0xB))[1]);
+            replaceLeadingZeros(sp18, 4, ((u8 *)getMenuString(0xB))[1], ((u8 *)getMenuString(0xB))[0]);
+
+            y2 = y + 0xD;
+            y += 0x17;
+
+            copyString(sp28, sp18 + 2);
+            btlStrcat2(sp28, text);
+
+            intToDecStringShort(D_801EB088[itemId], sp18, ((u8 *)getMenuString(0xB))[1]);
+            replaceLeadingZeros(sp18, 4, ((u8 *)getMenuString(0xB))[1], ((u8 *)getMenuString(0xB))[0]);
+
+            btlStrcat2(sp28, sp18 + 2);
+
+            text = (u8 *)func_801F6AFC(0x33);
+            btlStrcat2(sp28, text);
+    
+            arg2 = func_8002C56C(arg1, arg2, x + 0x34, y2, sp28, 7);
+        }
+    }
+
+    cfg->iconType = 0x4C;
+    cfg->iconSubType = 0;
+    cfg->x = arg3;
+    cfg->y = arg4;
+    cfg->w = 0x88;
+    cfg->h = 0x69;
+
+    arg2 = func_801EF9AC(arg1, arg2, 0x1000, g_menuColor);
+    return arg2;
+}
 
 /** @brief Return color code: 7 (equal), 3 (a0 > a1), 2 (a0 < a1). */
 s32 func_801E8FF8(s32 a0, s32 a1) {
