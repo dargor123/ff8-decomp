@@ -1,6 +1,7 @@
 #include "common.h"
 #include "menu.h"
 #include "menuitem.h"
+#include "overlay.h"
 
 /** @brief Store item menu state pointer. */
 void func_801E2800(s32 a0) {
@@ -104,7 +105,32 @@ s32 func_801E2C80(s32 a0) {
     return 0;
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E2CCC);
+void func_801E2CCC(s32 arg0, s32 arg1) {
+    switch (arg0) {
+    case 0:
+        arg1 += 28;
+        break;
+    case 1:
+        arg1 += 20;
+        break;
+    case 2:
+        arg1 += 24;
+        break;
+    case 3:
+        arg1 += 44;
+        break;
+    case 4:
+        arg1 += 48;
+        break;
+    case 5:
+        arg1 += 71;
+        break;
+    case 6:
+        arg1 += 180;
+        break;
+    }
+    loadOverlayWithTimCallback(arg1, 0x801D1000); // FIXME: create var to 0x801D1000
+}
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E2D54);
 
