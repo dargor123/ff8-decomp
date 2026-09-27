@@ -290,7 +290,7 @@ void func_801E2E04(u8 *a0) {
  * @param a0 Item entry index.
  * @return First byte of the 4-byte entry.
  */
-s32 func_801E2E38(s32 a0) {
+u8 func_801E2E38(s32 a0) {
     return D_801F889C[a0].b0;
 }
 
@@ -321,7 +321,42 @@ s32 func_801E2E8C(s32 a0) {
     return D_801F889C[a0].b3;
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E2EA8);
+s32 func_801E2EA8(s32 arg0) {
+    u8 ret;
+    switch (func_801E2E38(arg0)) {
+    case 19:
+        if (!(func_80036EC0() & 8) || (D_8007809A & 1)) {
+            ret = func_801E2E54(arg0) & 0xFE;
+        } else {
+            ret = func_801E2E54(arg0);
+        }
+        break;
+    case 0 ... 8:
+    case 10 ... 11:
+    case 16 ... 18:
+    case 20 ... 21:
+        ret = func_801E2E54(arg0);
+        break;
+    case 12:
+        ret = 17;
+        if (D_8007809A & 0x10) {
+            ret = 16;
+        }
+        break;
+    case 14:
+        ret = 16;
+        if (D_8008520B == 0) {
+            ret = 17;
+        }
+        break;
+    case 9:
+    case 13:
+    case 15:
+        ret = 17;
+        break;
+    }
+    return ret;
+}
 
 /**
  * @brief Check if a specific item type should trigger an ability menu update.
