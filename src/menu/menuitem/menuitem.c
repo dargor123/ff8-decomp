@@ -2,6 +2,9 @@
 #include "menu.h"
 #include "menuitem.h"
 #include "overlay.h"
+#include "game.h"
+#include "numstr.h"
+#include "btl_sfx.h"
 
 s32 func_801E80D0(s32, s32, s32, s32, s32);
 s32 func_801E95C4(s32, s32, s32);
@@ -25,12 +28,117 @@ u8 *func_801E281C(s32 a0) {
     return func_801F08D4(1, 0xB, a0, 0);
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E2848);
+s32 func_801E2848(u8 *src, u8 *dst) {
+    s32 ch;
+    u8 *name;
+    u8 *pName;
+    u8 *tempGp;
+    u8 *savedGp;
+    u8 *buf;
+    s32 ret;
+    u8* pos;
+    u8 pad[256];
+
+    GP_SAVE_SCRATCH(tempGp);
+    savedGp = tempGp;
+    GP_ALLOC(buf, 128);
+
+    if (src != NULL) {
+        while (1) {
+            if (src == NULL) {
+                break;
+            }
+
+            decodeMessage(src, buf, -1);
+            src = func_8002F548(src);
+            pos = buf;
+
+            while (1) {
+                ch = *pos++;
+
+                if (ch == 1 || ch == 7 || ch == 0) {
+                    goto end;
+                }
+
+                if (ch == 10) {
+                    ch = *pos++;
+                    name = pad;
+                    switch (ch) {
+                    case 39:
+                        name = getCharName(g_gameState.chars[D_801ECE28].characterId);
+                        break;
+                    case 40:
+                        name = func_801E281C(D_801ECE34 + 4);
+                        break;
+                    case 36:
+                        name = getMagicNamePtr(D_801ECE30 + 64);
+                        break;
+                    case 37:
+                        name = getAbilityName(D_801ECE2C);
+                        break;
+                    case 41:
+                        name = getBlueMagicName(D_801ECE24);
+                        break;
+                    case 34:
+                        intToDecStringShort(D_801ECE38, name, 1);
+                        replaceLeadingZeros(name, 4, 1, 16);
+                        while (*name == 16) {
+                            name++;
+                        }
+                        for (pName = name; *pName != 0; pName++) {
+                            u8 tmp = getMenuString(11)[1] + 255;
+                            *pName += tmp;
+                        }
+                    }
+                    while (*name != 0) {
+                        *dst++ = *name++;
+                    }
+                    continue;
+                }
+
+                *dst++ = ch;
+                if (ch >= 25) {
+                    s32 val;
+                    if (ch >= 32) {
+                        val = ch - 32;
+                    } else if (ch < 28) {
+                        val = ch * 224;
+                        *dst++ = *pos;
+                        val += *pos++;
+                        val -= 5408;
+                    } else {
+                        val = ch * 224;
+                        *dst++ = *pos;
+                        val += *pos++;
+                        val -= 6304;
+                        val |= 1024;
+                    }
+                    getNibbleValue(val);
+                } else if (ch == 2) {
+                    break;
+                } else if (ch < 16) {
+                    *dst++ = *pos;
+                    if (ch == 5) {
+                        ch = *pos++;
+                        func_8002E3A4(func_8002C734(ch));
+                    } else {
+                        pos++;
+                    }
+                }
+            }
+        }
+    }
+end:
+    *dst = 0;
+    GP_FREE(128);
+    GP_RESTORE_RET(savedGp, ret);
+    return ret;
+}
 
 /** @brief Store a2 to D_801ECE24 and call func_801E2848. */
 void func_801E2BA4(s32 a0, s32 a1, s32 a2) {
     D_801ECE24 = a2;
-    func_801E2848();
+    func_801E2848(a0, a1);
 }
 
 /**
