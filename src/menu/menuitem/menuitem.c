@@ -135,7 +135,31 @@ void func_801E2CCC(s32 arg0, s32 arg1) {
     loadOverlayWithTimCallback(arg1, 0x801D1000); // FIXME: create var to 0x801D1000
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E2D54);
+void func_801E2D54(ItemSlot *itemSlots, u8 *arg1) {
+    u8 buffer[32];
+    s32 i;
+    u8 *pBuffer;
+    u8 *pItemSlots;
+
+    for (i = 31, pBuffer = buffer + i; i >= 0; i--) {
+        *pBuffer-- = 0;
+    }
+
+    pItemSlots = (u8 *)itemSlots;
+    for (i = 0; i < ITEM_SLOT_COUNT; i++) {
+        s32 id = *pItemSlots++;
+        s32 quantity = *pItemSlots++;
+
+        if (id <= 32 && id != 0) {
+            buffer[id - 1] = quantity;
+        }
+    }
+
+    for (i = 0; i < 32; i++) {
+        D_801ECB20[arg1[i]].id = i + 1;
+        D_801ECB20[arg1[i]].count = buffer[i];
+    }
+}
 
 /**
  * @brief Initialize 32 entries using a lookup table of offsets.
@@ -146,15 +170,11 @@ INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E2D54);
  *
  * @param a0 Base address for storing iteration indices.
  */
-void func_801E2E04(s32 a0) {
-    s32 i = 0;
-    u8 *tbl = D_801ECB20;
-
-    do {
-        *(u8 *)(tbl[0] + a0 - 1) = i;
-        i++;
-        tbl += 2;
-    } while (i < 0x20);
+void func_801E2E04(u8 *a0) {
+    s32 i;
+    for (i = 0; i < 32; i++) {
+        a0[D_801ECB20[i].id - 1] = i;
+    }
 }
 
 /**
