@@ -13,6 +13,10 @@
 #define BATTLE_RESULT_ESCAPED       2
 #define BATTLE_RESULT_WIN           4
 
+/** @brief BattleConfig.unk2 flag: a countdown is running. The menu clock shows it
+ * instead of the play time, and a battle ends when it reaches 0. */
+#define BATTLE_FLAG_COUNTDOWN 0x04
+
 #define GET_OFFSET(type, ptr, var) ((type*)(var + (intrptr_t)ptr))
 
 /** @brief Battle command config (g_battleConfig). */
@@ -32,6 +36,18 @@ typedef struct {
 /* Tim / TimSection are the canonical PS1 TIM file structs — now in tim.h
  * (included above), shared with the world and tripletriad overlays. */
 
+/** @brief Clipped rectangle result: the clipped rect + saved pre-clip position. */
+typedef struct {
+    RECT rect; /* 0x00: clipped rectangle */
+    s32 savedPos; /* 0x08: packed original x|y before clipping */
+} ClipResult;
+
+/** @brief Scratch workspace for rectangle clipping operations. */
+typedef struct {
+    ClipResult work;
+    ClipResult disp;
+} ClipWork;
+
 struct BattleDisplayEntity;
 typedef void (*EntityCallback)(struct BattleDisplayEntity *);
 
@@ -40,7 +56,8 @@ typedef struct BattleDisplayEntity {
     s32 unk4;
     RECT boundRect;
     RECT dispRect;
-    u8 pad18[0x18];
+    ClipResult clipBound; /**< @c boundRect clipped by @ref clipBlitRects. */
+    ClipResult clipClamp; /**< @c dispRect clipped by @ref clipBlitRects. */
     s32 drawMode;
     u8 activeFlag;
     u8 unk35;
@@ -49,21 +66,9 @@ typedef struct BattleDisplayEntity {
     u8 entityType;
     u8 pad39;
     u8 subFields[2];
-    s16 scale;
+    s16 brightness; /**< 0x1000 = full: tint of a window's frame, background and icon. */
     s16 pad3E;
 } BattleDisplayEntity;
-
-/** @brief Clipped rectangle result: the clipped rect + saved pre-clip position. */
-typedef struct {
-    RECT rect;       /* 0x00: clipped rectangle */
-    s32 savedPos;    /* 0x08: packed original x|y before clipping */
-} ClipResult;
-
-/** @brief Scratch workspace for rectangle clipping operations. */
-typedef struct {
-    ClipResult work;
-    ClipResult disp;
-} ClipWork;
 
 /** @brief Parameters for a double-blit operation with source rects and destination buffers. */
 typedef struct {
@@ -73,93 +78,6 @@ typedef struct {
     u8 dstData1[12];
     u8 dstData2[12];
 } BlitParams;
-
-/**
- * @brief Bit of @c SfxEntry.ctrl.raw: the window shows its blinking corner marker.
- *
- * It is bit 7 of @c ctrl.fields.markerBlink; the blink bit below is spelled on
- * the shifted byte instead, because the two tests only compile to the original
- * instruction pair when written that way.
- */
-#define SFX_CTRL_MARKER 0x00800000
-
-/** @brief Position of @c SfxEntry.ctrl.fields.markerBlink inside @c ctrl.raw. */
-#define SFX_CTRL_MARKER_BLINK_SHIFT 16
-
-/**
- * @brief Bit of the 7-bit blink counter in @c SfxEntry.ctrl.fields.markerBlink.
- *
- * Set for 16 of every 32 ticks; the corner marker is blanked while it is set.
- */
-#define SFX_MARKER_BLINK_OFF 0x10
-
-typedef struct {
-    RECT rect;
-    u8 *dataPtr;
-    u8 *dataPtrCopy;
-    s16 pitch;
-    u16 field12;
-    union {
-        u32 raw;
-        struct {
-            s16 field14;
-            u8 state;
-            u8 field17;
-        } fields;
-    } flags;
-    u8 entityIdx;
-    s8 field19;
-    s16 volume;
-    s16 field1C;
-    s16 rateDelta;
-    u8 field20;
-    u8 field21;
-    u8 field22;
-    u8 field23;
-    s32 seqState;
-    u8 field28;
-    u8 field29;
-    u8 field2A;
-    u8 field2B;
-    union {
-        u32 raw;
-        struct {
-            u8 field2C;
-            u8 mode;
-            u8 markerBlink; /**< Bits 0-6: blink counter; bit 7: @ref SFX_CTRL_MARKER. */
-            u8 field2F;
-        } fields;
-    } ctrl;
-    u16 field30;
-    u8 field32;
-    u8 pad33;
-    s32 field34;
-    s32 field38;
-} SfxEntry;
-
-typedef struct {
-    u8 pad0[3];
-    u8 counter;
-    u32 color1;         /* flash color (processed) */
-    u32 color2;         /* flash color (output) */
-    s8 activeFlag;
-    u8 padD[7];
-    s8 counters[4];     /* per-channel auto-repeat countdown (func_8002CECC) */
-    u16 stored[4];      /* per-channel latched edge bits (func_8002CECC) */
-} SfxGlobalState;       /* 0x20 */
-
-/** @brief Complete SFX system: 8 entry slots + global state + message display values. */
-typedef struct {
-    SfxEntry entries[8];       /* 8 × 60 = 480 bytes */
-    SfxGlobalState state;      /* global SFX state (0x20 bytes) */
-    u32 msgValues[8];          /* numeric values formatted by decodeMessage */
-} SfxSystem;
-
-/** @brief Message formatting config (D_80083858). */
-typedef struct {
-    u8 digits[0x10];           /* glyph codes of the digits 0-F; [0] is the decimal digit base */
-    u8 separator;              /* thousands separator character */
-} MsgFormatConfig;
 
 
 typedef enum {
@@ -183,59 +101,23 @@ typedef struct {
     subStruct sub[4];
 } Struct_func_800A8794;
 
-/**
-* @brief Data block reached two indirections away through
-*        @c BattleEntity.linkedPtr->data.
-*
-* Size and most fields are unknown; only the byte at offset 0x14F
-* (read by @c func_800AF988) is mapped so far.
-*/
+typedef struct{
+    u8 unk0;
+    u8 unk1;
+    u8 unk2;
+    u8 unk3;
+} func_800A7D8C_Struct;
+
 typedef struct {
-    u8 pad0[8];
-    u32 unk8;
-    u8 padC[4];
-    volatile s32 unk10;  // volatile because func_800A5688, func_800A559C
-    volatile s32 unk14;  // volatile because func_800A5688, func_800A559C
-    s32 unk18;
-    s32 unk1C;
-    s32 unk20;
-    s32 unk24[7];
-    u8 pad40[4];
-    u16 unk44[8];
-    s16 unk54[16];
-    u8 pad74[0x7C - 0x74];
-    volatile s32 unk7C;
-    u16 unk80;
-    u8 pad82[2];
-    u16 unk84;
-    u16 unk86;
-    u8 unk88;
-    u8 unk89;
-    u8 unk8A;
-    u8 pad8B[5];
-    u8 unk90[40];
-    u8 unkB8;
-    u8 unkB9;
-    u8 unkBA;
-    u8 unkBB;
-    u8 unkBC;
-    u8 unkBD;
-    u8 unkBE;
-    u8 unkBF;
-    u8 unkC0;
-    u8 unkC1; 
-    u8 unkC2;
-    u8 unkC3;
-    u8 unkC4;
-    u8 unkC5;
-    u8 unkC6;
-    u8 unkC7;
-    u8 unkC8;
-    u8 padC9;
-    u8 unkCA;
-    u8 padCB;
-    u16 unkCC;
-    u8 padCE[0x26];
+    u8 pad0[0x18 - 0x00];
+    func_800A7D8C_Struct unk18;
+    func_800A7D8C_Struct unk1C;
+    func_800A7D8C_Struct unk20;
+    func_800A7D8C_Struct unk24;
+    func_800A7D8C_Struct unk28;
+    func_800A7D8C_Struct unk2C;
+    func_800A7D8C_Struct unk30;
+    u8 pad1C[0xF4 - 0x34];
     u8 unkF4;
     u8 unkF5;
     u8 unkF6;
@@ -254,9 +136,8 @@ typedef struct {
     u8 unk14D;
     u8 pad14E;
     u8 unk14F;          /* byte read by func_800AF988. */
-    u16 unk150[1];
-    u8 pad152[0xE];
-    u8 unk160[8]; 
+    u16 unk150[8];
+    u8 unk160[8]; // size not confirmed
     u8 unk168[40];// possibly size taken from func_800A7FD0 while calling func_800A7EE0
 } BattleEntityData;
 
@@ -280,22 +161,21 @@ typedef struct {
 typedef struct {
     /* 0x00 */ BattleEntityData** entityData;
     /* 0x04 */ Unk4Struct** monsterAiSection;
-    /* 0x08 */ s32 flags;
-    /* 0x0C */ s32 flagsBackup;
-    /* 0x10 */ s32 maxAtb;
+    /* 0x08 */ u32 flags;
+    /* 0x0C */ u32 flagsBackup;
+    /* 0x10 */ s32 volatile maxAtb;
     /* 0x14 */ s32 volatile curAtb;
     /* 0x18 */ s32 currentHp;
     /* 0x1C */ s32 maxHp;
     /* 0x20 */ s32 unk20;
-    /* 0x24 */ u8 pad24[0x20];
+    /* 0x24 */ s32 unk24[8];
     /* 0x44 */ u16 elemDef[8];
-    /* 0x54 */ s16 perBit[14];
-    /* 0x70 */ u8 pad70[4];
+    /* 0x54 */ s16 perBit[16];
     /* 0x74 */ u16 animParam1;
     /* 0x76 */ u16 animParam2;
     /* 0x78 */ u16 animParam3;
     /* 0x7A */ u8 pad7A[2];
-    /* 0x7C */ volatile ControlFlags controlFlags;
+    /* 0x7C */ ControlFlags volatile controlFlags;
     /* 0x80 */ u16 status;
     /* 0x82 */ u16 statusBackup;
     /* 0x84 */ s16 hpDisplay;     /* 0x84: HP value mirrored from BattleCharData.currentHp. */
@@ -890,7 +770,6 @@ extern s16             D_8005F158;
 extern BattleCharState g_battleChars; // 0x80078720
 //D_80078DF8 = g_battleChars.levelEntries[15].abilityFlags
 extern BattleConfig    g_battleConfig; // 0x80082C08
-extern MsgFormatConfig D_80083858;
 extern u8              D_80098030[];
 extern BattleSceneCtx* D_800D244C;
 extern s32             D_800E19B4[];
