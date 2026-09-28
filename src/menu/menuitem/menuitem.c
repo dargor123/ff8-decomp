@@ -549,7 +549,20 @@ s32 func_801E3288(s32 arg0) {
  * @param a0 Context pointer.
  * @return 1 if the action was processed (odd action), 0 otherwise.
  */
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E3314);
+s32 func_801E3314(s32 arg0) {
+    s32 val1;
+    s32 val2;
+
+    val1 = func_801F58EC(arg0);
+    val2 = func_801F57A4(arg0);
+    if (!(val2 & 1)) {
+        return 0;
+    }
+
+    func_801F576C(arg0, func_801F5150(val1, val1, val2));
+    func_801F5868(arg0, val1);
+    return 1;
+}
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E338C);
 
