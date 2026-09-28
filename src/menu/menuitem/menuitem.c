@@ -4,7 +4,7 @@
 #include "overlay.h"
 #include "game.h"
 #include "numstr.h"
-#include "btl_sfx.h"
+#include "dialog.h"
 
 extern s32 D_801ECC20;
 
@@ -52,7 +52,7 @@ s32 func_801E2848(u8 *src, u8 *dst) {
             }
 
             decodeMessage(src, buf, -1);
-            src = func_8002F548(src);
+            src = nextMessageLine(src);
             pos = buf;
 
             while (1) {
@@ -122,7 +122,7 @@ s32 func_801E2848(u8 *src, u8 *dst) {
                     *dst++ = *pos;
                     if (ch == 5) {
                         ch = *pos++;
-                        func_8002E3A4(func_8002C734(ch));
+                        getIconWidth(func_8002C734(ch));
                     } else {
                         pos++;
                     }
