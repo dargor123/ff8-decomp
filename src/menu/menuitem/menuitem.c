@@ -310,7 +310,7 @@ s32 func_801E2E54(s32 a0) {
  * @param a0 Item entry index.
  * @return Third byte of the 4-byte entry.
  */
-s32 func_801E2E70(s32 a0) {
+u8 func_801E2E70(s32 a0) {
     return D_801F889C[a0].b2;
 }
 
@@ -625,7 +625,69 @@ s32 func_801E347C(s32 arg0, s32 arg1) {
     return gfMask;
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E35B8);
+s32 func_801E35B8(s32 arg0, s32 arg1) {
+    s32 i;
+    s32 val1;
+    s32 val2;
+    s32 val3;
+    s32 val4;
+    s32 val5;
+    
+    if (arg0 >= 0x10) {
+        return 0;
+    }
+    
+    val1 = func_801E2E54(arg1);
+    val2 = func_801E2E70(arg1);
+    val3 = func_801E2E8C(arg1);
+    
+    if (val2 == 0xFF) {
+        return func_801E347C(arg0, arg1);
+    }
+
+    val4 = 0;
+    if (val1 & 0x80) {
+        val4 = (u32)val3 >> 1;
+    }
+
+    if (!(g_gameState.gfs[val2].exists & 1)) {
+        return 0;
+    }
+     
+    if (g_gameState.chars[arg0].gfCompatibility[val2] == 0x3E8) {
+        val5 = func_801F08D4(1, 9, 0x1C, 0);
+        func_801E2BC8(val5, &D_801ECC20, val2, 0, 0, arg0);
+        func_801E2800(&D_801ECC20);
+        return 0;
+    }
+        
+    for (i = 0; i < 16; i++) {
+        s32 tmp1;
+        s32 tmp2;
+
+        tmp1 = g_gameState.chars[arg0].gfCompatibility[i];
+        if (i == val2) {
+            tmp1 -= val3;
+        } else {
+            tmp1 += val4;
+        }
+
+        if (tmp1 < 1000) {
+            tmp2 = 1000;
+        } else if (tmp1 <= 6000) {
+            tmp2 = tmp1;
+        } else {
+            tmp2 = 6000;
+        }
+        
+        g_gameState.chars[arg0].gfCompatibility[i] = tmp2;
+    }
+    
+    val5 = func_801F08D4(1, 9, 0x1B, 0);
+    func_801E2BC8(val5, &D_801ECC20, val2, 0, val3 / 5, arg0);
+    func_801E2800(&D_801ECC20);
+    return 1;
+}
 
 /**
  * @brief Process scroll input and update item list view state.
