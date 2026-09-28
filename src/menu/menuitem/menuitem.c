@@ -317,7 +317,7 @@ s32 func_801E2E70(s32 a0) {
  * @param a0 Item entry index.
  * @return Fourth byte of the 4-byte entry.
  */
-s32 func_801E2E8C(s32 a0) {
+u8 func_801E2E8C(s32 a0) {
     return D_801F889C[a0].b3;
 }
 
@@ -564,7 +564,36 @@ s32 func_801E3314(s32 arg0) {
     return 1;
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E338C);
+s32 func_801E338C(s32 arg0, s32 arg1, s32 arg2) {
+    s32 ret;
+    s32 val1;
+    s32 val2;
+    s32 val3;
+    s32 val4;
+
+    ret = 0;
+    if (g_gameState.chars[arg0].gfCompatibility[arg2] == 1000) {
+        return ret;
+    }
+
+    val1 = func_801E2E8C(arg1);
+    val2 = g_gameState.chars[arg0].gfCompatibility[arg2];
+    val3 = val2 - val1;
+    if (val3 < 1000) {
+        val4 = 1000;
+    } else if (val3 <= 6000) {
+        val4 = val3;
+    } else {
+        val4 = 6000;
+    }
+    val3 = val4;
+    g_gameState.chars[arg0].gfCompatibility[arg2] = val3;
+    val3 &= 0xFFFF;
+    if (val2 != val3) {
+        ret = 1;
+    }
+    return ret;
+}
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E347C);
 
