@@ -394,7 +394,53 @@ s32 func_801E2F88(s32 a0) {
     return func_801E2EA8(a0) & 1;
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E302C);
+s32 func_801E302C(s32 arg0, s32 arg1, s32 arg2) {
+    s32 ret;
+    s32 val1;
+    s32 val2;
+    s32 val3;
+    s32 tmp;
+
+    ret = 0;
+    val1 = func_801F57DC(arg0);
+    val2 = func_801F58EC(arg0);
+    val3 = func_801F57A4(arg0);
+    arg1 *= 50;
+
+    if ((val3 & 0x40) && !(arg2 & 0x40)) {
+        return ret;
+    }
+
+    if (val3 & 1) {
+        arg1 = 0;
+    }
+    arg1 += val1;
+
+    if (arg1 >= 0) {
+        tmp = val2;
+        if (val2 >= arg1) {
+            tmp = arg1;
+        }
+    } else {
+        tmp = 0;
+    }
+    arg1 = tmp;
+
+    val3 = func_801F5150(arg1, val2, val3);
+    
+    if (val3 & arg2) {
+        val3 &= ~arg2;
+        ret = 1;
+    }
+
+    func_801F5868(arg0, arg1);
+    func_801F576C(arg0, val3);
+    
+    if (val1 != arg1) {
+        ret = 1;
+    }
+    return ret;
+}
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E3158);
 
