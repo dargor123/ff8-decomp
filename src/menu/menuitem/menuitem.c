@@ -6,6 +6,8 @@
 #include "numstr.h"
 #include "btl_sfx.h"
 
+extern s32 D_801ECC20;
+
 s32 func_801E80D0(s32, s32, s32, s32, s32);
 s32 func_801E95C4(s32, s32, s32);
 
@@ -595,7 +597,33 @@ s32 func_801E338C(s32 arg0, s32 arg1, s32 arg2) {
     return ret;
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E347C);
+s32 func_801E347C(s32 arg0, s32 arg1) {
+    s32 i;
+    s32 gfMask;
+    s32 val1;
+    s32 val2;
+
+    gfMask = 0;
+    val1 = func_801E2E8C(arg1);
+
+    for (i = 0; i < GF_COUNT; i++) {
+        if (g_gameState.gfs[i].exists & GF_EXISTS) {
+            gfMask |= func_801E338C(arg0, arg1, i);
+        }
+    }
+
+    if (gfMask == 0) {
+        val2 = func_801F08D4(1, 9, 32, 0);
+        func_801E2BC8(val2, &D_801ECC20, 0, 0, 0, arg0);
+        func_801E2800(&D_801ECC20);
+    } else {
+        val2 = func_801F08D4(1, 9, 33, 0);
+        func_801E2BC8(val2, &D_801ECC20, 0, 0, val1 / 5, arg0);
+        func_801E2800(&D_801ECC20);
+    }
+    
+    return gfMask;
+}
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E35B8);
 
