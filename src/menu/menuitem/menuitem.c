@@ -511,7 +511,23 @@ s32 func_801E3158(s32 arg0, s32 arg1, s32 arg2) {
  * @param a0 Context pointer.
  * @return 1 if processed, 0 otherwise.
  */
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E3288);
+s32 func_801E3288(s32 arg0) {
+    s32 ret;
+    s32 val1;
+    s32 val2;
+    s32 val3;
+
+    val1 = func_801F58EC(arg0);
+    val2 = func_801F57A4(arg0);
+    if (!(val2 & 1)) {
+        return 0;
+    }
+
+    val3 = val1 / 8;
+    func_801F576C(arg0, func_801F5150(val3, val1, val2));
+    func_801F5868(arg0, val3);
+    return 1;
+}
 
 /**
  * @brief Process input event and update state if odd-numbered action.
