@@ -701,7 +701,33 @@ s32 func_801E35B8(s32 arg0, s32 arg1) {
  * @param a0 Context pointer.
  * @return 1 if state changed, 0 otherwise.
  */
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E37A4);
+s32 func_801E37A4(s32 arg0) {
+    s32 val1;
+    s32 val2;
+    s32 val3;
+    s32 val4;
+
+    val1 = func_801F58EC(arg0);
+    val2 = func_801F57DC(arg0);
+    val3 = func_801F57A4(arg0);
+
+
+    if (func_801F79F8(0x40) && (val3 & 1)) {
+        return 0;
+    }
+
+    val4 = val3;
+    val3 &= 0x80;
+
+    func_801F576C(arg0, val3);    
+    func_801F5868(arg0, val1);
+
+    if (val2 != val1 || val3 != val4) {
+        return 1;
+    }
+
+    return 0;
+}
 
 /**
  * @brief Set ability bit flag in character's ability table.
