@@ -5,6 +5,8 @@
 #include "game.h"
 #include "numstr.h"
 #include "dialog.h"
+#include "gamestate.h"
+#include "kernel.h"
 
 extern s32 D_801ECC20;
 
@@ -749,7 +751,23 @@ s32 func_801E37A4(s32 arg0) {
  * @param a0 Character index.
  * @param a1 Ability ID to search for.
  */
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E3854);
+void func_801E3854(s32 arg0, s32 arg1) {
+    s32 val1;
+    JunctionableGfEntry *junctionableGf;
+    s32 i;
+
+    val1 = *(u32 *)&g_gameState.gfs[arg0].learning;
+    junctionableGf = &g_kernel.junctionableGfs[arg0];
+
+    for (i = 0; i < 21; i++) {
+        if (junctionableGf->abilities[i].abilityId == arg1) {
+            val1 |= 1 << (i + 8);
+            break;
+        }
+    }
+
+    *(u32 *)&g_gameState.gfs[arg0].learning = val1;
+}
 
 /**
  * @brief Clear ability bit flag in character's ability table.
