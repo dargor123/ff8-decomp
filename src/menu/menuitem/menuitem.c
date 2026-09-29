@@ -797,7 +797,97 @@ void func_801E38DC(s32 arg0, s32 arg1) {
     *(u32 *)&g_gameState.gfs[arg0].learning = val1;
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E3968);
+void func_801E3968(s32 arg0, s32 arg1) {
+    u8 buffer[4];
+    u8 *pBufferEnd;
+    u8 *pBufferStart;
+    s32 i;
+    s32 j;
+    s32 k;
+    u32 accum;
+    s32 hasAbility;
+    s32 availableJunctions;
+    s32 junctionMask;
+    s32 val1;
+    s32 val2;
+    s32 *completeAbilities;
+
+    if (g_gameState.gfs[arg0].learning == arg1) {
+        g_gameState.gfs[arg0].learning = 0;
+    }
+
+    completeAbilities = g_gameState.gfs[arg0].completeAbilities;
+    completeAbilities[arg1 / 32] &= ~(1 << (arg1 & 0x1F));
+
+    func_801E3854(arg0, arg1);
+
+    for (i = 0; i < 8; i++) {
+        accum = 0;
+        hasAbility = 0;
+
+        for (j = 0; j < 16; j++) {
+            if ((g_gameState.chars[i].junctedGfs >> j) & 1) {
+                accum |= g_gameState.gfs[j].completeAbilities[0];
+                completeAbilities = g_gameState.gfs[j].completeAbilities;
+                val1 = completeAbilities[arg1 / 32];
+                val2 = 1 << (arg1 & 0x1F);
+                if (val1 & val2) {
+                    hasAbility = 1;
+                }
+            }
+        }
+
+        accum /= 2;
+        accum &= 0x7FFFF;
+        k = 2;
+        if (accum & 0x20000) {
+            k = 3;
+        }
+        if (accum & 0x40000) {
+            k = 4;
+        }
+        
+        availableJunctions = func_801F7C20(accum);
+        
+        for (j = 0; j < 19; j++) {
+            junctionMask = 1 << j;
+            if (!(availableJunctions & junctionMask)) {
+                g_gameState.chars[i].junctions[j] = 0;
+            }
+        }
+
+        pBufferEnd = &buffer[3];
+        for (j = 3; j >= 0; j--) {
+            *pBufferEnd-- = 0;
+        }
+        
+        pBufferStart = &buffer[0];
+        for (j = 0; j < 4; j++) {
+            s32 ability = g_gameState.chars[i].abilities[j];
+            if (ability != 0 && (ability != arg1 || hasAbility)) {
+                *pBufferStart++ = ability;
+            }
+        }
+        
+        pBufferStart = &buffer[0];
+        for (j = 0; j < 4; j++) {
+            g_gameState.chars[i].abilities[j] = *pBufferStart++;
+        }
+
+        for (; k < 4; k++) {
+            g_gameState.chars[i].abilities[k] = 0;
+        }
+
+        for (j = 0; j < 4; j++) {
+            if (g_gameState.chars[i].commands[j] == arg1 && !hasAbility) {
+                g_gameState.chars[i].commands[j] = 0;
+            }
+        }
+        
+        func_801F5400(i);
+        func_801F1B4C(i);
+    }
+}
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E3C1C);
 
