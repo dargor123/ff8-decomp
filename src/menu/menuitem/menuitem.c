@@ -7,6 +7,9 @@
 #include "dialog.h"
 #include "gamestate.h"
 #include "kernel.h"
+#include "ability_list.h"
+#include "gf_anim.h"
+#include "card.h"
 
 extern s32 D_801ECC20;
 
@@ -889,7 +892,60 @@ void func_801E3968(s32 arg0, s32 arg1) {
     }
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E3C1C);
+s32 func_801E3C1C(s32 arg0, s32 arg1) {
+    s32 i;
+    s32 val;
+    s32 *completeAbilities;
+    AbilityListEntry *abilities;
+
+    if (arg0 < 16) {
+        return 0;
+    }
+
+    arg0 -= 16;
+    completeAbilities = g_gameState.gfs[arg0].completeAbilities;
+
+    abilities = D_801ECB60;
+    D_801ECC10 = func_800369CC(arg0, abilities, 1);
+
+    for (i = 0; i < D_801ECC10; i++) {
+        if (abilities[i].slotIndex == arg1) {
+            switch (abilities[i].type) {
+            case 1:
+                completeAbilities[arg1 / 32] |= 1 << (arg1 & 0x1F);
+                func_801E38DC(arg0, arg1);
+                val = func_801F08D4(1, 9, 24, 0);
+                func_801E2BC8(val, &D_801ECC20, arg0, arg1, 0, 0);
+                func_801E2800(&D_801ECC20);
+                recalcPartyStats();
+                return 1;
+            case 2:
+                val = func_801F08D4(1, 9, 25, 0);
+                func_801E2BC8(val, &D_801ECC20, arg0, abilities[i].slotIndex, 0, 0);
+                func_801E2800(&D_801ECC20);
+                return 0;
+            default:
+                return 0;
+            }
+            break;
+        }
+    }
+
+    if (D_801ECC10 < 22) {
+        completeAbilities[arg1 / 32] |= 1 << (arg1 & 0x1F);
+        func_801E38DC(arg0, arg1);
+        val = func_801F08D4(1, 9, 24, 0);
+        func_801E2BC8(val, &D_801ECC20, arg0, arg1, 0, 0);
+        func_801E2800(&D_801ECC20);
+        recalcPartyStats();
+        return 1;
+    }
+
+    val = func_801F08D4(1, 9, 26, 0);
+    func_801E2BC8(val, &D_801ECC20, arg0, 0, 0, 0);
+    func_801E2800(&D_801ECC20);
+    return 0;
+}
 
 /**
  * @brief Reset four item menu state words to -1.
