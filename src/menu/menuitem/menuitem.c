@@ -10,8 +10,21 @@
 #include "ability_list.h"
 #include "gf_anim.h"
 #include "card.h"
+#include "battle.h"
+
+typedef struct {
+    u16 unk0;
+    u16 unk2;
+    u16 unk4;
+    u8 unk6;
+    u8 unk7;
+} ST_0;
 
 extern s32 D_801ECC20;
+extern ST_0 D_801EB1FC[];
+extern CharacterData D_801ECE40;
+extern u8 D_801EB234[]; /**< Weapon ID's, indexed by char ID. */
+extern s32 D_801ECED8;
 
 s32 func_801E80D0(s32, s32, s32, s32, s32);
 s32 func_801E95C4(s32, s32, s32);
@@ -218,7 +231,7 @@ s32 func_801E2C44(u8 *a0, s32 a1, s32 a2) {
  */
 s32 func_801E2C80(s32 a0) {
     if (a0 < D_801ECC10) {
-        return getAbilityDesc(D_801ECB60[a0 * 8]);
+        return getAbilityDesc(D_801ECB60[a0].slotIndex);
     }
     return 0;
 }
@@ -960,7 +973,138 @@ void func_801E3E94(void) {
     D_801ECEE0 = -1;
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E3EBC);
+s32 func_801E3EBC(s32 arg0, s32 arg1, s32 arg2) {
+    BattleCharData buf;
+    s32 ret;
+    ST_0 *st;
+    s32 i;
+    s16* p1_16;
+    s16* p2_16;
+    u8* p1_8;
+    u8* p2_8;
+    s32 diff;
+    s32 value;
+    s32 sum;
+    s32 tmp;
+    s32 msg;
+
+    ret = 0;
+    if (arg0 >= 16) {
+        return ret;
+    }
+
+    if (D_801ECEDC == arg0 && D_801ECEE0 == arg1 && D_801ECEE4 == arg2) {
+        return D_801ECEE8;
+    }
+
+    st = &D_801EB1FC[arg2];
+
+    D_801ECEDC = arg0;
+    D_801ECEE0 = arg1;
+    D_801ECEE4 = arg2;
+
+    D_801ECE40 = g_gameState.chars[arg0];
+
+    g_gameState.chars[arg0].statusFlags = 0;
+
+    for (i = 0; i < 20; i++) {
+        g_gameState.chars[arg0].junctions[i] = 0;
+    }
+
+    for (i = 0; i < 4; i++) {
+        g_gameState.chars[arg0].commands[i] = 0;
+        g_gameState.chars[arg0].abilities[i] = 0;
+    }
+
+    g_gameState.chars[arg0].weaponId = D_801EB234[g_gameState.chars[arg0].characterId];
+
+    func_801F537C(arg0, &buf);
+
+    if (msg) { msg++; msg--; }
+
+    switch (st->unk6) {
+    case 0:
+        p1_16 = (s16 *)&buf.pad0[st->unk2];
+        D_801ECED8 = *p1_16;
+        p2_16 = (s16 *)&((u8 *)&D_801ECE40)[st->unk0];
+
+        if (*p1_16 < st->unk4) {
+            diff = *p2_16;
+            sum = diff + arg1;
+
+            if (sum >= 0) {
+                tmp = sum;
+                if (st->unk4 < sum) {
+                    tmp = st->unk4;
+                }
+            } else {
+                tmp = 0;
+            }
+
+            value = tmp;
+            diff = value - diff;
+            *p2_16 = value;
+            
+            ret = 1;
+
+            if (arg1 != 0) {
+                msg = func_801F08D4(1, 9, 0x1D, 0);
+                func_801E2C0C(msg, &D_801ECC20, arg0, st->unk7, diff);
+                func_801E2800(&D_801ECC20);
+            }
+        } else {
+            if (arg1 != 0) {
+                msg = func_801F08D4(1, 9, 0x1E, 0);
+                func_801E2C0C(msg, &D_801ECC20, arg0, st->unk7, 0);
+                func_801E2800(&D_801ECC20);
+            }
+        }
+        break;
+    case 1:
+        p1_8 = &buf.pad0[st->unk2];
+        D_801ECED8 = *p1_8;
+        p2_8 = &((u8 *)&D_801ECE40)[st->unk0];
+
+        if (*p1_8 < st->unk4) {
+            diff = *p2_8;
+            sum = diff + arg1;
+
+            if (sum >= 0) {
+                tmp = sum;
+                if (st->unk4 < sum) {
+                    tmp = st->unk4;
+                }
+            } else {
+                tmp = 0;
+            }
+
+            value = tmp;
+            diff = value - diff;
+            *p2_8 = value;
+
+            ret = 1;
+
+            if (arg1 != 0) {
+                msg = func_801F08D4(1, 9, 0x1D, 0);
+                func_801E2C0C(msg, &D_801ECC20, arg0, st->unk7, diff);
+                func_801E2800(&D_801ECC20);
+            }
+        } else {
+            if (arg1 != 0) {
+                msg = func_801F08D4(1, 9, 0x1E, 0);
+                func_801E2C0C(msg, &D_801ECC20, arg0, st->unk7, 0);
+                func_801E2800(&D_801ECC20);
+            }
+        }
+        break;
+    }
+
+    g_gameState.chars[arg0] = D_801ECE40;
+
+    func_801F5400(arg0);
+    D_801ECEE8 = ret;
+    return ret;
+}
 
 /**
  * @brief Process ability bits and accumulate results.

@@ -11,6 +11,7 @@
 #include "common.h"
 #include "gamestate.h"
 #include "menumain.h"
+#include "ability_list.h"
 
 extern s32 D_801ECC10;
 extern s32 D_801ECE20;
@@ -32,7 +33,7 @@ extern u8 D_801EB330[];
 extern u8 D_801EB4BC[];
 extern u8 D_801EC710[];
 extern ItemSlot D_801ECB20[];
-extern u8 D_801ECB60[];
+extern AbilityListEntry D_801ECB60[];
 extern s32 func_801E2EA8(s32);
 extern s32 func_801EFFD4(void);
 
