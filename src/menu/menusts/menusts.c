@@ -1,16 +1,13 @@
 #include "common.h"
 #include "battle.h"
 #include "menu.h"
+#include "menumain.h"
 #include "menusts.h"
 #include "numstr.h"
 #include "gamestate.h"
-#include "btl_color.h"
+#include "ui/icon.h"
 #include "btl_entity.h"
 #include "game.h"
-
-/* menumain is called at a fixed overlay address, so its prototype stays
- * file-local here (overlay-conflict rule, as in the other sub-overlays). */
-extern s32 func_801EF9AC(s32 displayList, s32 ot, s32 mode, s32 color);
 
 /** @brief Look up value from D_801FA3C8 table by dividing input by 64. */
 u16 func_801E5800(s32 a0) {
@@ -182,7 +179,7 @@ s32 func_801E72D8(s32 displayList, s32 ot, s32 x, s32 y, s32 mode) {
         if (statusFlags & mask) {
             if (drawn >= 3) break;
             yPos = y + yStep;
-            ot = func_8002FF34(displayList, ot, entry->statusId, x + 0xA, yPos, g_menuTint[MENU_TINT_NORMAL]);
+            ot = drawIcon(displayList, ot, entry->statusId, x + 0xA, yPos, g_menuTint[MENU_TINT_NORMAL]);
             drawn++;
             yPos += 4;
             intToDecStringShort(D_801E9EE4.atkStatusHit - 100, strBuf, digitBase);

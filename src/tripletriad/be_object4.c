@@ -4,6 +4,7 @@
 #include "numstr.h"
 #include "sound.h"
 #include "snd_init.h"
+#include "snd_sfx.h"
 #include "thread.h"
 #include "psxsdk/libc.h"
 #include "psxsdk/libgpu.h"
@@ -11,6 +12,7 @@
 #include "battle_anim.h"
 #include "menu_tint.h"
 #include "btl_anim.h"
+#include "ui/icon.h"
 #include "tripletriad/be_object1.h"
 #include "tripletriad/be_object1b.h"
 #include "tripletriad/be_object2.h"
@@ -25,8 +27,9 @@
 /** @brief @c DialogConfig.flags: the rect's x/y is the box's center, not its corner. */
 #define DIALOG_CONFIG_CENTER_BOX 0x04
 
-/* s32 view: btl_color.h's u16 (u16) makes the caller mask the argument and result. */
-extern s32 remapControllerInput(s32 arg);
+/* s32 view: input/button_remap.h's u16 (u16) makes the caller mask the argument and result. */
+// TODO: Drop this and include the prototype from the owner.
+extern s32 applyButtonRemapTranslation(s32 arg);
 
 /**
  * @brief Reset and configure the seven dialogs.
@@ -591,14 +594,14 @@ u8 *initTripleTriadRenderList(void) {
 
 /**
  * @brief Per-(slot, side) input-edge debounce with keyboard-style auto-repeat,
- *        for one of the four edges of a Triple Triad battle-anim entity.
+ * for one of the four channels of a pad port.
  *
  * Maintains, per card slot @p entry and side @p side (0..3), a small auto-repeat
  * state machine over a bitmask of edge events:
  *  - Reads last frame's masked bits from @ref D_801D4AF8 [entry][side] and stores
  *    @p newVal there.
  *  - Masks both new and previous bitmasks by the side's relevance mask
- *    (`elem->unk10[side]`): @c result = new active bits, @c prevMasked = old.
+ *    (`port->unk10[side]`): @c result = new active bits, @c prevMasked = old.
  *  - @c base->repeatDelays packs the timing: low byte = initial/restart delay,
  *    high byte = repeat interval.
  *  - If the masked new and old bits overlap (a sustained event), ticks the
@@ -610,8 +613,8 @@ u8 *initTripleTriadRenderList(void) {
  * Drives keyboard-style auto-repeat for whatever per-side cue the bits represent.
  * Called four times (once per side) by @ref func_800A2A8C, which ORs the results.
  *
- * @param base Battle-anim state; base->repeatDelays packs the two delays.
- * @param elem Battle-anim entity; elem->unk10[side] is the per-side mask.
+ * @param base Engine state; base->repeatDelays packs the two delays.
+ * @param port Pad port; port->unk10[side] is the per-side mask.
  * @param newVal Raw new edge bitmask for this frame.
  * @param side Card side index, 0..3.
  * @param entry Card slot index.
@@ -619,7 +622,7 @@ u8 *initTripleTriadRenderList(void) {
  *
  * @note Purpose inferred. Decomp scratch: https://decomp.me/scratch/7L33D
  */
-s32 func_800A29D4(BattleAnimState *base, BattleAnimEntity *elem, u16 newVal, s32 side, s32 entry)
+s32 func_800A29D4(EngineState *base, PadPort *port, u16 newVal, s32 side, s32 entry)
 {
     s32 repeatTimer;
     s32 restartDelay;
@@ -631,7 +634,7 @@ s32 func_800A29D4(BattleAnimState *base, BattleAnimEntity *elem, u16 newVal, s32
     D_801D4AF8[entry][side] = newVal;
     restartDelay = base->repeatDelays.hword;
     repeatTimer = D_801D4B08[entry][side];
-    mask = elem->unk10[side];
+    mask = port->unk10[side];
 
     repeatInterval = restartDelay >> 8;
     restartDelay &= 0xFF;
@@ -655,28 +658,25 @@ s32 func_800A29D4(BattleAnimState *base, BattleAnimEntity *elem, u16 newVal, s32
 }
 
 /**
- * @brief Evaluate all four edges of battle-anim entity @p entryIndex against its neighbour.
+ * @brief Auto-repeat the four channels of pad @p entryIndex's bits.
  *
- * Follows the entity's @c linkedIdx to its linked neighbour, then evaluates each
- * of the four edges (0..3) via @c func_800A29D4, OR-ing the per-edge results into
- * a single 16-bit mask. The Triple Triad board reuses the battle-animation
- * entities (@c g_battleAnims) to drive its card animations.
+ * Triple Triad's copy of autoRepeatPad: runs func_800A29D4 on @p arg1 for channels
+ * 0-3 against the port linked to port @p entryIndex, and ORs the bits that fire.
  *
- * @param entryIndex Index of the entity in @c g_battleAnims to evaluate.
- * @param arg1       Per-edge value forwarded to @c func_800A29D4.
- * @return Combined 16-bit result mask from the four edge evaluations. Typed @c s32
- *         (not @c u16) because @c readPads re-masks the value, which requires the
- *         caller to not assume it is already 16-bit-clean.
+ * @param entryIndex Pad index, 0 or 1.
+ * @param arg1 Pad bits of this frame.
+ * @return The bits that fire this frame. Typed @c s32 (not @c u16) because @c readPads
+ * re-masks the value, which requires the caller to not assume it is already 16-bit-clean.
  */
 s32 func_800A2A8C(s32 entryIndex, u16 arg1)
 {
-    BattleAnimEntity *link = &g_battleAnims.entities[g_battleAnims.entities[entryIndex].linkedIdx];
+    PadPort *port = &g_engine.ports[g_engine.ports[entryIndex].linkedIdx];
     u16 result = 0;
 
-    result |= func_800A29D4(&g_battleAnims, link, arg1, 0, entryIndex);
-    result |= func_800A29D4(&g_battleAnims, link, arg1, 1, entryIndex);
-    result |= func_800A29D4(&g_battleAnims, link, arg1, 2, entryIndex);
-    result |= func_800A29D4(&g_battleAnims, link, arg1, 3, entryIndex);
+    result |= func_800A29D4(&g_engine, port, arg1, 0, entryIndex);
+    result |= func_800A29D4(&g_engine, port, arg1, 1, entryIndex);
+    result |= func_800A29D4(&g_engine, port, arg1, 2, entryIndex);
+    result |= func_800A29D4(&g_engine, port, arg1, 3, entryIndex);
 
     return result & 0xFFFF;
 }
@@ -720,7 +720,7 @@ void readPads(void)
 
     func_800275D4();
 
-    padRaw = remapControllerInput(getAnimFrameParam(0, 0));
+    padRaw = applyButtonRemapTranslation(getPadReadButtons(0, 0));
     oldPad = D_801D4B20[0];
     held = func_80027DB4(0, PAD_AXIS_X, 0);
     if (!(padRaw & 0xF000) && held >= 0) {
@@ -731,7 +731,7 @@ void readPads(void)
     repeat = func_800A2A8C(0, padRaw & 0xFFFF) & 0xFFFF;
     D_801D4B28[0] = repeat;
 
-    padRaw = remapControllerInput(getAnimFrameParam(1, 0));
+    padRaw = applyButtonRemapTranslation(getPadReadButtons(1, 0));
     oldPad = D_801D4B20[1];
     held = func_80027DB4(1, PAD_AXIS_X, 0);
     if (!(padRaw & 0xF000) && held >= 0) {
@@ -744,13 +744,13 @@ void readPads(void)
 }
 
 /**
- * @brief Reset the Triple Triad per-edge animation state for both entities.
+ * @brief Reset the Triple Triad pad state for both ports.
  *
- * Clears the per-(entity, side) bookkeeping tables — previous edge flags
+ * Clears the per-(port, side) bookkeeping tables — previous edge flags
  * (@c D_801D4AF8), edge countdown timers (@c D_801D4B08), and the three
  * @c D_801D4B20 / @c D_801D4B28 / @c D_801D4B30 word tables — for both
- * animation entities, then seeds @c setAnimUnk10Both with the fixed per-side
- * parameters (one set per side 0..3) for each entity.
+ * ports, then seeds @c setPadRepeatMask with the fixed per-side
+ * parameters (one set per side 0..3) for each port.
  */
 void func_800A2D34(void)
 {
@@ -770,14 +770,14 @@ void func_800A2D34(void)
         D_801D4B30[i] = 0;
     }
 
-    setAnimUnk10Both(0, 0, 0xFFF);
-    setAnimUnk10Both(0, 1, 0x5000);
-    setAnimUnk10Both(0, 2, 0xA000);
-    setAnimUnk10Both(0, 3, 0x900);
-    setAnimUnk10Both(1, 0, 0xFFF);
-    setAnimUnk10Both(1, 1, 0x5000);
-    setAnimUnk10Both(1, 2, 0xA000);
-    setAnimUnk10Both(1, 3, 0x900);
+    setPadRepeatMask(0, 0, 0xFFF);
+    setPadRepeatMask(0, 1, 0x5000);
+    setPadRepeatMask(0, 2, 0xA000);
+    setPadRepeatMask(0, 3, 0x900);
+    setPadRepeatMask(1, 0, 0xFFF);
+    setPadRepeatMask(1, 1, 0x5000);
+    setPadRepeatMask(1, 2, 0xA000);
+    setPadRepeatMask(1, 3, 0x900);
 }
 
 /**
@@ -845,17 +845,17 @@ void func_800A2F78(void) {
 /**
  * @brief Draw the blinking corner markers around the Triple Triad cursor's view rect.
  *
- * Emits up to two glyphs through @c func_800300F8, selected by @p corners:
- * bit 0 draws the left marker (glyph 0x5C) just inside the view's top-left, and
- * bit 1 draws the right marker (glyph 0x5D) just inside the top-right. Both sit
+ * Emits up to two glyphs through @c drawIconClut, selected by @p corners:
+ * bit 0 draws the left marker (@c ICON_ARROW_LEFT) just inside the view's top-left, and
+ * bit 1 draws the right marker (@c ICON_ARROW_RIGHT) just inside the top-right. Both sit
  * near the bottom of the view (@c view.y + view.h - 10). The markers blink in
  * step with @c CursorState::frameCounter: bit 3 of the counter selects a blink
  * parameter of 0 or 0x140, toggling every 8 frames. The running @p prim cursor
  * is threaded through each call and returned.
  *
- * @param renderCtx Render context forwarded to @c func_800300F8.
+ * @param renderCtx Render context forwarded to @c drawIconClut.
  * @param prim      Primitive/cursor threaded through and advanced by each glyph.
- * @param color     Color parameter forwarded to @c func_800300F8.
+ * @param color     Color parameter forwarded to @c drawIconClut.
  * @param corners   Bitmask: bit 0 = left marker, bit 1 = right marker.
  * @return The advanced @p prim cursor.
  */
@@ -872,11 +872,11 @@ void *func_800A2FCC(void *renderCtx, void *prim, s32 color, s32 corners)
 
     if (corners & 1) {
         yc = cs->view.y + cs->view.h - 10;
-        prim = func_800300F8(renderCtx, prim, 0x5C, cs->view.x + 2, yc, color, blink);
+        prim = drawIconClut(renderCtx, prim, ICON_ARROW_LEFT, cs->view.x + 2, yc, color, blink);
     }
     if (corners & 2) {
         yc = cs->view.y + cs->view.h - 10;
-        prim = func_800300F8(renderCtx, prim, 0x5D, (cs->view.x + cs->view.w) - 9, yc, color, blink);
+        prim = drawIconClut(renderCtx, prim, ICON_ARROW_RIGHT, (cs->view.x + cs->view.w) - 9, yc, color, blink);
     }
     return prim;
 }
@@ -885,16 +885,16 @@ void *func_800A2FCC(void *renderCtx, void *prim, s32 color, s32 corners)
  * @brief Render a number (with a fixed prefix glyph) into the ordering table.
  *
  * Formats @p value @c +1 to a decimal glyph string and blanks its leading zero,
- * then emits a fixed prefix glyph (@c 0x32) followed by the digit(s) via
- * @c func_8002FF34, advancing the glyph position between each. When @p twoDigit
+ * then emits @c ICON_PAGE followed by the digit(s) via
+ * @c drawIcon, advancing the glyph position between each. When @p twoDigit
  * is set both the tens and units digits are drawn (advancing 9 then 6);
  * otherwise only the units digit is drawn after the prefix.
  *
  * @param otBase   Ordering-table base for the glyph primitives.
  * @param pkt      Current GPU packet cursor.
- * @param pos      Starting glyph position (passed to @c func_8002FF34; advanced per glyph).
- * @param w        Glyph width forwarded to @c func_8002FF34.
- * @param col      Glyph color/palette forwarded to @c func_8002FF34.
+ * @param pos      Starting x position (passed to @c drawIcon; advanced per glyph).
+ * @param w        Y position forwarded to @c drawIcon.
+ * @param col      Color word forwarded to @c drawIcon.
  * @param value    Number to display (rendered as @c value @c + @c 1).
  * @param twoDigit Non-zero to draw the tens digit as well as the units digit.
  * @return The advanced packet cursor.
@@ -902,16 +902,16 @@ void *func_800A2FCC(void *renderCtx, void *prim, s32 color, s32 corners)
 void *func_800A30C8(void *otBase, void *pkt, s32 pos, s32 w, s32 col, s32 value, s32 twoDigit) {
     u8 buf[16];
 
-    intToDecStringShort(value + 1, buf, 0x28);
-    replaceLeadingZeros(&buf[3], 1, 0x28, 7);
+    intToDecStringShort(value + 1, buf, ICON_SMALL_DIGIT_0);
+    replaceLeadingZeros(&buf[3], 1, ICON_SMALL_DIGIT_0, ICON_BLANK);
 
-    pkt = func_8002FF34(otBase, pkt, 0x32, pos, w, col);
+    pkt = drawIcon(otBase, pkt, ICON_PAGE, pos, w, col);
     pos += 9;
     if (twoDigit != 0) {
-        pkt = func_8002FF34(otBase, pkt, buf[3], pos, w, col);
+        pkt = drawIcon(otBase, pkt, buf[3], pos, w, col);
         pos += 6;
     }
-    pkt = func_8002FF34(otBase, pkt, buf[4], pos, w, col);
+    pkt = drawIcon(otBase, pkt, buf[4], pos, w, col);
     return pkt;
 }
 
@@ -1573,7 +1573,7 @@ void *func_800A4098(void *a0, void *a1, s32 a2, s32 a3, s32 stack0) {
  * (@c D_801D4AF6). Otherwise it looks up the cell's card index in
  * @c D_801D4A88, picks a highlight color (7 if the card passes @c func_80023B14,
  * else 1), and emits three primitives at a position derived from the cursor
- * view rect: a glyph (@c func_8002FF34), the card image (@c func_800A3D2C), and
+ * view rect: a glyph (@c drawIcon), the card image (@c func_800A3D2C), and
  * a frame (@c func_800A4098). The packet cursor is threaded through and returned.
  *
  * @param otBase  Ordering-table base forwarded to each emitter.
@@ -1609,7 +1609,7 @@ void *func_800A40F0(void *otBase, void *pkt, s32 row, s32 col, s32 xOffset)
     x = (cardImg = D_801D49C8.view.x + xOffset);
     y = cs->view.y + col * 13 + 8;
 
-    pkt = func_8002FF34(otBase, pkt, 0xD7, x + 7, y, cs->packedColor);
+    pkt = drawIcon(otBase, pkt, ICON_CARD, x + 7, y, cs->packedColor);
     cardImg = (s32)func_80023A54(cell);
     pkt = func_800A3D2C(otBase, pkt, x + 0x15, y, cardImg, color);
     x += 0x9A;
@@ -1619,7 +1619,7 @@ void *func_800A40F0(void *otBase, void *pkt, s32 row, s32 col, s32 xOffset)
 /**
  * @brief Emit one glyph into the OT at a grid cell derived from a linear index.
  *
- * Forwards to the glyph emitter @c func_8002FF34 (glyph 0) with the position
+ * Forwards to @c drawIcon (@c ICON_CHOICE_CURSOR) with the position
  * taken from @p ctx and the column @c a3 @c % @c 11 at a 13px pitch. Returns
  * the advanced packet cursor.
  *
@@ -1629,7 +1629,7 @@ void *func_800A40F0(void *otBase, void *pkt, s32 row, s32 col, s32 xOffset)
  */
 void *func_800A4250(s32 *otBase, void *pkt, func_800A4250_arg2 *ctx, s32 a3) {
     s32 w = ctx->unk02 + 0xB;
-    return func_8002FF34(otBase, pkt, 0,
+    return drawIcon(otBase, pkt, ICON_CHOICE_CURSOR,
                          ctx->unk00 - 0x13,
                          w + (a3 % 11) * 13,
                          ctx->unk10);
@@ -1665,14 +1665,14 @@ void *func_800A42D0(void *otBase, void *pkt)
     }
 
     pkt = func_800A31EC(otBase, pkt);
-    pkt = func_8002FF34(otBase, pkt, 0x4D, cs->view.x + 0x7F, cs->view.y, cs->packedColor);
+    pkt = drawIcon(otBase, pkt, ICON_NUM, cs->view.x + 0x7F, cs->view.y, cs->packedColor);
 
     if (D_801D4AF6 >= 0xC) {
         pkt = func_800A2FCC(otBase, pkt, cs->packedColor, 3);
         pkt = func_800A31B8(otBase, pkt, cs->view.x + 0x28, cs->view.y, cs->packedColor, cs->row);
     }
 
-    pkt = func_8002FF34(otBase, pkt, 0x59, cs->view.x, cs->view.y, cs->packedColor);
+    pkt = drawIcon(otBase, pkt, ICON_CARDS, cs->view.x, cs->view.y, cs->packedColor);
     func_800A3398(cs->timer, &cs->view, &cs->work);
     pkt = func_800A3320(otBase, pkt, &cs->work);
     return func_800A3528(otBase, pkt, func_800A40F0);

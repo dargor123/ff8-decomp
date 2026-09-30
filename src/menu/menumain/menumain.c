@@ -6,9 +6,12 @@
 #include "gamestate.h"
 #include "game.h"
 #include "gf.h"
+#include "card.h"
 #include "btl_anim.h"
 #include "btl_anim_packet.h"
-#include "btl_color.h"
+#include "ui/icon.h"
+#include "snd_sfx.h"
+#include "thread.h"
 #include "dialog.h"
 #include "numstr.h"
 #include "psxsdk/libgpu.h"
@@ -23,6 +26,10 @@ extern u8 D_80056290[];
 extern u8 D_800562A4;
 extern u8 D_80078D38[];
 extern s32 D_8005F138;
+
+/** @brief The persistent statuses the menu draws as icons: all but KO. */
+#define STATUS_ICON_MASK (STATUS_POISON | STATUS_PETRIFY | STATUS_DARKNESS | STATUS_SILENCE | \
+    STATUS_BERSERK | STATUS_ZOMBIE)
 
 /**
  * @brief The main menu's view of its menu-task slot.
@@ -279,7 +286,7 @@ void func_801F0224(void) {
     base = (s32)D_801FA280;
     *(s32 *)(base + 0x98) = (s32)0x801B2000;
     *(s32 *)(base + 0x138) = (s32)0x801B8800;
-    setAnimEntityParams(0, 0, 0);
+    setPadMotors(0, 0, 0);
 }
 
 /* ======================================================================== */
@@ -847,7 +854,7 @@ void func_801F1AFC(void) {
 /** @brief Restore the saved menu brightness, and the GPU colour with it. */
 void func_801F1B10(void) {
     setMenuBrightness(D_801FAB78);
-    buildGrayscaleGpuColor(D_801FAB78);
+    setNextPageMarkerBrightness(D_801FAB78);
 }
 
 INCLUDE_ASM("asm/ovl/menumain/nonmatchings/menumain", func_801F1B4C);
@@ -1090,14 +1097,9 @@ void func_801F22A8(void) {
  * @c STATUS_KO, then intersects with the character availability mask
  * from func_80036EC0.
  *
- * @return u16 bitmask of usable characters, bit index = character ID.
- *
- * @note func_80036EC0 (src/card.c) is deliberately called without a
- *       prototype, as in the original build: card.h's u16 declaration must
- *       not be visible here or the call gains a spurious @c andi truncation
- *       (same ABI split as getGfAvailabilityMask — see card.h).
+ * @return Bitmask of usable characters, bit index = character ID.
  */
-u16 func_801F22F4(void) {
+s32 func_801F22F4(void) {
     s32 avail = func_80036EC0();
     u16 mask = 0;
     s32 i;
@@ -1225,7 +1227,7 @@ void func_801F3994(u8 *text, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5) {
 /**
  * @brief Draw an icon glyph plus a two-digit zero-trimmed number.
  *
- * Renders glyph 0x145 via func_800300F8 with a (a5 << 6) + 2 selection
+ * Renders @c ICON_LV_YELLOW via drawIconClut with a (a5 << 6) + 2 selection
  * parameter, then formats @p val as two digits (leading zeros replaced by
  * the first char of menu string 0xB) and prints them 18 pixels below via
  * func_8002C56C.
@@ -1247,7 +1249,7 @@ void func_801F39D0(s32 val, s32 ctx, s32 dl, s32 y, s32 a4, s32 a5) {
     s32 cursor;
     u8 *str;
 
-    cursor = func_800300F8(ctx, dl, 0x145, y, a4, g_menuTint[MENU_TINT_NORMAL], (a5 << 6) + 2);
+    cursor = (s32)drawIconClut((void *)ctx, (TSPRT *)dl, ICON_LV_YELLOW, y, a4, g_menuTint[MENU_TINT_NORMAL], (a5 << 6) + 2);
     y += 0x12;
     intToDecStringShort(val, buf, digits);
     str = (u8 *)getMenuString(0xB);
@@ -1267,7 +1269,7 @@ INCLUDE_ASM("asm/ovl/menumain/nonmatchings/menumain", func_801F3DE4);
  * @brief Map status flags to display text color.
  *
  * Returns: 7 (white/normal), 2 (yellow/critical HP),
- * 5 (red/status ailment), 1 (gray/dead).
+ * 5 (blue/status ailment), 1 (gray/dead).
  */
 s32 func_801F3FB4(s32 a0) {
     s32 v1 = 7;
@@ -1507,7 +1509,7 @@ u16 func_801F57DC(s32 a0) {
 }
 
 /** @brief Set entity current HP (updates both primary and cache tables). */
-void func_801F5868(s32 a0, s16 a1) {
+void func_801F5868(s32 a0, s32 a1) {
     if (a0 >= 16) {
         s32 idx = a0 - 16;
         s32 base2 = (s32)&g_battleChars;
@@ -1706,7 +1708,7 @@ s32 func_801F5D5C(s32 ctx, DR_AREA *prim, s32 x, s32 y, s32 textCat, u16 *ids, s
 /**
  * @brief Draw a two-digit page/slot counter as glyphs.
  *
- * Renders the separator glyph 0x32, then the digits of @p val + 1: the tens
+ * Renders @c ICON_PAGE, then the digits of @p val + 1: the tens
  * digit only when @p flag is set, then the units digit. Each glyph advances
  * the cursor.
  *
@@ -1726,15 +1728,15 @@ s32 func_801F5D5C(s32 ctx, DR_AREA *prim, s32 x, s32 y, s32 textCat, u16 *ids, s
 s32 func_801F5E0C(s32 ctx, s32 dl, s32 x, s32 y, s32 color, s32 val, s32 flag) {
     u8 buf[16];
 
-    intToDecStringShort(val + 1, buf, 0x28);
-    replaceLeadingZeros(buf + 3, 1, 0x28, 7);
-    dl = func_8002FF34(ctx, dl, 0x32, x, y, color);
+    intToDecStringShort(val + 1, buf, ICON_SMALL_DIGIT_0);
+    replaceLeadingZeros(buf + 3, 1, ICON_SMALL_DIGIT_0, ICON_BLANK);
+    dl = drawIcon(ctx, dl, ICON_PAGE, x, y, color);
     x += 9;
     if (flag != 0) {
-        dl = func_8002FF34(ctx, dl, buf[3], x, y, color);
+        dl = drawIcon(ctx, dl, buf[3], x, y, color);
         x += 6;
     }
-    dl = func_8002FF34(ctx, dl, buf[4], x, y, color);
+    dl = drawIcon(ctx, dl, buf[4], x, y, color);
     return dl;
 }
 
@@ -1751,8 +1753,8 @@ s32 func_801F5F30(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5) {
 /**
  * @brief Draw the scroll arrows along a panel's bottom edge.
  *
- * Renders the left arrow (glyph 0x5C) at the panel's bottom-left and the
- * right arrow (0x5D) at its bottom-right, each gated by a bit of
+ * Renders the left arrow (@c ICON_ARROW_LEFT) at the panel's bottom-left and the
+ * right arrow (@c ICON_ARROW_RIGHT) at its bottom-right, each gated by a bit of
  * @p arrows. Both blink together: on alternate 8-frame phases of
  * g_menuDisplayCfg.animCounter the selection parameter drops to 0.
  *
@@ -1775,11 +1777,11 @@ s32 func_801F5F60(s32 ctx, s32 dl, s32 color, s32 arrows) {
     }
     if (arrows & 1) {
         bottom = cfg->y + cfg->h - 10;
-        dl = func_800300F8(ctx, dl, 0x5C, g_menuDisplayCfg.x + 2, bottom, color, blink);
+        dl = (s32)drawIconClut((void *)ctx, (TSPRT *)dl, ICON_ARROW_LEFT, g_menuDisplayCfg.x + 2, bottom, color, blink);
     }
     if (arrows & 2) {
         bottom = cfg->y + cfg->h - 10;
-        dl = func_800300F8(ctx, dl, 0x5D, g_menuDisplayCfg.x + cfg->w - 9, bottom, color, blink);
+        dl = (s32)drawIconClut((void *)ctx, (TSPRT *)dl, ICON_ARROW_RIGHT, g_menuDisplayCfg.x + cfg->w - 9, bottom, color, blink);
     }
     return dl;
 }
@@ -1787,24 +1789,24 @@ s32 func_801F5F60(s32 ctx, s32 dl, s32 color, s32 arrows) {
 INCLUDE_ASM("asm/ovl/menumain/nonmatchings/menumain", func_801F605C);
 
 /**
- * @brief Draw face glyphs for masked party members in a 3-column grid.
+ * @brief Draw the status icons of @p mask in a 3-column grid.
  *
- * For each set bit i in @p mask (restricted to bits 1..6), renders face
- * glyph 0x110 + i at an 18x18 grid cell, filling left-to-right then
- * top-to-bottom in draw order.
+ * For each set bit i of @p mask among @c STATUS_ICON_MASK, draws icon
+ * @c ICON_STATUS_KO + i at an 18x18 grid cell, filling left-to-right then
+ * top-to-bottom.
  *
  * @param ctx  Render context.
  * @param dl   Display-list cursor (threaded through the glyph calls).
  * @param x    Grid origin X.
  * @param y    Grid origin Y.
- * @param mask Bitmask of members to draw (FACE_GRID_MEMBERS honored).
+ * @param mask Persistent status bits.
  * @return Display-list cursor after the drawn glyphs.
  */
 s32 func_801F6234(s32 ctx, s32 dl, s32 x, s32 y, s32 mask) {
     s32 drawn = 0;
     s32 i;
 
-    mask &= FACE_GRID_MEMBERS;
+    mask &= STATUS_ICON_MASK;
     for (i = 0; i < 8; i++) {
         s32 bit = 1 << i;
 
@@ -1812,7 +1814,7 @@ s32 func_801F6234(s32 ctx, s32 dl, s32 x, s32 y, s32 mask) {
             s32 row = drawn / 3;
             s32 col = drawn - row * 3;
 
-            dl = func_8002FF34(ctx, dl, i + 0x110, x + col * 18, y + row * 18, g_menuTint[MENU_TINT_NORMAL]);
+            dl = drawIcon(ctx, dl, i + ICON_STATUS_KO, x + col * 18, y + row * 18, g_menuTint[MENU_TINT_NORMAL]);
             drawn++;
         }
     }
@@ -1851,7 +1853,7 @@ void func_801F63DC(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4, s32 a5) {
  * @brief Conditionally render highlighted entry if character bit is set.
  *
  * Checks if the bit at position a0 in the party mask is set.
- * If so, renders the entry via func_8002FF34 with a highlight color
+ * If so, renders the entry via drawIcon with a highlight color
  * of 0xD6. Otherwise returns the input OT pointer unchanged.
  *
  * @param a0 Bit position to check in party mask.
@@ -1865,7 +1867,7 @@ s32 func_801F6418(s32 a0, s32 a1, s32 a2, s32 a3, s32 a4) {
     s32 mask = menumain_getPartyMemberMask();
 
     if (((mask & 0xFFFF) >> a0) & 1) {
-        a2 = func_8002FF34(a1, a2, 0xD6, a3, a4, g_menuTint[MENU_TINT_NORMAL]);
+        a2 = drawIcon(a1, a2, ICON_PARTY_MEMBER, a3, a4, g_menuTint[MENU_TINT_NORMAL]);
     }
     return a2;
 }
@@ -2032,7 +2034,7 @@ void func_801F6934(void) {
 
 /** @brief Advance pseudo-random number generator (LCG: val*125+14 mod 32768). */
 s32 func_801F6A5C(void) {
-    s32 base = (s32)&g_battleAnims;
+    s32 base = (s32)&g_engine;
     s32 val = *(u16 *)(base + 0x9C2);
     val = (val * 125 + 14) % 32768;
     *(u16 *)(base + 0x9C2) = val;
@@ -2291,23 +2293,23 @@ void func_801F7928(void) {
     sndSelectMode(val != 0);
 }
 
-/** @brief Apply ATB/screen brightness setting from g_configFlags bit 6. */
+/** @brief Apply the Vibration option to pad port 0. */
 void func_801F7954(void) {
     s32 a1 = 0;
-    if (g_configFlags & 0x40) {
+    if (g_configFlags & CONFIG_VIBRATION) {
         a1 = 0xFF;
     }
-    setAnimEntityOpacity(0, a1);
+    setPadVibration(0, a1);
 }
 
 /**
  * @brief Push the analog-volume and controller-mode config to the sound layer.
  *
- * Sends (analogVolume + 5) * 12 as the volume argument of func_80027C00,
- * then tells func_80027C90 whether the analog flag is active — only
+ * Sends (analogVolume + 5) * 12 as the volume argument of setPadDeadZone,
+ * then tells setPadAnalogFlag whether the analog flag is active — only
  * honored when the controller is in customize mode (CONFIG_CONTROLLER).
  *
- * @note func_80027C00/func_80027C90 are main-executable sound-layer
+ * @note setPadDeadZone/setPadAnalogFlag are main-executable sound-layer
  *       routines that are not decompiled yet.
  */
 void func_801F798C(void) {
@@ -2315,13 +2317,13 @@ void func_801F798C(void) {
 
     v = g_gameState.config.analogVolume;
     v += 5;
-    func_80027C00(0, v * 12);
+    setPadDeadZone(0, v * 12);
     v = g_gameState.config.flags & CONFIG_ANALOG;
     v = v != 0;
     if (!(g_gameState.config.flags & CONFIG_CONTROLLER)) {
         v = 0;
     }
-    func_80027C90(0, v);
+    setPadAnalogFlag(0, v);
 }
 
 /** @brief Test sealed-features bits (@c GameConfig.sealedFeatures & @p a0). */
@@ -2329,9 +2331,9 @@ s32 func_801F79F8(s32 a0) {
     return g_gameState.config.sealedFeatures & a0;
 }
 
-/** @brief Update config vibration flag based on slot 0 status. */
+/** @brief Copy pad port 0's vibration setting back into the Vibration option. */
 void func_801F7A08(void) {
-    if (getBattleAnimOpacity(0) == 0xFF) {
+    if (getPadVibration(0) == 0xFF) {
         g_gameState.config.flags |= CONFIG_VIBRATION;
     } else {
         g_gameState.config.flags &= ~CONFIG_VIBRATION;

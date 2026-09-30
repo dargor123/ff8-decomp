@@ -492,13 +492,13 @@ void func_8009895C(void) {
                 func_800ACB10();
             }
             D_8005F14A = 0;
-            deactivateBattleCmd(-1);
-            func_80027448();
+            stopVibration(-1);
+            settlePadPorts();
         }
     }
 
-    deactivateBattleCmd(-1);
-    func_80027448();
+    stopVibration(-1);
+    settlePadPorts();
     VSync(0);
 }
 
@@ -527,16 +527,17 @@ void func_8009912C(void) {
     renderAndUpdateDisplay(1);
 }
 
-extern s32  getAnimFrameParam(s32 slot, s32 sub); /* per-pad input-frame param (s32 view) */
-extern s32  func_80027A58(s32 a, s32 b);          /* per-pad newly-pressed input */
-extern s32  remapControllerInput(s32 arg);        /* s32 view: btl_color.h's u16 (u16) masks arg and result, changing codegen */
+extern s32  getPadReadButtons(s32 slot, s32 sub); /* per-pad held buttons (s32 view) */
+extern s32  getPadReadPressed(s32 a, s32 b);          /* per-pad newly-pressed input */
+// TODO: Drop this and include the prototype from the owner.
+extern s32 applyButtonRemapTranslation(s32 arg); /* s32 view: input/button_remap.h's u16 (u16) masks arg and result, changing codegen */
 
 /**
  * @brief Per-tick controller-input sampling for the field engine's two pad slots.
  *
  * Snapshots the previous held/button state (@c padHeld → @c padHeldPrev,
  * @c unk150 → @c unk154), refreshes the raw pad buffers, then re-reads the held
- * (@c getAnimFrameParam) and pressed (@c func_80027A58) input for slots 0 and 1.
+ * (@c getPadReadButtons) and pressed (@c getPadReadPressed) input for slots 0 and 1.
  *
  * When slot 0 has no direction bits latched yet (@c padHeld & 0xF000 == 0) and a
  * pad is present, it converts the two analog axes into direction bits: X read
@@ -544,7 +545,7 @@ extern s32  remapControllerInput(s32 arg);        /* s32 view: btl_color.h's u16
  * Y read (axis 3) sets 0x1000 / 0x4000. Each bit is OR'd into @c padHeld always
  * and into @c padPressed only when it was not held last tick (edge detect).
  *
- * Finally derives the held/pressed button masks (@c remapControllerInput) into
+ * Finally derives the held/pressed button masks (@c applyButtonRemapTranslation) into
  * @c unk150 / @c ambientFlags.
  */
 void func_80099180(void) {
@@ -553,10 +554,10 @@ void func_80099180(void) {
     g_fieldEntity.padHeldPrev = g_fieldEntity.padHeld;
     g_fieldEntity.unk154 = g_fieldEntity.unk150;
     func_800275D4();
-    g_fieldEntity.padHeld = getAnimFrameParam(0, 0);
-    g_fieldEntity.padPressed = func_80027A58(0, 0);
-    g_fieldEntity.field_0x160 = getAnimFrameParam(1, 0);
-    g_fieldEntity.field_0x168 = func_80027A58(1, 0);
+    g_fieldEntity.padHeld = getPadReadButtons(0, 0);
+    g_fieldEntity.padPressed = getPadReadPressed(0, 0);
+    g_fieldEntity.field_0x160 = getPadReadButtons(1, 0);
+    g_fieldEntity.field_0x168 = getPadReadPressed(1, 0);
 
     if (!(g_fieldEntity.padHeld & 0xF000) && func_80027DB4(0, PAD_AXIS_X, 0) != -1) {
         r = (s16)func_80027DB4(0, PAD_AXIS_X, 0);
@@ -577,8 +578,8 @@ void func_80099180(void) {
         }
     }
 
-    g_fieldEntity.unk150 = remapControllerInput(g_fieldEntity.padHeld);
-    g_fieldEntity.ambientFlags = remapControllerInput(g_fieldEntity.padPressed);
+    g_fieldEntity.unk150 = applyButtonRemapTranslation(g_fieldEntity.padHeld);
+    g_fieldEntity.ambientFlags = applyButtonRemapTranslation(g_fieldEntity.padPressed);
 }
 
 /* Park the real stack pointer at 0x1F8003FC and run the next call with its
@@ -642,7 +643,7 @@ void func_80099348(void) {
         g_fieldEntity.unk1A5 = 0;
     }
     frames = 2;
-    activateBattleAnim(0);
+    requestPadSetup(0);
     func_8009A920(&D_80085224[g_fieldEntity.entityIndex[0]], D_8008538C);
 
     while (1) {
@@ -824,7 +825,7 @@ void func_80099348(void) {
             break;
         }
 
-        if ((g_fieldVars->stateFlags & FIELD_STATE_CAMERA_SHAKE) && g_gameState.mainData.countdownTimer == 0
+        if ((g_fieldVars->stateFlags & FIELD_STATE_COUNTDOWN) && g_gameState.mainData.countdownTimer == 0
             && (g_fieldVars->fieldB6 & 0x100) == 0) {
             g_fieldEntity.counter = 0x4B;
             g_fieldEntity.mode = 1;

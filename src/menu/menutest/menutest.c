@@ -63,7 +63,6 @@ extern u8 D_801E7ADC;
 extern u8 g_testQuestionText[];
 extern u8 g_testHeaderText[];
 extern TestChoiceMark g_testChoiceMarks[];
-extern MenuDisplayConfig g_menuDisplayCfg;
 extern u8 D_801FABD4;
 extern u8 g_gameState;
 extern u32 D_801E69B8;
@@ -301,7 +300,7 @@ s32 func_801E6760(TestMenuState *state, s32 a1, s32 a2) {
 
     func_801F1AFC();
     setMenuBrightness(state->intensity);
-    buildGrayscaleGpuColor(state->intensity);
+    setNextPageMarkerBrightness(state->intensity);
     v0 = func_801E64B4(a1, a2);
     v0 = func_801E6570(state, a1, v0);
     v0 = func_801E66A8(state, a1, v0);

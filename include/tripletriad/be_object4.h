@@ -153,10 +153,10 @@ typedef struct {
 
 /** @brief Render context for @c func_800A4250 (fields named by offset — role inferred). */
 typedef struct {
-    /* 0x00 */ s16 unk00;     /**< Forwarded (−0x13) as @c func_8002FF34's @c yPos. */
+    /* 0x00 */ s16 unk00;     /**< Forwarded (−0x13) as @c drawIcon's @c x. */
     /* 0x02 */ s16 unk02;     /**< Base for the @c w arg (+0xB, then +column*13). */
     /* 0x04 */ u8  pad04[0xC];
-    /* 0x10 */ s32 unk10;     /**< Forwarded as @c func_8002FF34's @c col. */
+    /* 0x10 */ s32 unk10;     /**< Forwarded as @c drawIcon's @c color. */
 } func_800A4250_arg2;
 
 /* ───────────────────── be_object4-internal externs ───────────────────── */
@@ -164,14 +164,9 @@ typedef struct {
 /* Imported functions kept as externs here, each for a concrete reason (numstr, controller-
    input, battle-display and colour-bar GPU helpers were migrated to numstr.h / thread.h /
    btl_anim.h / drawbar.h):
-     - sendSpuCommand, func_800300F8 — owned by btl_color.c, whose btl_color.h pulls in battle.h
-       (for BattleCmdEntry); tripletriad is decoupled from battle.h, and this header does not
-       include battle.h.
-     - getAnimFrameParam — returns u16 (thread.c) but this caller needs the s32 view with no
+     - getPadReadButtons — returns u16 (thread.c) but this caller needs the s32 view with no
        widening mask; adopting the true u16 measurably breaks the match (see thread.h). */
-extern void sendSpuCommand(s32 idx);
-extern void *func_800300F8(void *renderCtx, void *prim, s32 glyph, s32 x, s32 y, s32 color, s32 blink);
-extern s32  getAnimFrameParam(s32 slot, s32 sub);     /**< Per-controller input-frame param. Defined u16 in thread.c, but the original caller uses it as s32 (no widening mask) — match-load-bearing, so kept here rather than via thread.h. */
+extern s32  getPadReadButtons(s32 slot, s32 sub);     /**< Per-controller held buttons. Defined u16 in thread.c, but the original caller uses it as s32 (no widening mask) — match-load-bearing, so kept here rather than via thread.h. */
 
 /* File-scope data: a few globals owned elsewhere (battle config / menu palette) plus
    be_object4-private board / SFX / input state — the D_801D4xxx / D_801C2Exx / D_80182Exx
@@ -184,8 +179,8 @@ extern s16 D_801D49E2;
 extern s16 D_801D49F8[];
 extern u16 D_801D4B18;
 extern u16 D_801D4B1A;
-extern u16 D_801D4AF8[2][4]; /**< Per-(entity,side) previous edge flags (see func_800A29D4). */
-extern s16 D_801D4B08[2][4]; /**< Per-(entity,side) edge countdown timer (see func_800A29D4). */
+extern u16 D_801D4AF8[2][4]; /**< Per-(port,side) previous edge flags (see func_800A29D4). */
+extern s16 D_801D4B08[2][4]; /**< Per-(port,side) edge countdown timer (see func_800A29D4). */
 extern s32 D_801D4B20[]; /**< Per-controller current held-button mask. */
 extern s32 D_801D4B28[]; /**< Per-controller auto-repeat mask. */
 extern s32 D_801D4B30[]; /**< Per-controller newly-pressed mask. */
@@ -209,7 +204,7 @@ extern void *func_800A3EE0(void *a0, void *a1, s32 a2, s32 a3, s32 a4, s32 a5); 
 extern void *func_800A3D2C(void *otBase, void *pkt, s32 x, s32 y, s32 cardImg, s32 col); /**< Card-image primitive. */
 extern void *func_800A3528(void *otBase, void *pkt, void *(*drawCell)(void *, void *, s32, s32, s32)); /**< Per-cell slide-render iterator. */
 extern s32 func_800A238C();
-extern s32 func_800A29D4(BattleAnimState *base, BattleAnimEntity *elem, u16 arg1, s32 side, s32 entryIndex);
+extern s32 func_800A29D4(EngineState *base, PadPort *port, u16 arg1, s32 side, s32 entryIndex);
 extern s32 func_800A390C(s32 flags0, s32 flags1); /**< Cursor/timer state machine. */
 extern s32 func_800A443C(s32 a0);                 /**< VSync-locked display-list apply. */
 extern void func_800A4504(s32 a0, s32 a1); /**< SFX (60, 32) init. */

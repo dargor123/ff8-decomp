@@ -14,6 +14,7 @@
 #define MENUMAIN_H
 
 #include "common.h"
+#include "battle.h"
 #include "character.h"
 #include "menu.h"
 #include "psxsdk/libgpu.h"
@@ -78,10 +79,6 @@ typedef struct {
     s16 color;  /**< 0x6: color/font parameter. */
 } TextQueueEntry; /* 0x8 bytes */
 
-/** @brief Face-grid members: the switchable party (not Squall or Edea). */
-#define FACE_GRID_MEMBERS ((1 << CHAR_ZELL) | (1 << CHAR_IRVINE) | (1 << CHAR_QUISTIS) | \
-                           (1 << CHAR_RINOA) | (1 << CHAR_SELPHIE) | (1 << CHAR_SEIFER))
-
 /* ======================================================================== */
 /* Private prototypes                                                       */
 /* ======================================================================== */
@@ -106,7 +103,7 @@ s32  func_801F6358(s32, s32, s32, s32, s32);
 void func_801F66B0(s32, s32, s32, s32, s32);
 s32  func_801F6B54(s32, s32, s32, s32, s32);
 void func_801F6C9C(s32, s32, s32, s32, s32, u16);
-u16  func_801F22F4(void);
+s32 func_801F22F4(void);
 void func_801F23D0(s32, s32, u8 *);
 u16  func_801F2370(void);
 void func_801F2458(s32);
@@ -125,14 +122,42 @@ void func_801F202C(void);
 void func_801F72C4(void);
 s32  func_801F738C(s32);
 s32  func_801F7394(s32);
-
-/* Main-executable helpers without an owner header yet. */
-void func_80027C00(s32, s32);
-void func_80027C90(s32, s32);
+void func_801F0A34(s32, s32, s32, s32);
+void func_801F0A78(s32, s32, s32, s32, s32);
+void func_801F0BF8(s32);
+void func_801F0C5C(u8, void *);
+void func_801F1B10(void);
+void func_801F1B4C(s32);
+void func_801F5400(s32);
+void func_801F576C(s32, s32);
+s32 func_801F57A4(s32);
+s32 func_801F6768(u16, s32, s32);
+void func_801F6F88(s32);
+s32 func_801F76E0(s32, s32, s32);
+void func_801F7BEC(s32);
+s32 menumain_getPartyMemberMask(void);
+void func_801EFFE4(s32);
+s32 func_801F0BB0(void);
+s32 func_801F0D84(void);
+void func_801F1AFC(void);
+s32 func_801F72B4(void);
+s32 func_801F5150(s32, s32, s32);
+void func_801F537C(s32, BattleCharData *);
+s32 func_801F565C(s32, s32);
+s32 func_801F56E4(s32, s32);
+void func_801F5868(s32, s32);
+s32 func_801F58EC(s32);
+void func_801F7B10(s32);
 
 /* ======================================================================== */
 /* Data (unit-owned, menumain overlay region)                               */
 /* ======================================================================== */
+
+/** @brief Magic availability entry: one 4-byte record per spell. */
+typedef struct {
+    u8 flags;
+    u8 pad[3];
+} FlagEntry;
 
 extern u8  D_801F7DF4;
 extern u8  D_801F7E00;
@@ -142,7 +167,7 @@ extern u8  D_801F7F74[];        /**< Fallback string for failed text lookups. */
 extern u8  D_801F7F78[];
 extern u8  D_801F7F98[];
 extern u8  D_801F7FB0[];        /**< String table base (two-level offset table). */
-extern u8  D_801F87B8;
+extern FlagEntry D_801F87B8[];
 /** @brief Item table entry: four bytes read individually by the item menu. */
 typedef struct {
     u8 b0, b1, b2, b3;

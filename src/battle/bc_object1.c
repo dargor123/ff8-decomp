@@ -2,6 +2,8 @@
 #include "main.h"
 #include "battle.h"
 #include "gf.h"
+#include "gamestate.h"
+#include "psxsdk/libetc.h"
 #include "battle/bc_object1.h"
 #include "battle/bc_object7.h"
 #include "battle/bc_object9.h"
@@ -109,9 +111,9 @@ void func_80099F58(void) {
 }
 
 void func_80099FA0() {
-    while(D_8005F146 != 0);
+    while(g_renderMode != 0);
    
-    D_8005F146 = 3;
+    g_renderMode = 3;
     func_800D0FB0();
 }
 
@@ -126,7 +128,7 @@ void func_80099FA0() {
 void func_80099FE8(void) {
     s32 i;
 
-    func_80027448();
+    settlePadPorts();
     func_8009B428();
 
     D_800ED148.unk5C3 = 1;
@@ -140,7 +142,7 @@ void func_80099FE8(void) {
         g_battleConfig.unk4[i] = 255;
     }
 
-    func_8009B198(func_80042634(-1));
+    func_8009B198(VSync(-1));
     func_800B25E4();
     func_8009B6D0(g_battleConfig.battleSceneId, &D_800ED148.unkCDC);
     
@@ -284,15 +286,15 @@ void func_8009A3BC(void) {
 }
 
 /**
- * @brief Conditionally apply vibration feedback.
+ * @brief Show the countdown timer in battle if the field was showing it.
  *
- * If bit 2 of g_battleConfig.unk2 is set, calls setCameraVibrateIntensity(0x1000) and
- * setCameraVibrateState(1) to trigger controller vibration.
+ * If bit 2 of g_battleConfig.unk2 is set (DISPTIMER sets it), calls
+ * setHudBrightness(0x1000) and setCountdownVisible(1).
  */
 void func_8009A3F4(void) {
     if (g_battleConfig.unk2 & 4) {
-        setCameraVibrateIntensity(0x1000);
-        setCameraVibrateState(1);
+        setHudBrightness(0x1000);
+        setCountdownVisible(1);
     }
 }
 

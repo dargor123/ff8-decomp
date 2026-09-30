@@ -1,6 +1,7 @@
 #include "common.h"
 #include "gamestate.h"
-#include "btl_color.h"
+#include "ui/countdown.h"
+#include "input/vibration.h"
 #include "psxsdk/libgpu.h"
 #include "psxsdk/libgte.h"
 #include "psxsdk/libetc.h"
@@ -239,8 +240,8 @@ s32 func_800987D8(void)
     func_800A6BE0();
     func_800A246C();
     SetGeomScreen(D_800C9730);
-    setCameraVibrateIntensity(0x1000);
-    activateBattleAnim(0);
+    setHudBrightness(0x1000);
+    requestPadSetup(0);
     VSync(0);
     SetDispMask(1);
 
@@ -462,8 +463,8 @@ s32 func_800987D8(void)
     func_800C4450();
     flushCdAndWait();
     func_800A6358();
-    deactivateBattleCmd(-1);
-    func_80027448();
+    stopVibration(-1);
+    settlePadPorts();
     DrawSync(0);
     ResetGraph(3);
     func_8009AD3C();

@@ -29,13 +29,6 @@ typedef struct {
     u8  unk9;            /**< Bit 0 toggles the @c FieldVars.soundBankSelector at field-VM init. */
 } BattleConfig;
 
-/* AnimFrame, BattleAnimEntity, DisplayListBuf, BattleAnimState, OT_SIZE and
- * g_battleAnims now live in battle_anim.h (included above) so non-battle code
- * can use them without depending on battle.h. */
-
-/* Tim / TimSection are the canonical PS1 TIM file structs — now in tim.h
- * (included above), shared with the world and tripletriad overlays. */
-
 /** @brief Clipped rectangle result: the clipped rect + saved pre-clip position. */
 typedef struct {
     RECT rect; /* 0x00: clipped rectangle */
@@ -464,31 +457,6 @@ typedef struct {
     /* 0x0A3 */ BattleAnimSubEntry subEntries[3];  /**< 3 × 0x47 = 0xD5 bytes. */
 } BattleAnimTable;
 
-/** @brief Data stream within a battle command (two per entry). */
-typedef struct {
-    u8 *start;       /* +0x00: pointer to stream data start */
-    u8 *end;         /* +0x04: pointer to stream data end */
-    s16 cursor;      /* +0x08: current read position (-1 = not started) */
-    u16 length;      /* +0x0A: stream length in bytes */
-    u8 enabled;      /* +0x0C: 1 if stream has data, 0 if empty */
-    u8 pad0D[3];     /* +0x0D: padding */
-} CmdStream;
-
-/** @brief Battle command table entry (g_battleCmdTable, stride 0x24 = 36 bytes). */
-typedef struct {
-    CmdStream streams[2]; /* +0x00: two data streams (0x20 bytes) */
-    u16 sourceId;         /* +0x20: source ID (wraps at 0x400, reset to 1) */
-    s8 active;            /* +0x22: priority/active flag */
-    u8 index;             /* +0x23: slot index (0-3) */
-} BattleCmdEntry;
-
-/** @brief Header for packed command stream data within a command data block. */
-typedef struct {
-    u16 len1;    /* +0x00: length of first stream */
-    u16 len2;    /* +0x02: length of second stream */
-    u8 data[1];  /* +0x04: stream1 data[len1], then stream2 data[len2] */
-} CmdStreamHeader;
-
 /** @brief Memory card subsystem data block (g_cardData). */
 typedef struct {
     s32 events[8];
@@ -765,8 +733,6 @@ extern s16             D_8005F11C;
 extern u8              D_8005F170;   /**< Cleared once at boot by loadKernel and set only by
                                             battle_render's entry, which only gameStateLoop state 4
                                             reaches; gates the magic menu's refill-all shortcut. */
-extern s16             D_8005F146;
-extern s16             D_8005F158;
 extern BattleCharState g_battleChars; // 0x80078720
 //D_80078DF8 = g_battleChars.levelEntries[15].abilityFlags
 extern BattleConfig    g_battleConfig; // 0x80082C08
@@ -835,15 +801,8 @@ u8 *func_800B04A0(s32 a0, u8 *buf);
 u8 *func_800B02AC(u8 *buf);
 
 /* --- Battle animation lifecycle --- */
-void activateBattleAnim(s32 idx);
+void requestPadSetup(s32 idx);
 
-/* --- Spatial / matrix helpers (defined in field overlay) --- */
-void func_800406A4(u8 *p);
-void func_80040734(u8 *p);
-/* func_80040DE4 (the main binary's RotTransPers) is declared in psxsdk/libgte.h. */
-
-/** @brief Reset battle-transition state (clears @c btl_color flags). */
-void initBattleTransition(void);
 void func_800D0608(void); /* bc_object17: overlay VSync handler (RENDER_OVERLAY) */
 
 
