@@ -20,6 +20,13 @@ typedef struct {
     u8 unk7;
 } ST_0;
 
+typedef struct {
+    u8 pad00[0x67];
+    s8 unk67;
+    u8 pad68[4];
+    s16 unk6C;
+} ST_1;
+
 extern s32 D_801ECC20;
 extern ST_0 D_801EB1FC[];
 extern CharacterData D_801ECE40;
@@ -1291,7 +1298,35 @@ void func_801E45B4(u8 *a0, s32 a1, s32 a2) {
     } while (i < 0xC6);
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E4608);
+void func_801E4608(s32 arg0, ST_1 *arg1) {
+    s32 unk67;
+    s32 unk6C;
+    s32 x;
+    s32 y;
+    s32 aux;
+
+    unk6C = arg1->unk6C;
+
+    if (unk6C == 0) {
+        return;
+    }
+
+    unk67 = arg1->unk67;
+
+    x = D_801FA3C8[(4096 - unk6C) / 64];
+    x = x * 192 / 4096;
+
+    do {
+        aux = 65;
+    } while (0);
+
+    y = (unk67 % 4) * 13;
+
+    x = aux - x; 
+    y = 68 + y;
+
+    func_801F0A34(arg0, 0, x, y);
+}
 
 /**
  * @brief Render item entry at Y position computed from row modulo 4.
