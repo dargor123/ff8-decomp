@@ -1445,7 +1445,33 @@ void func_801E4908(s32 a0, s32 a1) {
     func_801F0A34(a0, 0, 0xC8, a1 * 13 + 0x42);
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E4940);
+void func_801E4940(s32 arg0) {
+    MenuDisplayConfig *cfg;
+    s32 counter;
+    s32 y;
+    s32 i;
+    s32 one;
+    s32 width;
+    s32 mask;
+
+    cfg = &g_menuDisplayCfg;
+    counter = 0;
+    y = 200;
+    i = 0;
+    one = 1;
+    width = 66;
+
+    for (; i < 8; i++) {
+        mask = one << i;
+        if (arg0 & mask) {
+            if ((counter + cfg->animCounter) & 1) {
+                func_801F0994(0, y, width);
+            }
+            width += 13;
+            counter++;
+        }
+    }
+}
 
 /**
  * @brief Render item entry at position derived from index parity and half-index
@@ -1460,7 +1486,34 @@ void func_801E49FC(s32 a0, s32 a1) {
     func_801F0A34(a0, 0, (a1 & 1) * 82 + 0xC4, (a1 / 2) * 13 + 0x40);
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E4A58);
+void func_801E4A58(u32 arg0) {
+    MenuDisplayConfig *cfg;
+    s32 counter;
+    s32 yBase;
+    s32 widthBase;
+    s32 i;
+    s32 mask;
+    s32 y;
+    s32 width;
+
+    cfg = &g_menuDisplayCfg;
+    counter = 0;
+    yBase = 196;
+    widthBase = 64;
+    arg0 >>= 16;
+    
+    for (i = 0; i < 16; i++) {
+        mask = 1 << i;
+        if (arg0 & mask) {
+            y = yBase + ((i & 1) * 82);
+            width = widthBase + ((i / 2) * 13);
+            if ((counter + cfg->animCounter) & 1) {
+                func_801F0994(0, y, width);
+            }
+            counter++;
+        }
+    }
+}
 
 /**
  * @brief Dispatch based on upper/lower 16 bits of flags.
