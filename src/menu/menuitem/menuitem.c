@@ -27,6 +27,11 @@ typedef struct {
     s16 unk6C;
 } ST_1;
 
+typedef struct {
+    u8 pad00[0x58];
+    s16 unk58;
+} ST_2;
+
 extern s32 D_801ECC20;
 extern ST_0 D_801EB1FC[];
 extern CharacterData D_801ECE40;
@@ -1354,7 +1359,21 @@ void func_801E4708(s32 a0, s32 a1) {
     func_801F0A34(a0, 0, buf[a1] + 0x32, 0xD);
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E476C);
+void func_801E476C(s32 arg0, ST_2 *arg1) {
+    s32 unk58;
+    s32 x;
+    s32 y;
+    
+    unk58 = arg1->unk58;
+
+    y = unk58 % 11;
+    y *= 0xD;
+    y += 0x41;
+
+    x = 0xCD;
+    
+    func_801F0A34(arg0, 0, x, y);
+}
 
 /**
  * @brief Render a visual indicator at a column position derived from an index.
