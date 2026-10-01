@@ -25,6 +25,7 @@ extern ST_0 D_801EB1FC[];
 extern CharacterData D_801ECE40;
 extern u8 D_801EB234[]; /**< Weapon ID's, indexed by char ID. */
 extern s32 D_801ECED8;
+extern u8 D_801EB1E4[];
 
 s32 func_801E80D0(s32, s32, s32, s32, s32);
 s32 func_801E95C4(s32, s32, s32);
@@ -1119,16 +1120,14 @@ s32 func_801E3EBC(s32 arg0, s32 arg1, s32 arg2) {
  * @param a2 Bitmask of abilities to process (low 8 bits).
  * @return OR'd result of all func_801E3EBC calls.
  */
-s32 func_801E42F8(s32 arg0, s32 arg1, s32 arg2) {
+s32 func_801E42F8(s32 arg0, s32 arg1, u8 arg2) {
     s32 accum;
     s32 i;
-    s32 val;
 
     accum = 0;
     i = 0;
-    val = arg2 & 0xFF;
     while (i < 8) {
-        if ((val >> i) & 1) {
+        if ((arg2 >> i) & 1) {
             func_801E3E94();
             accum |= func_801E3EBC(arg0, arg1, i);
         }
@@ -1138,7 +1137,80 @@ s32 func_801E42F8(s32 arg0, s32 arg1, s32 arg2) {
     return accum;
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E4394);
+s32 func_801E4394(s32 arg0, s32 arg1) {
+    s32 b2;
+    s32 b3;
+    s32 ret;
+    s32 i;
+    s32 mask;
+    s32 val;
+
+    b2 = D_801F889C[arg0].b2;
+    b3 = D_801F889C[arg0].b3;
+    val = func_801E2E38(arg0);
+    val = D_801EB1E4[val];
+    ret = 0;
+
+    for (i = 0; i < 32; i++) {
+        mask = 1 << i;
+        if (arg1 & mask) {
+            switch (val) {
+            case 1:
+                ret |= func_801E302C(i, b2, b3);
+                break;
+            case 2:
+                ret |= func_801E3288(i);
+                break;
+            case 3:
+                ret |= func_801E3314(i);
+                break;
+            case 4:
+                ret |= func_801E37A4(i);
+                break;
+            case 5:
+                ret |= func_801E35B8(i, arg0);
+                break;
+            case 6:
+                ret |= func_801E3C1C(i, b2);
+                break;
+            case 8:
+                ret |= func_801E42F8(i, b2, b3);
+                break;
+            case 9:
+                ret |= func_801E3158(i, b2, b3);
+                break;
+            case 0:
+                break;
+            }
+        }
+    }
+
+    if (ret != 0) {
+        switch (val) {
+        case 1: 
+        case 4: 
+            playSoundEffect(0xA);
+            break;
+        case 2: 
+        case 3: 
+        case 5: 
+        case 6: 
+        case 8: 
+        case 9: 
+            playSoundEffect(0xB);
+            break;
+        default:
+            sendSpuCommand(8);
+            break;
+        }
+    } else {
+        sendSpuCommand(5);
+    }
+
+    if (val) { val++; val--; }
+
+    return ret;
+}
 
 /**
  * @brief Decrement item count at table entry and clear first byte if depleted.
