@@ -32,6 +32,13 @@ typedef struct {
     s16 unk58;
 } ST_2;
 
+typedef struct {
+    u8 pad00[0x5E];
+    s16 unk5E;
+    u8 pad60[9];
+    s8 unk69;
+} ST_3;
+
 extern s32 D_801ECC20;
 extern ST_0 D_801EB1FC[];
 extern CharacterData D_801ECE40;
@@ -1306,9 +1313,12 @@ void func_801E45B4(u8 *a0, s32 a1, s32 a2) {
 void func_801E4608(s32 arg0, ST_1 *arg1) {
     s32 unk67;
     s32 unk6C;
+    s32 index;
+    s32 xOffset;
+    s32 yOffset;
+    s32 xBase;
     s32 x;
     s32 y;
-    s32 aux;
 
     unk6C = arg1->unk6C;
 
@@ -1317,18 +1327,19 @@ void func_801E4608(s32 arg0, ST_1 *arg1) {
     }
 
     unk67 = arg1->unk67;
+    index = (4096 - unk6C) / 64;
 
-    x = D_801FA3C8[(4096 - unk6C) / 64];
-    x = x * 192 / 4096;
+    xOffset = D_801FA3C8[index];
+    xOffset = (xOffset * 192) / 4096;
 
     do {
-        aux = 65;
+        xBase = 65;
     } while (0);
 
-    y = (unk67 % 4) * 13;
+    yOffset = (unk67 % 4) * 13;
 
-    x = aux - x; 
-    y = 68 + y;
+    x = xBase - xOffset; 
+    y = 68 + yOffset;
 
     func_801F0A34(arg0, 0, x, y);
 }
@@ -1367,10 +1378,10 @@ void func_801E476C(s32 arg0, ST_2 *arg1) {
     unk58 = arg1->unk58;
 
     y = unk58 % 11;
-    y *= 0xD;
-    y += 0x41;
+    y *= 13;
+    y += 65;
 
-    x = 0xCD;
+    x = 205;
     
     func_801F0A34(arg0, 0, x, y);
 }
@@ -1384,9 +1395,46 @@ void func_801E476C(s32 arg0, ST_2 *arg1) {
  * @param a0 First argument passed through to func_801F0A34.
  * @param a1 Index value, divided by 11 to determine column.
  */
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E47E0);
+void func_801E47E0(s32 arg0, s32 arg1) {
+    s32 x;
+    s32 y;
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E4848);
+    y = arg1 % 11;
+    y *= 13;
+    y += 65;
+
+    x = 39;
+
+    func_801F0A34(arg0, 0, x, y);
+}
+
+void func_801E4848(s32 arg0, ST_3 *arg1) {
+    s32 unk5E;
+    s32 unk69;
+    s32 index;
+    s32 xOffset;
+    s32 yOffset;
+    s32 x;
+    s32 y;
+
+    unk5E = arg1->unk5E;
+    unk69 = arg1->unk69;
+
+    index = unk5E / 64;
+
+    xOffset = D_801FA3C8[index];
+    xOffset = (xOffset * 190) / 4096;
+
+    yOffset = unk69 % 11;
+    yOffset *= 13;
+    
+    x = 39;
+    x -= xOffset;
+
+    y = 65 + yOffset;
+
+    func_801F0A34(arg0, 0, x, y);
+}
 
 /**
  * @brief Render item at computed Y position based on row index.
