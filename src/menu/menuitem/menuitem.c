@@ -1236,7 +1236,29 @@ s32 func_801E4394(s32 arg0, s32 arg1) {
  * @param a2 Entry index.
  * @return 1 if count was decremented but not depleted, 0 otherwise.
  */
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E457C);
+s32 func_801E457C(s32 arg0, ItemSlot *arg1, s32 arg2) {
+    ItemSlot *item;
+    s32 count;
+    s32 ret;
+
+    ret = 0;
+    item = &arg1[arg2];
+    count = item->count;
+
+    if (count > 0) {
+        count--;
+        item->count = count;
+        if (count != 0) {
+            ret = 1;
+            return ret;
+        }
+        item->id = 0;
+    }
+
+    if (ret) { ret++; ret--; }
+
+    return ret;
+}
 
 /**
  * @brief Find and consume an item from the byte-pair table.
