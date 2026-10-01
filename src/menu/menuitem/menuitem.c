@@ -1119,7 +1119,24 @@ s32 func_801E3EBC(s32 arg0, s32 arg1, s32 arg2) {
  * @param a2 Bitmask of abilities to process (low 8 bits).
  * @return OR'd result of all func_801E3EBC calls.
  */
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E42F8);
+s32 func_801E42F8(s32 arg0, s32 arg1, s32 arg2) {
+    s32 accum;
+    s32 i;
+    s32 val;
+
+    accum = 0;
+    i = 0;
+    val = arg2 & 0xFF;
+    while (i < 8) {
+        if ((val >> i) & 1) {
+            func_801E3E94();
+            accum |= func_801E3EBC(arg0, arg1, i);
+        }
+        i++;
+    }
+    func_801E3E94();
+    return accum;
+}
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E4394);
 
