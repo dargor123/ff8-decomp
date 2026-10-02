@@ -52,6 +52,13 @@ typedef struct {
     s8 unk65;
 } ST_4;
 
+typedef struct {
+    u8 unk0;
+    u8 pad1;
+    u8 unk2;
+    u8 pad3[5];
+} ST_5;
+
 extern s32 D_801ECC20;
 extern ST_0 D_801EB1FC[];
 extern CharacterData D_801ECE40;
@@ -1651,7 +1658,47 @@ void func_801E4C74(u8* src, u8* dst, s32 abilityId) {
     *dst = 0;
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E4D40);
+void func_801E4D40(u8 *arg0, u8 *arg1, s32 arg2, s32 arg3, s32 arg4, ST_5 *arg5) {
+    GfLearnData *gfLearnData;
+    s32 i;
+    s32 j;
+    s32 k;
+    s32 slot;
+    s32 levelReq;
+
+    gfLearnData = &D_80079D78[arg2];
+    func_801E4C74(arg0, arg1, arg3);
+    arg1 = &arg1[btlStrlen(arg1)];
+
+    for (i = 0; i < 21; i++) {
+        if (arg3 != gfLearnData->abilities[i].slot) {
+            continue;
+        }
+
+        for (j = 0; j < 21; j++) {
+            levelReq = gfLearnData->abilities[j].levelReq;
+            slot = gfLearnData->abilities[j].slot;
+
+            if (levelReq == 0xFF || levelReq < 0x65) {
+                continue;
+            }
+
+            levelReq -= 0x65;
+            if (levelReq != i) {
+                continue;
+            }
+
+            for (k = 0; k < arg4; k++) {
+                if (arg5[k].unk0 != slot || arg5[k].unk2 != 1) {
+                    continue;
+                }
+
+                func_801E4C74(arg0, arg1, slot);
+                arg1 = &arg1[btlStrlen(arg1)];
+            } 
+        }
+    }
+}
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E4EA4);
 
