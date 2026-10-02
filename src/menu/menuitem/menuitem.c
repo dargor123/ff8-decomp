@@ -46,7 +46,9 @@ typedef struct {
     u8 *unk28;
     u8 pad2C[0x27];
     s16 unk54;
-    u8 pad56[0xF];
+    u8 pad56[0x2];
+    s16 unk58;
+    u8 pad60[0xB];
     s8 unk65;
 } ST_4;
 
@@ -1595,9 +1597,59 @@ void func_801E4BB4(ST_4 *arg0) {
  *
  * @param a0 Pointer to item menu context.
  */
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E4C14);
+void func_801E4C14(ST_4* arg0) {
+    s32 id;
+    s32 count;
+    ItemSlot *item;
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E4C74);
+    item = &arg0->unk20[arg0->unk58];
+
+    item++; item--;
+
+    id = item->id;
+    count = item->count;
+
+    arg0->unk65 = id;
+
+    if (id && count) {
+        arg0->unk28 = getItemDesc(id);
+    } else {
+        arg0->unk28 = NULL;    
+    }
+}
+
+void func_801E4C74(u8* src, u8* dst, s32 abilityId) {
+    u8 buffer[64];
+    s32 srcVal;
+    u8* bufferPtr;
+    
+    while (1) {
+        srcVal = *src++;
+    
+        if (srcVal == 0) {
+            break;
+        }
+        
+        bufferPtr = buffer;
+        
+        if (srcVal != 0xA) {
+            *dst++ = srcVal;
+        } else {
+            srcVal = *src++;
+            *buffer = 0;
+            
+            if (srcVal == 0x25) {
+                copyString(bufferPtr, getAbilityName(abilityId));
+            }
+            
+            while (*bufferPtr != 0) {
+                *dst++ = *bufferPtr++;
+            }
+        }
+    }
+    
+    *dst = 0;
+}
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E4D40);
 
