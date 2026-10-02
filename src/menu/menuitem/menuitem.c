@@ -39,6 +39,17 @@ typedef struct {
     s8 unk69;
 } ST_3;
 
+typedef struct {
+    u8 pad[0x20];
+    ItemSlot *unk20;
+    u8 pad24[0x4];
+    u8 *unk28;
+    u8 pad2C[0x27];
+    s16 unk54;
+    u8 pad56[0xF];
+    s8 unk65;
+} ST_4;
+
 extern s32 D_801ECC20;
 extern ST_0 D_801EB1FC[];
 extern CharacterData D_801ECE40;
@@ -1556,7 +1567,26 @@ void func_801E4B80(s32 a0, s32 a1) {
  *
  * @param a0 Pointer to item menu context.
  */
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E4BB4);
+void func_801E4BB4(ST_4 *arg0) {
+    s32 id;
+    s32 count;
+    ItemSlot *item;
+    
+    item = &arg0->unk20[arg0->unk54];
+
+    item++; item--;
+
+    id = item->id;
+    count = item->count;
+
+    arg0->unk65 = id;
+
+    if (id && count) {
+        arg0->unk28 = getItemDesc(id);
+    } else {
+        arg0->unk28 = NULL;    
+    }
+}
 
 /**
  * @brief Load item entry data for the secondary list index.
