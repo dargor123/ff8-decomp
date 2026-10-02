@@ -21,43 +21,32 @@ typedef struct {
 } ST_0;
 
 typedef struct {
-    u8 pad00[0x67];
-    s8 unk67;
-    u8 pad68[4];
-    s16 unk6C;
-} ST_1;
-
-typedef struct {
-    u8 pad00[0x58];
-    s16 unk58;
-} ST_2;
-
-typedef struct {
-    u8 pad00[0x5E];
-    s16 unk5E;
-    u8 pad60[9];
-    s8 unk69;
-} ST_3;
-
-typedef struct {
-    u8 pad[0x20];
-    ItemSlot *unk20;
-    u8 pad24[0x4];
-    u8 *unk28;
-    u8 pad2C[0x27];
-    s16 unk54;
-    u8 pad56[0x2];
-    s16 unk58;
-    u8 pad60[0xB];
-    s8 unk65;
-} ST_4;
-
-typedef struct {
     u8 unk0;
     u8 pad1;
     u8 unk2;
     u8 pad3[5];
-} ST_5;
+} ST_1;
+
+typedef struct {
+    u8 pad[0x20];
+    ItemSlot *unk20;
+    u8 pad24[4];
+    u8 *unk28;
+    u8 pad2C[0x27];
+    s16 unk54;
+    u8 pad56[2];
+    s16 unk58;
+    u8 pad5A[4];
+    s16 unk5E;
+    u8 pad60[5];
+    s8 unk65;
+    u8 pad66[1];
+    s8 unk67;
+    u8 pad68[1];
+    s8 unk69;
+    u8 pad6A[2];
+    s16 unk6C;
+} MenuItemState;
 
 extern s32 D_801ECC20;
 extern ST_0 D_801EB1FC[];
@@ -1330,7 +1319,7 @@ void func_801E45B4(u8 *a0, s32 a1, s32 a2) {
     } while (i < 0xC6);
 }
 
-void func_801E4608(s32 arg0, ST_1 *arg1) {
+void func_801E4608(s32 arg0, MenuItemState *arg1) {
     s32 unk67;
     s32 unk6C;
     s32 index;
@@ -1390,7 +1379,7 @@ void func_801E4708(s32 a0, s32 a1) {
     func_801F0A34(a0, 0, buf[a1] + 0x32, 0xD);
 }
 
-void func_801E476C(s32 arg0, ST_2 *arg1) {
+void func_801E476C(s32 arg0, MenuItemState *arg1) {
     s32 unk58;
     s32 x;
     s32 y;
@@ -1428,7 +1417,7 @@ void func_801E47E0(s32 arg0, s32 arg1) {
     func_801F0A34(arg0, 0, x, y);
 }
 
-void func_801E4848(s32 arg0, ST_3 *arg1) {
+void func_801E4848(s32 arg0, MenuItemState *arg1) {
     s32 unk5E;
     s32 unk69;
     s32 index;
@@ -1576,7 +1565,7 @@ void func_801E4B80(s32 a0, s32 a1) {
  *
  * @param a0 Pointer to item menu context.
  */
-void func_801E4BB4(ST_4 *arg0) {
+void func_801E4BB4(MenuItemState *arg0) {
     s32 id;
     s32 count;
     ItemSlot *item;
@@ -1604,7 +1593,7 @@ void func_801E4BB4(ST_4 *arg0) {
  *
  * @param a0 Pointer to item menu context.
  */
-void func_801E4C14(ST_4* arg0) {
+void func_801E4C14(MenuItemState *arg0) {
     s32 id;
     s32 count;
     ItemSlot *item;
@@ -1658,7 +1647,7 @@ void func_801E4C74(u8* src, u8* dst, s32 abilityId) {
     *dst = 0;
 }
 
-void func_801E4D40(u8 *arg0, u8 *arg1, s32 arg2, s32 arg3, s32 arg4, ST_5 *arg5) {
+void func_801E4D40(u8 *arg0, u8 *arg1, s32 arg2, s32 arg3, s32 arg4, ST_1 *arg5) {
     GfLearnData *gfLearnData;
     s32 i;
     s32 j;
