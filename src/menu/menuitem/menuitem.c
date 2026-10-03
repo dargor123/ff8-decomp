@@ -47,7 +47,7 @@ typedef struct {
     u8 pad42[0x4];
     s16 unk46;
     s16 unk48;
-    s8 unk4A;
+    u8 unk4A;
     s8 unk4B;
     s16 unk4C;
     s8 unk4E;
@@ -3521,10 +3521,10 @@ void *func_801E7D18(void *arg0, void *arg1, s32 arg2, s32 arg3, s32 arg4) {
         return arg1;
     }
 
-    x1 = arg4 + 0xD;
+    x1 = arg4 + 13;
     x2 = g_menuDisplayCfg.x + x1;
 
-    y1 = arg3 * 0xD + 9;
+    y1 = arg3 * 13 + 9;
     y2 = g_menuDisplayCfg.y + y1;
 
     tmp++; tmp--;
@@ -3537,22 +3537,37 @@ void *func_801E7D18(void *arg0, void *arg1, s32 arg2, s32 arg3, s32 arg4) {
 
     x3 = x2;
     y3 = y2 - 2;
-    arg1 = drawIcon(arg0, arg1, func_801F6B28(id) + 0xDF, x3, y3, g_menuTint[0]);
+    arg1 = drawIcon(arg0, arg1, func_801F6B28(id) + 223, x3, y3, g_menuTint[MENU_TINT_NORMAL]);
 
     tmp = y2;
 
-    x4 = x2 + 0xD;
+    x4 = x2 + 13;
     y4 = tmp;
     arg1 = func_801F0FEC(arg0, arg1, x4, y4, getItemName(id), color);
 
-    x5 = x2 + 0x91;
+    x5 = x2 + 145;
     y5 = tmp;
     arg1 = drawNumberMenuTint(arg0, arg1, (y5 << 0x10) | (x5 & 0xFFFF), count, color);
 
     return arg1;
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E7E74);
+void func_801E7E74(MenuItemState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+    g_menuDisplayCfg.iconType = 76;
+    g_menuDisplayCfg.iconSubType = 0;
+    g_menuDisplayCfg.x = arg3;
+    g_menuDisplayCfg.w = 166;
+    g_menuDisplayCfg.h = 160;
+    g_menuDisplayCfg.columnCount = 11;
+    g_menuDisplayCfg.y = arg4;
+    g_menuDisplayCfg.pageStart = s->unk4A;
+    g_menuDisplayCfg.pageEnd = s->unk4B;
+    g_menuDisplayCfg.scrollOffset = s->unk48;
+    g_menuDisplayCfg.dataPtr = s->itemSlots;
+    arg2 = func_801F5EFC(arg1, arg2, arg3 + 28, arg4, g_menuTint[MENU_TINT_NORMAL], s->unk4A);
+    arg2 = func_801F5F60(arg1, arg2, g_menuTint[MENU_TINT_NORMAL], 3);
+    func_801EFBB4(arg1, arg2, func_801E7D18);
+}
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E7F4C);
 
