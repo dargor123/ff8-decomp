@@ -5,12 +5,17 @@
 #include "game.h"
 #include "numstr.h"
 #include "ui/dialog.h"
+#include "ui/text.h"
+#include "ui/font.h"
+#include "ui/window.h"
 #include "gamestate.h"
 #include "kernel.h"
 #include "ability_list.h"
 #include "gf_anim.h"
 #include "card.h"
 #include "battle.h"
+#include "gf.h"
+#include "snd_sfx.h"
 
 typedef struct {
     u16 unk0;
@@ -68,7 +73,7 @@ typedef struct {
     s16 unk6C;
 } MenuItemState;
 
-extern s32 D_801ECC20;
+extern u8 D_801ECC20[];
 extern ST_0 D_801EB1FC[];
 extern CharacterData D_801ECE40;
 extern u8 D_801EB234[]; /**< Weapon ID's, indexed by char ID. */
@@ -209,7 +214,7 @@ end:
 }
 
 /** @brief Store a2 to D_801ECE24 and call func_801E2848. */
-void func_801E2BA4(s32 a0, s32 a1, s32 a2) {
+void func_801E2BA4(u8 *a0, u8 *a1, s32 a2) {
     D_801ECE24 = a2;
     func_801E2848(a0, a1);
 }
@@ -282,11 +287,11 @@ s32 func_801E2C44(u8 *a0, s32 a1, s32 a2) {
  * @param a0 Item list index.
  * @return Pointer to item name string, or NULL if index out of bounds.
  */
-s32 func_801E2C80(s32 a0) {
+u8* func_801E2C80(s32 a0) {
     if (a0 < D_801ECC10) {
         return getAbilityDesc(D_801ECB60[a0].slotIndex);
     }
-    return 0;
+    return NULL;
 }
 
 void func_801E2CCC(s32 arg0, s32 arg1) {
@@ -685,12 +690,12 @@ s32 func_801E347C(s32 arg0, s32 arg1) {
 
     if (gfMask == 0) {
         val2 = func_801F08D4(1, 9, 32, 0);
-        func_801E2BC8(val2, &D_801ECC20, 0, 0, 0, arg0);
-        func_801E2800(&D_801ECC20);
+        func_801E2BC8(val2, D_801ECC20, 0, 0, 0, arg0);
+        func_801E2800(D_801ECC20);
     } else {
         val2 = func_801F08D4(1, 9, 33, 0);
-        func_801E2BC8(val2, &D_801ECC20, 0, 0, val1 / 5, arg0);
-        func_801E2800(&D_801ECC20);
+        func_801E2BC8(val2, D_801ECC20, 0, 0, val1 / 5, arg0);
+        func_801E2800(D_801ECC20);
     }
     
     return gfMask;
@@ -727,8 +732,8 @@ s32 func_801E35B8(s32 arg0, s32 arg1) {
      
     if (g_gameState.chars[arg0].gfCompatibility[val2] == 0x3E8) {
         val5 = func_801F08D4(1, 9, 0x1C, 0);
-        func_801E2BC8(val5, &D_801ECC20, val2, 0, 0, arg0);
-        func_801E2800(&D_801ECC20);
+        func_801E2BC8(val5, D_801ECC20, val2, 0, 0, arg0);
+        func_801E2800(D_801ECC20);
         return 0;
     }
         
@@ -755,8 +760,8 @@ s32 func_801E35B8(s32 arg0, s32 arg1) {
     }
     
     val5 = func_801F08D4(1, 9, 0x1B, 0);
-    func_801E2BC8(val5, &D_801ECC20, val2, 0, val3 / 5, arg0);
-    func_801E2800(&D_801ECC20);
+    func_801E2BC8(val5, D_801ECC20, val2, 0, val3 / 5, arg0);
+    func_801E2800(D_801ECC20);
     return 1;
 }
 
@@ -981,14 +986,14 @@ s32 func_801E3C1C(s32 arg0, s32 arg1) {
                 completeAbilities[arg1 / 32] |= 1 << (arg1 & 0x1F);
                 func_801E38DC(arg0, arg1);
                 val = func_801F08D4(1, 9, 24, 0);
-                func_801E2BC8(val, &D_801ECC20, arg0, arg1, 0, 0);
-                func_801E2800(&D_801ECC20);
+                func_801E2BC8(val, D_801ECC20, arg0, arg1, 0, 0);
+                func_801E2800(D_801ECC20);
                 recalcPartyStats();
                 return 1;
             case 2:
                 val = func_801F08D4(1, 9, 25, 0);
-                func_801E2BC8(val, &D_801ECC20, arg0, abilities[i].slotIndex, 0, 0);
-                func_801E2800(&D_801ECC20);
+                func_801E2BC8(val, D_801ECC20, arg0, abilities[i].slotIndex, 0, 0);
+                func_801E2800(D_801ECC20);
                 return 0;
             default:
                 return 0;
@@ -1001,15 +1006,15 @@ s32 func_801E3C1C(s32 arg0, s32 arg1) {
         completeAbilities[arg1 / 32] |= 1 << (arg1 & 0x1F);
         func_801E38DC(arg0, arg1);
         val = func_801F08D4(1, 9, 24, 0);
-        func_801E2BC8(val, &D_801ECC20, arg0, arg1, 0, 0);
-        func_801E2800(&D_801ECC20);
+        func_801E2BC8(val, D_801ECC20, arg0, arg1, 0, 0);
+        func_801E2800(D_801ECC20);
         recalcPartyStats();
         return 1;
     }
 
     val = func_801F08D4(1, 9, 26, 0);
-    func_801E2BC8(val, &D_801ECC20, arg0, 0, 0, 0);
-    func_801E2800(&D_801ECC20);
+    func_801E2BC8(val, D_801ECC20, arg0, 0, 0, 0);
+    func_801E2800(D_801ECC20);
     return 0;
 }
 
@@ -1102,14 +1107,14 @@ s32 func_801E3EBC(s32 arg0, s32 arg1, s32 arg2) {
 
             if (arg1 != 0) {
                 msg = func_801F08D4(1, 9, 0x1D, 0);
-                func_801E2C0C(msg, &D_801ECC20, arg0, st->unk7, diff);
-                func_801E2800(&D_801ECC20);
+                func_801E2C0C(msg, D_801ECC20, arg0, st->unk7, diff);
+                func_801E2800(D_801ECC20);
             }
         } else {
             if (arg1 != 0) {
                 msg = func_801F08D4(1, 9, 0x1E, 0);
-                func_801E2C0C(msg, &D_801ECC20, arg0, st->unk7, 0);
-                func_801E2800(&D_801ECC20);
+                func_801E2C0C(msg, D_801ECC20, arg0, st->unk7, 0);
+                func_801E2800(D_801ECC20);
             }
         }
         break;
@@ -1139,14 +1144,14 @@ s32 func_801E3EBC(s32 arg0, s32 arg1, s32 arg2) {
 
             if (arg1 != 0) {
                 msg = func_801F08D4(1, 9, 0x1D, 0);
-                func_801E2C0C(msg, &D_801ECC20, arg0, st->unk7, diff);
-                func_801E2800(&D_801ECC20);
+                func_801E2C0C(msg, D_801ECC20, arg0, st->unk7, diff);
+                func_801E2800(D_801ECC20);
             }
         } else {
             if (arg1 != 0) {
                 msg = func_801F08D4(1, 9, 0x1E, 0);
-                func_801E2C0C(msg, &D_801ECC20, arg0, st->unk7, 0);
-                func_801E2800(&D_801ECC20);
+                func_801E2C0C(msg, D_801ECC20, arg0, st->unk7, 0);
+                func_801E2800(D_801ECC20);
             }
         }
         break;
@@ -2923,12 +2928,12 @@ restart:
         slot = D_801ECB60[s->unk69].slotIndex;
         func_801E4D40(msg, buffer1, s->unk6A, slot, D_801ECC10, D_801ECB60);
         msg = func_801F08D4(1, 9, 0xE, 0);
-        copyString(&D_801ECC20, msg);
-        btlStrcat2(&D_801ECC20, buffer1);
+        copyString(D_801ECC20, msg);
+        btlStrcat2(D_801ECC20, buffer1);
         msg = func_801F08D4(1, 9, 0x11, 0);
-        btlStrcat2(&D_801ECC20, msg);
-        width = measureMessage(&D_801ECC20);
-        func_801F728C(&D_801ECC20, 0x64 - ((width >> 0x10) - 0x1A) / 2);
+        btlStrcat2(D_801ECC20, msg);
+        width = measureMessage(D_801ECC20);
+        func_801F728C(D_801ECC20, 0x64 - ((width >> 0x10) - 0x1A) / 2);
         s->unk66 = 1;
         *statePtr = 0x4B;
         break;
@@ -3415,8 +3420,8 @@ restart:
         sendSpuCommand(8);
         func_801E457C(s->unk65, s->itemSlots, s->unk54);
         msg = func_801F08D4(1, 9, 0xF, 0);
-        func_801E2BA4(msg, &D_801ECC20, func_801E2E70(s->unk65));
-        s->unk30 = &D_801ECC20;
+        func_801E2BA4(msg, D_801ECC20, func_801E2E70(s->unk65));
+        s->unk30 = D_801ECC20;
         val1 = func_801E2E70(s->unk65);
         val1 = 1 << val1;
         g_gameState.mainData.limitBreaks.quistisLimits |= val1;
@@ -3428,9 +3433,9 @@ restart:
         u8 *msg;
         sendSpuCommand(5);
         msg = func_801F08D4(1, 9, 0x10, 0);
-        func_801E2BA4(msg, &D_801ECC20, func_801E2E70(s->unk65));
+        func_801E2BA4(msg, D_801ECC20, func_801E2E70(s->unk65));
         state = 0x6E;
-        s->unk30 = &D_801ECC20;
+        s->unk30 = D_801ECC20;
         goto restart;
     }
 
@@ -3603,15 +3608,14 @@ INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E8FA8);
  * @param a3 OT (ordering table) pointer.
  * @param arg5 Item data pointer.
  */
-void func_801E90D8(s32 a0, s32 a1, s32 a2, s32 a3, s32 arg5) {
+void func_801E90D8(s32 a0, s32 a1, MenuDisplayConfig *cfg, s32 a3, s32 arg5) {
     s32 ctx = a0;
-    s32 cfg = a2;
     s32 ot = a3;
     s32 data = arg5;
     s32 result;
     s32 bit;
 
-    result = func_801E8E98(a0, a1, a2, a3, data);
+    result = func_801E8E98(a0, a1, cfg, a3, data);
     result = func_801E89C0(ctx, result, cfg, ot, data);
     result = func_801E8AF0(ctx, result, cfg, ot, data);
 

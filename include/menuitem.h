@@ -30,7 +30,7 @@ extern u8 D_801EB188[];
 extern u8 D_801EB194[];
 extern s16 D_801EB1D8[];
 extern u8 D_801EB330[];
-extern u8 D_801EB4BC[];
+extern GfSaveData D_801EB4BC[];
 extern u8 D_801EC710[];
 extern ItemSlot D_801ECB20[];
 extern AbilityListEntry D_801ECB60[];
