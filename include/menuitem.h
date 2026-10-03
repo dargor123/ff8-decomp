@@ -28,15 +28,13 @@ extern s32 D_801ECEE8;
 extern u8 D_801EB17C[];
 extern u8 D_801EB188[];
 extern u8 D_801EB194[];
-extern u8 D_801EB1D8[];
+extern s16 D_801EB1D8[];
 extern u8 D_801EB330[];
 extern u8 D_801EB4BC[];
 extern u8 D_801EC710[];
 extern ItemSlot D_801ECB20[];
 extern AbilityListEntry D_801ECB60[];
-extern s32 func_801E2EA8(s32);
+extern u8 func_801E2EA8(s32);
 extern s32 func_801EFFD4(void);
-
-void func_801E4EA4(s32);
 
 #endif /* MENUITEM_H */
