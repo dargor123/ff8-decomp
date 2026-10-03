@@ -4,7 +4,7 @@
 #include "overlay.h"
 #include "game.h"
 #include "numstr.h"
-#include "dialog.h"
+#include "ui/dialog.h"
 #include "gamestate.h"
 #include "kernel.h"
 #include "ability_list.h"
