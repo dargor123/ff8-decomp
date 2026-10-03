@@ -16,6 +16,7 @@
 #include "battle.h"
 #include "gf.h"
 #include "snd_sfx.h"
+#include "psxsdk/libetc.h"
 
 typedef struct {
     u16 unk0;
@@ -1758,22 +1759,22 @@ restart:
         s->itemDesc = func_801F08D4(1, 9, D_801EB1D8[s->unk61], 1);
         s->unk61 = func_801F76E0(btnFlags, 15, s->unk61);
         func_801E4708(1, s->unk61);
-        if (cfgFlags & 0x10) {
+        if (cfgFlags & PADRup) {
             sendSpuCommand(3);
             state = 112;
             goto restart;
         }
-        if (btnFlags & 0x40) {
+        if (btnFlags & PADRdown) {
             sendSpuCommand(2);
             switch (s->unk61) {
             case 1:
-                *statePtr = 0x5E;
+                *statePtr = 94;
                 break;
             case 2:
-                *statePtr = 0x4F;
+                *statePtr = 79;
                 break;
             case 3:
-                *statePtr = 0x1A;
+                *statePtr = 26;
                 break;
             case 0:
                 *statePtr = 4;
@@ -1798,29 +1799,29 @@ restart:
         s->unk54 = func_801F6768(btnFlags, 11, s->unk54 % 11) + (page * 11);
         func_801E47E0(1, s->unk54);
         func_801E4BB4(s);
-        if (btnFlags & 0x8000) {
+        if (btnFlags & PADLleft) {
             s->returnState = 5;
             *statePtr = 6;
         }
-        if (btnFlags & 0x2000) {
+        if (btnFlags & PADLright) {
             s->returnState = 5;
             *statePtr = 8;
         }
-        if (cfgFlags & 0x10) {
+        if (cfgFlags & PADRup) {
             sendSpuCommand(3);
             *statePtr = 2;
         }
-        if (btnFlags & 0x40) {
+        if (btnFlags & PADRdown) {
             item = s->itemSlots;
             count = s->unk54;
             count *= 2;
             item += count;
             count = ((ItemSlot *)item)->count;
             if ((func_801E2EA8(s->unk65) & 6) == 4) {
-                if ((getGfAvailabilityMask() << 0x10) == 0) {
+                if ((getGfAvailabilityMask() << 16) == 0) {
                     sendSpuCommand(5);
                     s->unk30 = func_801F08D4(1, 9, 3, 0);
-                    *statePtr = 0x16;
+                    *statePtr = 22;
                     break;
                 }
             }
@@ -1832,8 +1833,8 @@ restart:
                     if (mask != 0xFF) {
                         if (!((getGfAvailabilityMask() >> mask) & 1)) {
                             sendSpuCommand(5);
-                            s->unk30 = func_801F6AFC(0x3F);
-                            *statePtr = 0x16;
+                            s->unk30 = func_801F6AFC(63);
+                            *statePtr = 22;
                             setTextBrightness(s->unk40);
                             func_801F0948(s->menuColorIntensity);
                             if (D_8008520C != 0) {
@@ -1845,8 +1846,8 @@ restart:
                     }
                     if (getGfAvailabilityMask() == 0) {
                         sendSpuCommand(5);
-                        s->unk30 = func_801F6AFC(0x3F);
-                        *statePtr = 0x16;
+                        s->unk30 = func_801F6AFC(63);
+                        *statePtr = 22;
                         setTextBrightness(s->unk40);
                         func_801F0948(s->menuColorIntensity);
                         if (D_8008520C != 0) {
@@ -1858,14 +1859,14 @@ restart:
                 case 12:
                     if (func_801E2F88(s->unk65) != 0) {
                         sendSpuCommand(2);
-                        func_801F728C(func_801F08D4(1, 9, 8, 0), 0x64);
-                        func_801F0000(0x82);
-                        state = 0x18;
+                        func_801F728C(func_801F08D4(1, 9, 8, 0), 100);
+                        func_801F0000(130);
+                        state = 24;
                         goto restart;
                     }
                     sendSpuCommand(5);
-                    s->unk30 = func_801F6AFC(0x3F);
-                    *statePtr = 0x16;
+                    s->unk30 = func_801F6AFC(63);
+                    *statePtr = 22;
                     setTextBrightness(s->unk40);
                     func_801F0948(s->menuColorIntensity);
                     if (D_8008520C != 0) {
@@ -1875,14 +1876,14 @@ restart:
                 case 13:
                     if (*getChocoboWorldPtr() & 1) {
                         sendSpuCommand(2);
-                        func_801F728C(func_801F08D4(1, 9, 7, 0), 0x64);
-                        func_801F0000(0x93);
-                        state = 0x18;
+                        func_801F728C(func_801F08D4(1, 9, 7, 0), 100);
+                        func_801F0000(147);
+                        state = 24;
                         goto restart;
                     }
                     sendSpuCommand(5);
-                    s->unk30 = func_801F6AFC(0x3F);
-                    *statePtr = 0x16;
+                    s->unk30 = func_801F6AFC(63);
+                    *statePtr = 22;
                     setTextBrightness(s->unk40);
                     func_801F0948(s->menuColorIntensity);
                     if (D_8008520C != 0) {
@@ -1891,10 +1892,10 @@ restart:
                     return;
                 case 9:
                     sendSpuCommand(2);
-                    state = 0x50;
+                    state = 80;
                     goto restart;
                 case 14:
-                    state = 0x41;
+                    state = 65;
                     if (!(D_8007752D & 1)) {
                         if (D_8008520B == 0) {
                             sendSpuCommand(2);
@@ -1902,19 +1903,19 @@ restart:
                             func_801E457C(s->unk65, s->itemSlots, s->unk54);
                             setModeData(func_801E2E70(s->unk65) | (func_801E2E8C(s->unk65) << 8));
                             setGfExists(5);
-                            state = 0x70;
+                            state = 112;
                             goto restart;
                         }
                     }
                     goto restart;
                 case 15:
-                    state = 0x32;
+                    state = 50;
                     goto restart;
                 }
             }
             if (func_801E2F88(s->unk65) != 0 && count != 0) {
                 sendSpuCommand(2);
-                *statePtr = 0xA;
+                *statePtr = 10;
             } else {
                 sendSpuCommand(5);
             }
@@ -1922,7 +1923,7 @@ restart:
         break;
     }
 
-    case 0x8: {
+    case 8: {
         s32 page;
         s32 rowInPage;
         sendSpuCommand(1);
@@ -1935,7 +1936,7 @@ restart:
         }
         s->unk54 = rowInPage + page * 11;
         s->unk4A = page;
-        s->unk48 = 0xE67;
+        s->unk48 = 3687;
         func_801E4708(0, s->unk61);
         func_801E47E0(1, s->unk54);
         s->previousItemDesc = s->itemDesc;
@@ -1944,23 +1945,23 @@ restart:
         break;
     }
 
-    case 0x9:
+    case 9:
         func_801E4708(0, s->unk61);
         func_801E47E0(1, s->unk54);
         s->unk48 -= 409;
-        if ((s->unk48 << 0x10) <= 0) {
+        if (s->unk48 <= 0) {
             s->unk48 = 0;
             *statePtr = s->returnState;
         }
-        if (cfgFlags & 0x8000) {
+        if (cfgFlags & PADLleft) {
             *statePtr = 6;
         }
-        if (cfgFlags & 0x2000) {
+        if (cfgFlags & PADLright) {
             *statePtr = 8;
         }
         break;
 
-    case 0x6: {
+    case 6: {
         s32 page;
         s32 rowInPage;
         sendSpuCommand(1);
@@ -1973,7 +1974,7 @@ restart:
         }
         s->unk54 = rowInPage + page * 11;
         s->unk4A = page;
-        s->unk48 = -0xE67;
+        s->unk48 = -3687;
         func_801E4708(0, s->unk61);
         func_801E47E0(1, s->unk54);
         s->previousItemDesc = s->itemDesc;
@@ -1982,18 +1983,18 @@ restart:
         break;
     }
 
-    case 0x7:
+    case 7:
         func_801E4708(0, s->unk61);
         func_801E47E0(1, s->unk54);
         s->unk48 += 409;
-        if ((s->unk48 << 0x10) >= 0) {
+        if (s->unk48 >= 0) {
             s->unk48 = 0;
             *statePtr = s->returnState;
         }
-        if (cfgFlags & 0x8000) {
+        if (cfgFlags & PADLleft) {
             *statePtr = 6;
         }
-        if (cfgFlags & 0x2000) {
+        if (cfgFlags & PADLright) {
             *statePtr = 8;
         }
         break;
@@ -2009,9 +2010,8 @@ restart:
         s32 val4;
         s32 mask;
         s32 i;
-
         val1 = func_801E2EA8(s->unk65);
-        if (func_801E2E38(s->unk65) == 0x14) {
+        if (func_801E2E38(s->unk65) == 20) {
             s->unk6B = findNthSetBit(func_801E2E8C(s->unk65), 0);
         } else {
             s->unk6B = -1;
@@ -2027,7 +2027,7 @@ restart:
             if (val2 == 0) {
                 sendSpuCommand(5);
                 s->unk30 = func_801F08D4(1, 9, 3, 0);
-                *statePtr = 0x16;
+                *statePtr = 22;
                 break;
             }
         }
@@ -2061,7 +2061,7 @@ restart:
                     val4 = i;
                 }
             }
-            s->unk63 = (s8)(val4 - 0xE) / 2;
+            s->unk63 = (s8)(val4 - 14) / 2;
         } else {
             s->unk63 = popcount(val2);
         }
@@ -2096,11 +2096,11 @@ restart:
             val3 >>= 1;
             val4 = (s16)(val2 - (val3 * 2));
             val5 = func_801F6768(btnFlags, s->unk63, val3);
-            if ((btnFlags & 0x8000) && val4 != 0) {
+            if ((btnFlags & PADLleft) && val4 != 0) {
                 sendSpuCommand(1);
                 val4 = 0;
             }
-            if ((btnFlags & 0x2000) && val4 == 0) {
+            if ((btnFlags & PADLright) && val4 == 0) {
                 sendSpuCommand(1);
                 val4 = 1;
             }
@@ -2117,7 +2117,7 @@ restart:
         }
         func_801E4B38(1, s->unk58, s->unk38);
         if (s->unk64 != 0) {
-            s->unk62 = s->unk58 + 0x10;
+            s->unk62 = s->unk58 + 16;
             mask = 1 << s->unk62;
             if (!(s->unk38 & mask)) {
                 s->unk62 = -1;
@@ -2125,8 +2125,8 @@ restart:
         } else {
             s->unk62 = findNthSetBit(s->unk38, s->unk58);
         }
-        if (btnFlags & 0x40) {
-            state = 0x11;
+        if (btnFlags & PADRdown) {
+            state = 17;
             if (s->unk62 >= 0) {
                 s->unk34 = 1 << s->unk62;
                 s->returnState = s->state;
@@ -2134,7 +2134,7 @@ restart:
             }
             sendSpuCommand(5);
         }
-        if (cfgFlags & 0x10) {
+        if (cfgFlags & PADRup) {
             sendSpuCommand(3);
             *statePtr = 4;
         }
@@ -2150,12 +2150,12 @@ restart:
         func_801E4708(0, s->unk61);
         func_801E47E0(0, s->unk54);
         func_801E4B80(s->unk64, s->unk38);
-        if (cfgFlags & 0x10) {
+        if (cfgFlags & PADRup) {
             sendSpuCommand(3);
             *statePtr = 4;
         }
         state = 17;
-        if (btnFlags & 0x40) {
+        if (btnFlags & PADRdown) {
             s->returnState = s->state;
             goto restart;
         }
@@ -2186,7 +2186,7 @@ restart:
             break;
         case 11: 
             sendSpuCommand(2);
-            func_801F0000((findNthSetBit(s->unk34 & 0xFFFF0000, 0) - 0xD) | 0x80);
+            func_801F0000((findNthSetBit(s->unk34 & 0xFFFF0000, 0) - 13) | 0x80);
             state = 45;
             goto restart;
         case 18: 
@@ -2200,27 +2200,27 @@ restart:
         if (val1 == 1 && func_801E457C(s->unk65, s->itemSlots, s->unk54) == 0) {
             if (func_801E280C() != 0) {
                 s->returnState = 4;
-                *statePtr = 0x12;
+                *statePtr = 18;
                 break;
             }
             *statePtr = 4;
             break;
         }
         if (func_801E280C() != 0) {
-            *statePtr = 0x12;
+            *statePtr = 18;
         }
         break;
     }
 
     case 18:
-        s->unk5C = 0x258;
+        s->unk5C = 600;
         s->unk30 = func_801E280C();
         *statePtr = 19;
         break;
 
     case 19:
         s->unk5C = s->unk5C - 1;
-        if (cfgFlags & 0x50) {
+        if (cfgFlags & (PADRup | PADRdown)) {
             func_801F7BEC(cfgFlags);
             s->unk5C = 0;
         }
@@ -2237,13 +2237,13 @@ restart:
         break;
 
     case 22:
-        s->unk5C = 0x258;
+        s->unk5C = 600;
         *statePtr = 23;
         break;
 
     case 23:
         s->unk5C--;
-        if (cfgFlags & 0x50) {
+        if (cfgFlags & (PADRup | PADRdown)) {
             func_801F7BEC(cfgFlags);
             s->unk5C = 0;
             s->unk30 = NULL;
@@ -2264,86 +2264,86 @@ restart:
     case 25:
         s->unk66 = func_801F6768(btnFlags, 2, s->unk66);
         func_801F6F88(s->unk66);
-        if (cfgFlags & 0x40) {
+        if (cfgFlags & PADRdown) {
             sendSpuCommand(2);
             if (s->unk66 != 0) {
                 s->unk66 = -1;
                 *statePtr = 5;
             } else {
-                *statePtr = 0x2D;
+                *statePtr = 45;
             }
         }
-        if (cfgFlags & 0x10) {
+        if (cfgFlags & PADRup) {
             sendSpuCommand(3);
             s->unk66 = -1;
             *statePtr = 5;
         }
         break;
 
-    case 0x1A:
+    case 26:
         s->unk4E = s->unk67 / 4;
         s->unk52 = s->unk68 / 4;
         s->unk4C = 0;
         s->unk50 = 0;
         func_801E2D54(s->itemSlots, s->unk24);
-        *statePtr = 0x1B;
+        *statePtr = 27;
         /* fallthrough */
 
-    case 0x1B:
+    case 27:
         s->unk3E -= 256;
-        if ((s->unk3E << 0x10) <= 0) {
+        if (s->unk3E <= 0) {
             s->unk3E = 0;
-            *statePtr = 0x1C;
+            *statePtr = 28;
         }
         func_801E4708(0, s->unk61);
         func_801E4608(1, s);
         break;
 
-    case 0x1C:
+    case 28:
         s->unk6C += 256;
         if (s->unk6C >= 4096) {
             s->unk6C = 4096;
-            *statePtr = 0x1D;
+            *statePtr = 29;
         }
         func_801E4708(0, s->unk61);
         func_801E4608(1, s);
         break;
 
-    case 0x1D:
-        *statePtr = 0x1E;
+    case 29:
+        *statePtr = 30;
         /* fallthrough */
 
-    case 0x1E: {
+    case 30: {
         s32 page;
         page = s->unk67 / 4;
         s->unk67 = (page * 4) + func_801F6768(btnFlags, 4, s->unk67 % 4);
         func_801E4708(0, s->unk61);
         func_801E4608(1, s);
-        if (!(btnFlags & 0x8000)) {
-            if (btnFlags & 0x2000) {
-                *statePtr = 0x21;
+        if (!(btnFlags & PADLleft)) {
+            if (btnFlags & PADLright) {
+                *statePtr = 33;
             } else {
                 if (D_801ECB20[s->unk67].count != 0) {
                     s->itemDesc = getItemDesc(D_801ECB20[s->unk67].id);
                 } else {
                     s->itemDesc = NULL;
                 }
-                if (cfgFlags & 0x10) {
+                if (cfgFlags & PADRup) {
                     sendSpuCommand(3);
-                    *statePtr = 0x2A;
+                    *statePtr = 42;
                 }
-                if (cfgFlags & 0x40) {
+                if (cfgFlags & PADRdown) {
                     sendSpuCommand(2);
-                    *statePtr = 0x23;
+                    *statePtr = 35;
                 }
             }
         } else {
-            *statePtr = 0x1F;
+            *statePtr = 31;
         }
         break;
     }
 
-    case 0x1F: {
+    case 31: {
         s32 page;
         s32 rowInPage;
         sendSpuCommand(1);
@@ -2357,33 +2357,33 @@ restart:
         }
         s->unk67 = (page * 4) + rowInPage;
         s->unk4E = page;
-        s->unk4C = -0xE67;
+        s->unk4C = -3687;
         if (D_801ECB20[s->unk67].count != 0) {
             s->itemDesc = getItemDesc(D_801ECB20[s->unk67].id);
         } else {
             s->itemDesc = NULL;
         }
-        *statePtr = 0x20;
+        *statePtr = 32;
         /* fallthrough */
     }
 
-    case 0x20:
+    case 32:
         func_801E4708(0, s->unk61);
         func_801E4608(1, s);
         s->unk4C += 409;
-        if ((s->unk4C << 0x10) >= 0) {
+        if (s->unk4C >= 0) {
             s->unk4C = 0;
-            *statePtr = 0x1E;
+            *statePtr = 30;
         }
-        if (cfgFlags & 0x2000) {
-            *statePtr = 0x21;
+        if (cfgFlags & PADLright) {
+            *statePtr = 33;
         }
-        if (cfgFlags & 0x8000) {
-            *statePtr = 0x1F;
+        if (cfgFlags & PADLleft) {
+            *statePtr = 31;
         }
         break;
 
-    case 0x21: {
+    case 33: {
         s32 page;
         s32 rowInPage;
         sendSpuCommand(1);
@@ -2397,37 +2397,37 @@ restart:
         }
         s->unk67 = (page * 4) + rowInPage;
         s->unk4E = page;
-        s->unk4C = 0xE67;
+        s->unk4C = 3687;
         if (D_801ECB20[s->unk67].count != 0) {
             s->itemDesc = getItemDesc(D_801ECB20[s->unk67].id);
         } else {
             s->itemDesc = NULL;
         }
-        *statePtr = 0x22;
+        *statePtr = 34;
         /* fallthrough */
     }
 
-    case 0x22:
+    case 34:
         func_801E4708(0, s->unk61);
         func_801E4608(1, s);
         s->unk4C -= 409;
-        if ((s->unk4C << 0x10) <= 0) {
+        if (s->unk4C <= 0) {
             s->unk4C = 0;
-            *statePtr = 0x1E;
+            *statePtr = 30;
         }
-        if (cfgFlags & 0x2000) {
-            *statePtr = 0x21;
+        if (cfgFlags & PADLright) {
+            *statePtr = 33;
         }
-        if (cfgFlags & 0x8000) {
-            *statePtr = 0x1F;
+        if (cfgFlags & PADLleft) {
+            *statePtr = 31;
         }
         break;
 
-    case 0x23:
-        *statePtr = 0x24;
+    case 35:
+        *statePtr = 36;
         /* fallthrough */
 
-    case 0x24: {
+    case 36: {
         s32 val1;
         s32 count;
         val1 = s->unk68 / 4;
@@ -2435,36 +2435,36 @@ restart:
         func_801E4708(0, s->unk61);
         func_801E4608(0, s);
         func_801E46B8(1, s->unk68);
-        if (!(btnFlags & 0x8000)) {
-            if (btnFlags & 0x2000) {
-                *statePtr = 0x27;
+        if (!(btnFlags & PADLleft)) {
+            if (btnFlags & PADLright) {
+                *statePtr = 39;
             } else {
                 if (D_801ECB20[s->unk68].count != 0) {
                     s->itemDesc = getItemDesc(D_801ECB20[s->unk68].id);
                 } else {
                     s->itemDesc = NULL;
                 }
-                if (cfgFlags & 0x10) {
+                if (cfgFlags & PADRup) {
                     sendSpuCommand(3);
-                    *statePtr = 0x1E;
+                    *statePtr = 30;
                 }
-                if (cfgFlags & 0x40) {
+                if (cfgFlags & PADRdown) {
                     count = D_801ECB20[s->unk67].count;
                     if (count != D_801ECB20[s->unk68].count || count != 0) {
                         sendSpuCommand(2);
-                        *statePtr = 0x29;
+                        *statePtr = 41;
                     } else {
                         sendSpuCommand(5);
                     }
                 }
             }
         } else {
-            *statePtr = 0x25;
+            *statePtr = 37;
         }
         break;
     }
 
-    case 0x25: {
+    case 37: {
         s32 page;
         s32 rowInPage;
         sendSpuCommand(1);
@@ -2478,34 +2478,34 @@ restart:
         }
         s->unk68 = (page * 4) + rowInPage;
         s->unk52 = page;
-        s->unk50 = -0xE67;
+        s->unk50 = -3687;
         if (D_801ECB20[s->unk68].count != 0) {
             s->itemDesc = getItemDesc(D_801ECB20[s->unk68].id);
         } else {
             s->itemDesc = NULL;
         }
-        *statePtr = 0x26;
+        *statePtr = 38;
         /* fallthrough */
     }
 
-    case 0x26:
+    case 38:
         func_801E4708(0, s->unk61);
         func_801E4608(0, s);
         func_801E46B8(1, s->unk68);
         s->unk50 += 409;
-        if ((s->unk50 << 0x10) >= 0) {
+        if (s->unk50 >= 0) {
             s->unk50 = 0;
-            *statePtr = 0x24;
+            *statePtr = 36;
         }
-        if (cfgFlags & 0x2000) {
-            *statePtr = 0x27;
+        if (cfgFlags & PADLright) {
+            *statePtr = 39;
         }
-        if (cfgFlags & 0x8000) {
-            *statePtr = 0x25;
+        if (cfgFlags & PADLleft) {
+            *statePtr = 37;
         }
         break;
 
-    case 0x27: {
+    case 39: {
         s32 page;
         s32 rowInPage;
         sendSpuCommand(1);
@@ -2519,34 +2519,34 @@ restart:
         }
         s->unk68 = (page * 4) + rowInPage;
         s->unk52 = page;
-        s->unk50 = 0xE67;
+        s->unk50 = 3687;
         if (D_801ECB20[s->unk68].count != 0) {
             s->itemDesc = getItemDesc(D_801ECB20[s->unk68].id);
         } else {
             s->itemDesc = NULL;
         }
-        *statePtr = 0x28;
+        *statePtr = 40;
         /* fallthrough */
     }
 
-    case 0x28:
+    case 40:
         func_801E4708(0, s->unk61);
         func_801E4608(0, s);
         func_801E46B8(1, s->unk68);
         s->unk50 -= 409;
-        if ((s->unk50 << 0x10) <= 0) {
+        if (s->unk50 <= 0) {
             s->unk50 = 0;
-            *statePtr = 0x24;
+            *statePtr = 36;
         }
-        if (cfgFlags & 0x2000) {
-            *statePtr = 0x27;
+        if (cfgFlags & PADLright) {
+            *statePtr = 39;
         }
-        if (cfgFlags & 0x8000) {
-            *statePtr = 0x25;
+        if (cfgFlags & PADLleft) {
+            *statePtr = 37;
         }
         break;
 
-    case 0x29: {
+    case 41: {
         s32 id1;
         s32 id2;
         s32 count1;
@@ -2559,28 +2559,28 @@ restart:
         D_801ECB20[s->unk68].count = count1;
         D_801ECB20[s->unk67].id = id2;
         D_801ECB20[s->unk67].count = count2;
-        state = 0x1D;
+        state = 29;
         goto restart;
     }
 
-    case 0x2A:
+    case 42:
         func_801E4708(0, s->unk61);
         func_801E4608(1, s);
         func_801E2E04(s->unk24);
-        *statePtr = 0x2B;
+        *statePtr = 43;
         break;
 
-    case 0x2B:
+    case 43:
         s->unk6C -= 256;
-        if ((s->unk6C << 0x10) <= 0) {
+        if (s->unk6C <= 0) {
             s->unk6C = 0;
-            *statePtr = 0x2C;
+            *statePtr = 44;
         }
         func_801E4708(0, s->unk61);
         func_801E4608(1, s);
         break;
 
-    case 0x2C:
+    case 44:
         s->unk3E += 256;
         if (s->unk3E >= 4096) {
             s->unk3E = 4096;
@@ -2590,44 +2590,44 @@ restart:
         func_801E4608(1, s);
         break;
 
-    case 0x2D:
+    case 45:
         func_801E457C(s->unk65, s->itemSlots, s->unk54);
         loadOverlayWithTimCallback(9, 0x801CD000);
-        loadOverlayWithTimCallback(0xA, 0x801D5000);
-        *statePtr = 0x2E;
+        loadOverlayWithTimCallback(10, 0x801D5000);
+        *statePtr = 46;
         break;
 
-    case 0x2E:
+    case 46:
         s->menuColorIntensity -= 256;
         func_801F1DB0(s->menuColorIntensity);
         if (s->menuColorIntensity <= 0) {
             s->menuColorIntensity = 0;
             func_801F1DB0(0);
             if (pollCdReadStatus() == 0) {
-                func_801F0C5C(0xF, s);
-                *statePtr = 0x2F;
+                func_801F0C5C(15, s);
+                *statePtr = 47;
             }
         }
         break;
 
-    case 0x2F:
+    case 47:
         if (func_801F0D84() == 2) {
-            *statePtr = 0x30;
+            *statePtr = 48;
         }
         break;
 
-    case 0x30:
+    case 48:
         func_801F202C();
         func_801F1DBC(2);
         s->unk62 = -1;
         s->unk6B = -1;
         s->unk66 = -1;
         func_801E4BB4(s);
-        loadOverlayWithTimCallback(0xC, 0x801D5000);
-        *statePtr = 0x31;
+        loadOverlayWithTimCallback(12, 0x801D5000);
+        *statePtr = 49;
         break;
 
-    case 0x31:
+    case 49:
         s->menuColorIntensity += 256;
         func_801F1DB0(s->menuColorIntensity);
         if (s->menuColorIntensity >= 4096) {
@@ -2637,22 +2637,22 @@ restart:
         }
         break;
 
-    case 0x32: {
+    case 50: {
         u8 *ptr;
         s32 val1;
         s32 val2;
-        state = 0x41;
+        state = 65;
         if (!(D_800776C5 & 1)) {
             ptr = D_801EC710;
             while (1) {
                 val1 = ptr[0];
                 val2 = ptr[1];
                 if (val1 == 0) {
-                    state = 0x33;
+                    state = 51;
                     break;
                 }
                 if (func_801E2C44(s->itemSlots, val1, val2) == 0) {
-                    state = 0x40;
+                    state = 64;
                     break;
                 }
                 ptr += 4;
@@ -2661,13 +2661,13 @@ restart:
         goto restart;
     }
 
-    case 0x33: {
+    case 51: {
         u8 *ptr;
         s32 val1;
         s32 val2;
-        playSoundEffect(0x1A);
-        playSoundEffect(0x1B);
-        playSoundEffect(0x1C);
+        playSoundEffect(26);
+        playSoundEffect(27);
+        playSoundEffect(28);
         ptr = D_801EC710;
         while (1) {
             val1 = ptr[0];
@@ -2678,165 +2678,165 @@ restart:
             ptr += 4;
             func_801E45B4(&s->itemSlots->id, val1, val2);
         }
-        *statePtr = 0x34;
+        *statePtr = 52;
         /* fallthrough */
     }
 
-    case 0x34: {
+    case 52: {
         u8 *msg;
-        msg = func_801F08D4(1, 9, 0xA, 0);
+        msg = func_801F08D4(1, 9, 10, 0);
         setDialogMessage(0, msg);
-        func_801F23D0(0, 0x68, msg);
-        setDialogCornerIcon(0, 0x50);
-        setDialogTextSpeed(0, 0x400);
+        func_801F23D0(0, 104, msg);
+        setDialogCornerIcon(0, 80);
+        setDialogTextSpeed(0, 1024);
         openDialogAnimated(0);
-        *statePtr = 0x35;
+        *statePtr = 53;
         break;
     }
 
-    case 0x35:
-        if ((getDialogTypingDone(0) != 0) && (cfgFlags & 0x40)) {
+    case 53:
+        if ((getDialogTypingDone(0) != 0) && (cfgFlags & PADRdown)) {
             sendSpuCommand(2);
             closeDialogAnimated(0);
-            *statePtr = 0x36;
+            *statePtr = 54;
         }
         break;
 
-    case 0x36:
+    case 54:
         if (getOpenDialogScale(0) == 0) {
-            *statePtr = 0x37;
+            *statePtr = 55;
         }
         break;
 
-    case 0x37: {
+    case 55: {
         u8 *msg;
-        msg = func_801F08D4(1, 9, 0xB, 0);
+        msg = func_801F08D4(1, 9, 11, 0);
         setDialogMessage(0, msg);
-        func_801F23D0(0, 0x68, msg);
-        setDialogCornerIcon(0, 0x50);
-        setDialogTextSpeed(0, 0x400);
+        func_801F23D0(0, 104, msg);
+        setDialogCornerIcon(0, 80);
+        setDialogTextSpeed(0, 1024);
         openDialogAnimated(0);
-        *statePtr = 0x38;
+        *statePtr = 56;
         break;
     }
 
-    case 0x38:
-        if ((getDialogTypingDone(0) != 0) && (cfgFlags & 0x40)) {
+    case 56:
+        if ((getDialogTypingDone(0) != 0) && (cfgFlags & PADRdown)) {
             sendSpuCommand(2);
-            *statePtr = 0x39;
+            *statePtr = 57;
         }
         break;
 
-    case 0x39:
+    case 57:
         s->menuColorIntensity -= 256;
         func_801F1DB0(s->menuColorIntensity);
         setDialogBrightness(0, s->menuColorIntensity);
         if (s->menuColorIntensity <= 0) {
             s->menuColorIntensity = 0;
-            func_801F0000(0xE);
-            func_801F0C5C(0xF, s);
+            func_801F0000(14);
+            func_801F0C5C(15, s);
             setDialogTextSpeed(0, 0);
             closeDialogInstant(0);
             setDialogBrightness(0, 4096);
-            setGfExists(0xB);
+            setGfExists(11);
             func_801E457C(s->unk65, s->itemSlots, s->unk54);
-            *statePtr = 0x3A;
+            *statePtr = 58;
         }
         break;
 
-    case 0x3A:
+    case 58:
         if (func_801F0D84() == 2) {
-            *statePtr = 0x3B;
+            *statePtr = 59;
         }
         break;
 
-    case 0x3B:
+    case 59:
         func_801F202C();
         func_801F1DBC(2);
         s->unk46 = getGfAvailabilityMask();
         s->unk66 = -1;
         func_801E4BB4(s);
-        *statePtr = 0x3C;
+        *statePtr = 60;
         break;
 
-    case 0x3C:
+    case 60:
         s->menuColorIntensity += 256;
         func_801F1DB0(s->menuColorIntensity);
         if (s->menuColorIntensity >= 4096) {
             s->menuColorIntensity = 4096;
             func_801F1DB0(4096);
-            *statePtr = 0x3D;
+            *statePtr = 61;
         }
         break;
 
-    case 0x3D: {
+    case 61: {
         u8 *msg;
-        msg = func_801F08D4(1, 9, 0xC, 0);
+        msg = func_801F08D4(1, 9, 12, 0);
         setDialogMessage(0, msg);
-        func_801F23D0(0, 0x68, msg);
-        setDialogCornerIcon(0, 0x50);
-        setDialogTextSpeed(0, 0x400);
+        func_801F23D0(0, 104, msg);
+        setDialogCornerIcon(0, 80);
+        setDialogTextSpeed(0, 1024);
         openDialogAnimated(0);
-        *statePtr = 0x3E;
+        *statePtr = 62;
         break;
     }
 
-    case 0x3E:
-        if ((getDialogTypingDone(0) != 0) && (cfgFlags & 0x40)) {
+    case 62:
+        if ((getDialogTypingDone(0) != 0) && (cfgFlags & PADRdown)) {
             sendSpuCommand(8);
             closeDialogAnimated(0);
-            *statePtr = 0x3F;
+            *statePtr = 63;
         }
         break;
 
-    case 0x3F:
+    case 63:
         if (getOpenDialogScale(0) == 0) {
             setDialogTextSpeed(0, 0);
             *statePtr = 4;
         }
         break;
 
-    case 0x40:
+    case 64:
         sendSpuCommand(5);
         s->unk30 = func_801F08D4(1, 9, 9, 0);
-        *statePtr = 0x16;
+        *statePtr = 22;
         break;
 
-    case 0x41:
+    case 65:
         sendSpuCommand(5);
-        s->unk30 = func_801F08D4(1, 9, 0x17, 0);
-        *statePtr = 0x16;
+        s->unk30 = func_801F08D4(1, 9, 23, 0);
+        *statePtr = 22;
         break;
 
-    case 0x42:
+    case 66:
         s->unk69 = 0;
         s->unk4F = 0;
         s->unk4E = 0;
-        s->unk6A = findNthSetBit(s->unk34 & 0xFFFF0000, 0) - 0x10;
+        s->unk6A = findNthSetBit(s->unk34 & 0xFFFF0000, 0) - 16;
         D_801ECC10 = func_800369CC(s->unk6A, D_801ECB60, 1);
         func_801E4708(0, s->unk61);
         func_801E4B38(0, s->unk58, s->unk38);
-        *statePtr = 0x43;
+        *statePtr = 67;
         /* fallthrough */
 
-    case 0x43:
+    case 67:
         func_801E4708(0, s->unk61);
         func_801E4B38(0, s->unk58, s->unk38);
         s->unk5E -= 256;
-        if ((s->unk5E << 0x10) <= 0) {
+        if (s->unk5E <= 0) {
             s->unk5E = 0;
-            *statePtr = 0x44;
+            *statePtr = 68;
         }
         func_801E4708(0, s->unk61);
         func_801E4B38(0, s->unk58, s->unk38);
         func_801E4848(1, s);
         break;
 
-    case 0x44:
-        *statePtr = 0x45;
+    case 68:
+        *statePtr = 69;
         /* fallthrough */
 
-    case 0x45: {
+    case 69: {
         s32 val1;
         val1 = s->unk69 / 11;
         s->unk69 = func_801F6768(btnFlags, 11, s->unk69 % 11) + (val1 * 11);
@@ -2844,22 +2844,22 @@ restart:
         func_801E4B38(0, s->unk58, s->unk38);
         func_801E4848(1, s);
         s->itemDesc = func_801E2C80(s->unk69);
-        if (D_801ECC10 >= 0xC) {
-            if ((btnFlags & 0x8000) && val1 != 0) {
-                *statePtr = 0x46;
+        if (D_801ECC10 >= 12) {
+            if ((btnFlags & PADLleft) && val1 != 0) {
+                *statePtr = 70;
             }
-            if ((btnFlags & 0x2000) && val1 == 0) {
-                *statePtr = 0x48;
+            if ((btnFlags & PADLright) && val1 == 0) {
+                *statePtr = 72;
             }
         }
-        if (cfgFlags & 0x10) {
+        if (cfgFlags & PADRup) {
             sendSpuCommand(3);
-            *statePtr = 0x4D;
+            *statePtr = 77;
         }
-        if (cfgFlags & 0x40) {
+        if (cfgFlags & PADRdown) {
             if (s->unk69 < D_801ECC10) {
                 sendSpuCommand(2);
-                *statePtr = 0x4A;
+                *statePtr = 74;
             } else {
                 sendSpuCommand(5);
             }
@@ -2867,32 +2867,32 @@ restart:
         break;
     }
 
-    case 0x46:
+    case 70:
         sendSpuCommand(1);
         s->unk4E = 0;
         s->unk4F = 1;
-        s->unk69 %= 0xB;
-        s->unk4C = -0xE67;
+        s->unk69 %= 11;
+        s->unk4C = -3687;
         s->previousItemDesc = s->itemDesc;
         s->itemDesc = func_801E2C80(s->unk69);
         func_801E4708(0, s->unk61);
         func_801E4B38(0, s->unk58, s->unk38);
         func_801E4848(1, s);
-        *statePtr = 0x47;
+        *statePtr = 71;
         break;
 
-    case 0x47:
+    case 71:
         func_801E4708(0, s->unk61);
         func_801E4B38(0, s->unk58, s->unk38);
         func_801E4848(1, s);
         s->unk4C += 409;
-        if ((s->unk4C << 0x10) >= 0) {
+        if (s->unk4C >= 0) {
             s->unk4C = 0;
-            *statePtr = 0x45;
+            *statePtr = 69;
         }
         break;
 
-    case 0x48: {
+    case 72: {
         s32 val1;
         sendSpuCommand(1);
         s->unk4F = 0;
@@ -2901,75 +2901,75 @@ restart:
         val1 = (s->unk69 % 11) + 11;
         s->unk69 = val1;
         s->itemDesc = func_801E2C80(s->unk69);
-        s->unk4C = 0xE67;
+        s->unk4C = 3687;
         func_801E4708(0, s->unk61);
         func_801E4B38(0, s->unk58, s->unk38);
         func_801E4848(1, s);
-        *statePtr = 0x49;
+        *statePtr = 73;
         break;
     }
 
-    case 0x49:
+    case 73:
         func_801E4708(0, s->unk61);
         func_801E4B38(0, s->unk58, s->unk38);
         func_801E4848(1, s);
         s->unk4C -= 409;
-        if ((s->unk4C << 0x10) <= 0) {
+        if (s->unk4C <= 0) {
             s->unk4C = 0;
-            *statePtr = 0x45;
+            *statePtr = 69;
         }
         break;
 
-    case 0x4A: {
+    case 74: {
         u8 *msg;
         s32 slot;
         s32 width;
-        msg = func_801F08D4(1, 9, 0x22, 0);
+        msg = func_801F08D4(1, 9, 34, 0);
         slot = D_801ECB60[s->unk69].slotIndex;
         func_801E4D40(msg, buffer1, s->unk6A, slot, D_801ECC10, D_801ECB60);
-        msg = func_801F08D4(1, 9, 0xE, 0);
+        msg = func_801F08D4(1, 9, 14, 0);
         copyString(D_801ECC20, msg);
         btlStrcat2(D_801ECC20, buffer1);
-        msg = func_801F08D4(1, 9, 0x11, 0);
+        msg = func_801F08D4(1, 9, 17, 0);
         btlStrcat2(D_801ECC20, msg);
         width = measureMessage(D_801ECC20);
-        func_801F728C(D_801ECC20, 0x64 - ((width >> 0x10) - 0x1A) / 2);
+        func_801F728C(D_801ECC20, 100 - ((width >> 16) - 26) / 2);
         s->unk66 = 1;
-        *statePtr = 0x4B;
+        *statePtr = 75;
         break;
     }
 
-    case 0x4B: {
+    case 75: {
         s->unk66 = func_801F6768(btnFlags, 2, s->unk66);
         func_801F6F88(s->unk66);
-        if (cfgFlags & 0x40) {
+        if (cfgFlags & PADRdown) {
             sendSpuCommand(2);
             if (s->unk66 != 0) {
                 if (s->unk66 == 1) {
                     s->unk66 = -1;
-                    *statePtr = 0x45;
+                    *statePtr = 69;
                     break;
                 }
-                if (cfgFlags & 0x10) {
+                if (cfgFlags & PADRup) {
                     sendSpuCommand(3);
                     s->unk66 = -1;
-                    *statePtr = 0x45;
+                    *statePtr = 69;
                 }
                 break;
             }
             s->unk66 = -1;
-            state = 0x4C;
+            state = 76;
             goto restart;
         }
-        if (cfgFlags & 0x10) {
+        if (cfgFlags & PADRup) {
             sendSpuCommand(3);
             s->unk66 = -1;
-            *statePtr = 0x45;
+            *statePtr = 69;
         }
         break;
     }
 
-    case 0x4C: {
+    case 76: {
         s32 i;
         s32 exists;
         func_801E3968(s->unk6A, D_801ECB60[s->unk69].slotIndex);
@@ -2977,7 +2977,7 @@ restart:
         s->unk66 = -1;
         if (s->unk69 >= D_801ECC10) {
             s->unk69 = D_801ECC10 - 1;
-            if ((s->unk69 << 0x18) < 0) {
+            if (s->unk69 < 0) {
                 s->unk69 = 0;
             }
             s->unk4E = s->unk69 / 11;
@@ -2993,7 +2993,7 @@ restart:
             g_gameState.gfs[s->unk6A].learning = 0;
         }
         if (func_801E457C(s->unk65, s->itemSlots, s->unk54) != 0) {
-            *statePtr = 0x44;
+            *statePtr = 68;
         } else {
             s->unk5E = 4096;
             *statePtr = 4;
@@ -3001,23 +3001,23 @@ restart:
         break;
     }
 
-    case 0x4D:
-        *statePtr = 0x4E;
+    case 77:
+        *statePtr = 78;
         /* fallthrough */
 
-    case 0x4E:
+    case 78:
         s->unk66 = -1;
         s->unk5E += 256;
         if (s->unk5E >= 4096) {
             s->unk5E = 4096;
-            *statePtr = 0xC;
+            *statePtr = 12;
         }
         func_801E4708(0, s->unk61);
         func_801E4B38(0, s->unk58, s->unk38);
         func_801E4848(1, s);
         break;
 
-    case 0x4F: {
+    case 79: {
         s32 i;
         u8 *item;
         s32 id;
@@ -3052,71 +3052,71 @@ restart:
         break;
     }
 
-    case 0x50: {
+    case 80: {
         GfSaveData *gf;
         gf = D_801EB4BC;
         gf += func_801E2E70(s->unk65);
         s->unk52 = func_801E2E70(s->unk65);
         func_801E2CCC(((u8 *)gf->completeAbilities)[2], ((u8 *)gf->completeAbilities)[3]);
         loadSubOverlay(7, 0x801CD000);
-        loadSubOverlay(0x57, 0x801D1000);
-        *statePtr = 0x51;
+        loadSubOverlay(87, 0x801D1000);
+        *statePtr = 81;
         break;
     }
 
-    case 0x51:
+    case 81:
         s->menuColorIntensity -= 256;
         func_801F1DB0(s->menuColorIntensity);
         if (s->menuColorIntensity <= 0) {
             s->menuColorIntensity = 0;
             func_801F1DB0(0);
             if (pollCdReadStatus() == 0) {
-                *statePtr = 0x52;
+                *statePtr = 82;
             }
         }
         func_801E4708(0, s->unk61);
         func_801E47E0(1, s->unk54);
         break;
 
-    case 0x52:
-        *statePtr = 0x53;
+    case 82:
+        *statePtr = 83;
         break;
 
-    case 0x53:
+    case 83:
         s->unk40 += 256;
         if (s->unk40 >= 4096) {
             s->unk40 = 4096;
-            *statePtr = 0x54;
+            *statePtr = 84;
         }
         break;
 
-    case 0x54:
-        *statePtr = 0x55;
+    case 84:
+        *statePtr = 85;
         /* fallthrough */
 
-    case 0x55:
+    case 85:
         if (func_801E2E70(s->unk65) != func_801E2E8C(s->unk65)) {
-            if (btnFlags & 0x8000) {
-                *statePtr = 0x56;
+            if (btnFlags & PADLleft) {
+                *statePtr = 86;
             } else {
-                if (!(btnFlags & 0x2000)) {
-                    if (cfgFlags & 0x10) {
+                if (!(btnFlags & PADLright)) {
+                    if (cfgFlags & PADRup) {
                         sendSpuCommand(3);
-                        *statePtr = 0x5A;
+                        *statePtr = 90;
                     }
                     break;
                 }
-                *statePtr = 0x58;
+                *statePtr = 88;
             }
         } else {
-            if (cfgFlags & 0x10) {
+            if (cfgFlags & PADRup) {
                 sendSpuCommand(3);
-                *statePtr = 0x5A;
+                *statePtr = 90;
             }
         }
         break;
 
-    case 0x56: {
+    case 86: {
         s32 val1;
         sendSpuCommand(1);
         val1 = s->unk52;
@@ -3125,28 +3125,28 @@ restart:
         if (val1 < func_801E2E70(s->unk65)) {
             val1 = func_801E2E8C(s->unk65);
         }
-        s->unk50 = -0xF80;
+        s->unk50 = -3968;
         s->unk52 = val1;
-        *statePtr = 0x57;
+        *statePtr = 87;
         break;
     }
 
-    case 0x57:
-        s->unk50 += 0x80;
-        if ((s->unk50 << 0x10) >= 0) {
+    case 87:
+        s->unk50 += 128;
+        if (s->unk50 >= 0) {
             s->unk50 = 0;
-            *statePtr = 0x55;
+            *statePtr = 85;
         }
         s++; s--;
-        if (cfgFlags & 0x8000) {
-            *statePtr = 0x56;
+        if (cfgFlags & PADLleft) {
+            *statePtr = 86;
         }
-        if (cfgFlags & 0x2000) {
-            *statePtr = 0x58;
+        if (cfgFlags & PADLright) {
+            *statePtr = 88;
         }
         break;
 
-    case 0x58: {
+    case 88: {
         s32 val1;
         sendSpuCommand(1);
         val1 = s->unk52;
@@ -3155,43 +3155,43 @@ restart:
         if (func_801E2E8C(s->unk65) < val1) {
             val1 = func_801E2E70(s->unk65);
         }
-        s->unk50 = 0xF80;
+        s->unk50 = 3968;
         s->unk52 = val1;
-        *statePtr = 0x59;
+        *statePtr = 89;
         break;
     }
 
-    case 0x59:
-        s->unk50 -= 0x80;
-        if ((s->unk50 << 0x10) <= 0) {
+    case 89:
+        s->unk50 -= 128;
+        if (s->unk50 <= 0) {
             s->unk50 = 0;
-            *statePtr = 0x55;
+            *statePtr = 85;
         }
-        if (cfgFlags & 0x8000) {
-            *statePtr = 0x56;
+        if (cfgFlags & PADLleft) {
+            *statePtr = 86;
         }
-        if (cfgFlags & 0x2000) {
-            *statePtr = 0x58;
+        if (cfgFlags & PADLright) {
+            *statePtr = 88;
         }
         break;
         
-    case 0x5A:
-        *statePtr = 0x5B;
+    case 90:
+        *statePtr = 91;
         break;
 
-    case 0x5B:
+    case 91:
         s->unk40 -= 256;
-        if ((s->unk40 << 0x10) <= 0) {
+        if (s->unk40 <= 0) {
             s->unk40 = 0;
-            *statePtr = 0x5C;
+            *statePtr = 92;
         }
         break;
 
-    case 0x5C:
-        *statePtr = 0x5D;
+    case 92:
+        *statePtr = 93;
         break;
 
-    case 0x5D:
+    case 93:
         s->menuColorIntensity += 256;
         func_801F1DB0(s->menuColorIntensity);
         if (s->menuColorIntensity >= 4096) {
@@ -3203,59 +3203,59 @@ restart:
         func_801E47E0(1, s->unk54);
         break;
 
-    case 0x5E:
+    case 94:
         s->unk52 = s->unk4A;
         s->unk58 = s->unk54;
         func_801E4708(0, s->unk61);
         func_801E47E0(1, s->unk54);
-        *statePtr = 0x5F;
+        *statePtr = 95;
         /* fallthrough */
 
-    case 0x5F:                        
+    case 95:                        
         s->unk5A -= 256;
-        if ((s->unk5A << 0x10) <= 0) {
+        if (s->unk5A <= 0) {
             s->unk5A = 0;
-            *statePtr = 0x60;
+            *statePtr = 96;
         }
         func_801E4708(0, s->unk61);
         func_801E47E0(1, s->unk54);
         break;
 
-    case 0x60:
-        *statePtr = 0x61;
+    case 96:
+        *statePtr = 97;
         /* fallthrough */
 
-    case 0x61: {
+    case 97: {
         s32 val1;
         func_801E4708(0, s->unk61);
         val1 = s->unk54 / 11;
         s->unk54 = func_801F6768(btnFlags, 11, s->unk54 % 11) + (val1 * 11);
         func_801E47E0(1, s->unk54);
         func_801E4BB4(s);
-        if (btnFlags & 0x8000) {
-            s->returnState = 0x61;
+        if (btnFlags & PADLleft) {
+            s->returnState = 97;
             *statePtr = 6;
         }
-        if (btnFlags & 0x2000) {
-            s->returnState = 0x61;
+        if (btnFlags & PADLright) {
+            s->returnState = 97;
             *statePtr = 8;
         }
-        if (cfgFlags & 0x10) {
+        if (cfgFlags & PADRup) {
             sendSpuCommand(3);
-            *statePtr = 0x69;
+            *statePtr = 105;
         }
-        if (btnFlags & 0x40) {
+        if (btnFlags & PADRdown) {
             sendSpuCommand(2);
-            *statePtr = 0x62;
+            *statePtr = 98;
         }
         break;
     }
 
-    case 0x62:
-        *statePtr = 0x63;
+    case 98:
+        *statePtr = 99;
         /* fallthrough */
 
-    case 0x63: {
+    case 99: {
         s32 page;
         s32 rowInPage;
         page = s->unk58 / 11;
@@ -3265,25 +3265,25 @@ restart:
         s->unk58 = func_801F6768(btnFlags, 11, rowInPage) + (page * 11);
         func_801E476C(1, s);
         func_801E4C14(s);
-        if (btnFlags & 0x8000) {
-            *statePtr = 0x65;
+        if (btnFlags & PADLleft) {
+            *statePtr = 101;
         }
-        if (btnFlags & 0x2000) {
-            *statePtr = 0x67;
+        if (btnFlags & PADLright) {
+            *statePtr = 103;
         }
-        if (!(cfgFlags & 0x40)) {
-            if (cfgFlags & 0x10) {
+        if (!(cfgFlags & PADRdown)) {
+            if (cfgFlags & PADRup) {
                 sendSpuCommand(3);
-                *statePtr = 0x61;
+                *statePtr = 97;
             }
         } else {
-            state = 0x64;
+            state = 100;
             goto restart;
         }
         break;
     }
 
-    case 0x64: {
+    case 100: {
         s32 id1;
         s32 id2;
         s32 count1;
@@ -3296,7 +3296,7 @@ restart:
         count2 = s->itemSlots[s->unk58].count;
         if (id1 == id2) {
             sendSpuCommand(5);
-            *statePtr = 0x63;
+            *statePtr = 99;
         } else {
             item1 = &s->itemSlots[s->unk54];
             item2 = &s->itemSlots[s->unk58];
@@ -3305,12 +3305,12 @@ restart:
             item2->id = id1;
             item2->count = count1;
             sendSpuCommand(2);
-            *statePtr = 0x61;
+            *statePtr = 97;
         }
         break;
     }
 
-    case 0x65: {
+    case 101: {
         s32 page;
         s32 rowInPage;
         sendSpuCommand(1);
@@ -3323,34 +3323,34 @@ restart:
         }
         s->unk58 = rowInPage + (page * 11);
         s->unk52 = page;
-        s->unk50 = -0xE67;
+        s->unk50 = -3687;
         func_801E4708(0, s->unk61);
         func_801E47E0(0, s->unk54);
         func_801E476C(1, s);
         s->previousItemDesc = s->itemDesc;
         func_801E4C14(s);
-        *statePtr = 0x66;
+        *statePtr = 102;
         break;
     }
 
-    case 0x66:
+    case 102:
         func_801E4708(0, s->unk61);
         func_801E47E0(0, s->unk54);
         func_801E476C(1, s);
         s->unk50 += 409;
-        if ((s->unk50 << 0x10) >= 0) {
+        if (s->unk50 >= 0) {
             s->unk50 = 0;
-            *statePtr = 0x63;
+            *statePtr = 99;
         }
-        if (cfgFlags & 0x8000) {
-            *statePtr = 0x65;
+        if (cfgFlags & PADLleft) {
+            *statePtr = 101;
         }
-        if (cfgFlags & 0x2000) {
-            *statePtr = 0x67;
+        if (cfgFlags & PADLright) {
+            *statePtr = 103;
         }
         break;
 
-    case 0x67: {
+    case 103: {
         s32 page;
         s32 rowInPage;
         sendSpuCommand(1);
@@ -3363,38 +3363,38 @@ restart:
         }
         s->unk58 = rowInPage + (page * 11);
         s->unk52 = page;
-        s->unk50 = 0xE67;
+        s->unk50 = 3687;
         func_801E4708(0, s->unk61);
         func_801E47E0(0, s->unk54);
         func_801E476C(1, s);
         s->previousItemDesc = s->itemDesc;
         func_801E4C14(s);
-        *statePtr = 0x68;
+        *statePtr = 104;
         break;
     }
 
-    case 0x68:
+    case 104:
         func_801E4708(0, s->unk61);
         func_801E47E0(0, s->unk54);
         func_801E476C(1, s);
         s->unk50 -= 409;
-        if ((s->unk50 << 0x10) <= 0) {
+        if (s->unk50 <= 0) {
             s->unk50 = 0;
-            *statePtr = 0x63;
+            *statePtr = 99;
         }
-        if (cfgFlags & 0x8000) {
-            *statePtr = 0x65;
+        if (cfgFlags & PADLleft) {
+            *statePtr = 101;
         }
-        if (cfgFlags & 0x2000) {
-            *statePtr = 0x67;
+        if (cfgFlags & PADLright) {
+            *statePtr = 103;
         }
         break;
 
-    case 0x69:
-        *statePtr = 0x6A;
+    case 105:
+        *statePtr = 106;
         /* fallthrough */
 
-    case 0x6A:
+    case 106:
         func_801E4708(0, s->unk61);
         s->unk5A += 256;
         if (s->unk5A >= 4096) {
@@ -3403,51 +3403,51 @@ restart:
         }
         break;
 
-    case 0x6B: {
+    case 107: {
         s32 val1;
         val1 = func_801E2E70(s->unk65);
         val1 = 1 << val1;
-        state = 0x6C;
+        state = 108;
         if (D_80077E8C & val1) {
-            state = 0x6D;
+            state = 109;
         }
         goto restart;
     }
 
-    case 0x6C: {
+    case 108: {
         u8 *msg;
         s32 val1;
         sendSpuCommand(8);
         func_801E457C(s->unk65, s->itemSlots, s->unk54);
-        msg = func_801F08D4(1, 9, 0xF, 0);
+        msg = func_801F08D4(1, 9, 15, 0);
         func_801E2BA4(msg, D_801ECC20, func_801E2E70(s->unk65));
         s->unk30 = D_801ECC20;
         val1 = func_801E2E70(s->unk65);
         val1 = 1 << val1;
         g_gameState.mainData.limitBreaks.quistisLimits |= val1;
-        state = 0x6E;
+        state = 110;
         goto restart;
     }
 
-    case 0x6D: {
+    case 109: {
         u8 *msg;
         sendSpuCommand(5);
-        msg = func_801F08D4(1, 9, 0x10, 0);
+        msg = func_801F08D4(1, 9, 16, 0);
         func_801E2BA4(msg, D_801ECC20, func_801E2E70(s->unk65));
-        state = 0x6E;
+        state = 110;
         s->unk30 = D_801ECC20;
         goto restart;
     }
 
-    case 0x6E:
+    case 110:
         s->unk62 = findNthSetBit(s->unk38, s->unk58);
-        s->unk5C = 0x258;
-        *statePtr = 0x6F;
+        s->unk5C = 600;
+        *statePtr = 111;
         break;
 
-    case 0x6F:
+    case 111:
         s->unk62 = findNthSetBit(s->unk38, s->unk58);
-        if (cfgFlags & 0x50) {
+        if (cfgFlags & (PADRup | PADRdown)) {
             func_801F7BEC(cfgFlags);
             s->unk5C = 0;
             s->unk30 = NULL;
@@ -3460,15 +3460,15 @@ restart:
         }
         break;
 
-    case 0x70:
+    case 112:
         loadOverlayWithTimCallback(9, 0x801CD000);
-        loadOverlayWithTimCallback(0xA, 0x801D5000);
-        *statePtr = 0x71;
+        loadOverlayWithTimCallback(10, 0x801D5000);
+        *statePtr = 113;
         break;
 
-    case 0x71:
+    case 113:
         s->menuColorIntensity -= 256;
-        if ((s->menuColorIntensity << 0x10) < 0) {
+        if (s->menuColorIntensity < 0) {
             s->menuColorIntensity = 0;
             if (pollCdReadStatus() == 0) {
                 func_801F1CAC();
