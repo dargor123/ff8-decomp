@@ -8,6 +8,7 @@
 #include "ui/text.h"
 #include "ui/font.h"
 #include "ui/window.h"
+#include "ui/icon.h"
 #include "gamestate.h"
 #include "kernel.h"
 #include "ability_list.h"
@@ -17,6 +18,7 @@
 #include "gf.h"
 #include "snd_sfx.h"
 #include "psxsdk/libetc.h"
+#include "battle_results/number.h"
 
 typedef struct {
     u16 unk0;
@@ -3493,7 +3495,62 @@ restart:
     }
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E7D18);
+void *func_801E7D18(void *arg0, void *arg1, s32 arg2, s32 arg3, s32 arg4) {
+    ItemSlot *item;
+    s32 id;
+    s32 count;
+    s32 color;
+    s32 x1;
+    s32 y1;
+    s32 x2;
+    s32 y2;
+    s32 x3;
+    s32 y3;
+    s32 x4;
+    s32 y4;
+    s32 x5;
+    s32 y5;
+    s32 tmp;
+
+    item = g_menuDisplayCfg.dataPtr;
+    item += arg2 * 11 + arg3;
+
+    id = item->id;
+    count = item->count;
+    if (id == 0 || count == 0) {
+        return arg1;
+    }
+
+    x1 = arg4 + 0xD;
+    x2 = g_menuDisplayCfg.x + x1;
+
+    y1 = arg3 * 0xD + 9;
+    y2 = g_menuDisplayCfg.y + y1;
+
+    tmp++; tmp--;
+
+    if (func_801E2F88(id) != 0) {
+        color = 7;
+    } else {
+        color = 1;
+    }
+
+    x3 = x2;
+    y3 = y2 - 2;
+    arg1 = drawIcon(arg0, arg1, func_801F6B28(id) + 0xDF, x3, y3, g_menuTint[0]);
+
+    tmp = y2;
+
+    x4 = x2 + 0xD;
+    y4 = tmp;
+    arg1 = func_801F0FEC(arg0, arg1, x4, y4, getItemName(id), color);
+
+    x5 = x2 + 0x91;
+    y5 = tmp;
+    arg1 = drawNumberMenuTint(arg0, arg1, (y5 << 0x10) | (x5 & 0xFFFF), count, color);
+
+    return arg1;
+}
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E7E74);
 
