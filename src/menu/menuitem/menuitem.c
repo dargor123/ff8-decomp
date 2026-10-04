@@ -3694,7 +3694,21 @@ TSPRT *func_801E82CC(P_TAG *arg0, TSPRT *arg1, s32 arg2, s32 arg3, s32 arg4, u16
     return arg1;
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E83B4);
+TSPRT *func_801E83B4(P_TAG *arg0, TSPRT *arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5, u16 arg6, u16 arg7) {
+    u8 val;
+    val = func_801E2EA8(arg5);
+    arg1 = func_801EF8D8(arg0, arg1);
+    if (val & 0x10) {
+        arg1 = func_801F6C9C(arg0, arg1, arg2, arg3, arg4, arg6);
+    } else if ((val & 6) == 6) {
+        arg1 = func_801F6C9C(arg0, arg1, arg2, arg3, arg4, arg6);
+    } else if (val & 4) {
+        arg1 = func_801E82CC(arg0, arg1, arg2, arg3, arg4, arg7);
+    } else {
+        arg1 = func_801F6C9C(arg0, arg1, arg2, arg3, arg4, arg6);
+    }
+    return arg1;
+}
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E84A4);
 
