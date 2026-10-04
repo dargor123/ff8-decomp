@@ -3710,11 +3710,84 @@ TSPRT *func_801E83B4(P_TAG *arg0, TSPRT *arg1, s32 arg2, s32 arg3, s32 arg4, s32
     return arg1;
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E84A4);
+s32 func_801E84A4(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+    MenuDisplayConfig *cfg;
+    s32 color;
+    ItemSlot *item;
+    s32 id;
+    s32 count;
+    s32 xBase;
+    s32 yBase;
+    s32 x;
+    s32 y;
+    u8 *itemName;
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E859C);
+    cfg = &g_menuDisplayCfg;
+    color = 7;
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E8684);
+    item = D_801ECB20;
+    item += arg2 * 4 + arg3;
+    count = item->count;
+    id = item->id;
+
+    if (count == 0) {
+        return arg1;
+    }
+
+    xBase = cfg->x + arg4;
+    yBase = cfg->y + arg3 * 13;
+
+    itemName = getItemName(id);
+    x = xBase + 12;
+    y = yBase + 7;
+    arg1 = func_801F0FEC(arg0, arg1, x, y, itemName, color);
+
+    x = xBase + 138;
+    return drawNumberMenuTint(arg0, arg1, (y << 0x10) | (x & 0xFFFF), count, color);
+}
+
+s32 func_801E859C(MenuItemState *s, void* arg1, void* arg2, s32 arg3, s32 arg4) {
+    arg2 = drawIcon(arg1, arg2, 77, arg3 + 114, arg4, g_menuTint[0]);
+    g_menuDisplayCfg.iconType = 76;
+    g_menuDisplayCfg.iconSubType = 0;
+    g_menuDisplayCfg.x = arg3;
+    g_menuDisplayCfg.w = 150;
+    g_menuDisplayCfg.y = arg4;
+    g_menuDisplayCfg.h = 64;
+    g_menuDisplayCfg.columnCount = 4;
+    arg2 = func_801F5F30(arg1, arg2, arg3 + 28, arg4, g_menuTint[MENU_TINT_NORMAL], g_menuDisplayCfg.pageStart);
+    arg2 = func_801F5F60(arg1, arg2, g_menuTint[MENU_TINT_NORMAL], 3);
+    return func_801EFBB4(arg1, arg2, func_801E84A4);
+}
+
+void func_801E8684(MenuItemState *s, void *arg1, void *arg2) {
+    s32 index;
+    s32 xOffset;
+    s32 x;
+    s32 y;
+
+    index = (0x1000 - s->unk6C) / 64;
+    xOffset = D_801FA3C8[index];
+    xOffset = xOffset * 192 / 4096;
+
+    g_menuDisplayCfg.pageStart = s->unk4E;
+    g_menuDisplayCfg.pageEnd = s->unk4F;
+    g_menuDisplayCfg.scrollOffset = s->unk4C;
+
+    x = 0x35;
+    x -= xOffset;
+    y = 0x3D;
+    arg2 = func_801E859C(s, arg1, arg2, x, y);
+
+    g_menuDisplayCfg.pageStart = s->unk52;
+    g_menuDisplayCfg.pageEnd = s->unk53;
+    g_menuDisplayCfg.scrollOffset = s->unk50;
+
+    x = 0xB5;
+    x += xOffset;
+    y = 0x86;
+    func_801E859C(s, arg1, arg2, x, y);
+}
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E8780);
 
