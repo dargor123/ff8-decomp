@@ -3671,7 +3671,7 @@ TSPRT *func_801E820C(P_TAG *arg0, TSPRT *arg1, s32 arg2, s32 arg3, s32 arg4) {
     return arg1;
 }
 
-TSPRT *func_801E82CC(P_TAG *arg0, TSPRT *arg1, s32 arg2, s32 arg3, s32 arg4, u16 arg5) {
+TSPRT *menuitem_drawGfPanel(P_TAG *arg0, TSPRT *arg1, s32 arg2, s32 arg3, s32 arg4, u16 arg5) {
     MenuDisplayConfig *cfg;
     s32 x;
     s32 y;
@@ -3703,7 +3703,7 @@ TSPRT *func_801E83B4(P_TAG *arg0, TSPRT *arg1, s32 arg2, s32 arg3, s32 arg4, s32
     } else if ((val & 6) == 6) {
         arg1 = func_801F6C9C(arg0, arg1, arg2, arg3, arg4, arg6);
     } else if (val & 4) {
-        arg1 = func_801E82CC(arg0, arg1, arg2, arg3, arg4, arg7);
+        arg1 = menuitem_drawGfPanel(arg0, arg1, arg2, arg3, arg4, arg7);
     } else {
         arg1 = func_801F6C9C(arg0, arg1, arg2, arg3, arg4, arg6);
     }
