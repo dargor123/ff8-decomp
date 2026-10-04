@@ -3569,9 +3569,33 @@ void func_801E7E74(MenuItemState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     func_801EFBB4(arg1, arg2, func_801E7D18);
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E7F4C);
+void func_801E7F4C(MenuItemState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+    g_menuDisplayCfg.iconType = 76;
+    g_menuDisplayCfg.iconSubType = 0;
+    g_menuDisplayCfg.x = arg3;
+    g_menuDisplayCfg.w = 166;
+    g_menuDisplayCfg.h = 160;
+    g_menuDisplayCfg.columnCount = 11;
+    g_menuDisplayCfg.y = arg4;
+    g_menuDisplayCfg.pageStart = s->unk52;
+    g_menuDisplayCfg.pageEnd = s->unk53;
+    g_menuDisplayCfg.scrollOffset = s->unk50;
+    g_menuDisplayCfg.dataPtr = s->itemSlots;
+    arg2 = func_801F5EFC(arg1, arg2, arg3 + 28, arg4, g_menuTint[MENU_TINT_NORMAL], s->unk52);
+    arg2 = func_801F5F60(arg1, arg2, g_menuTint[MENU_TINT_NORMAL], 3);
+    func_801EFBB4(arg1, arg2, func_801E7D18);
+}
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E8024);
+void func_801E8024(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+    arg2 = func_801F5A38(arg1, arg2, arg3 + 26, arg4 + 6, 9, D_801EB1D8, 15);
+    g_menuDisplayCfg.iconType = 0;
+    g_menuDisplayCfg.iconSubType = 0;
+    g_menuDisplayCfg.x = arg3;
+    g_menuDisplayCfg.y = arg4;
+    g_menuDisplayCfg.w = 244;
+    g_menuDisplayCfg.h = 18;
+    func_801EF9AC(arg1, arg2, 4096, g_menuTint[MENU_TINT_NORMAL]);
+}
 
 /**
  * @brief Render an item description text for a specific table entry.
@@ -3586,7 +3610,22 @@ INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E8024);
  * @param arg5 Additional offset added to g_menuDisplayCfg X position.
  * @return Updated rendering state after text is rendered.
  */
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E80D0);
+s32 func_801E80D0(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+    u8 buffer[128];
+    s32 xOffset;
+    s32 x;
+    s32 y;
+    u8 **ptr;
+    ptr = g_menuDisplayCfg.dataPtr;
+    if (ptr[arg2] != NULL) {
+        xOffset = arg4 + 10;
+        x = g_menuDisplayCfg.x + xOffset;
+        y = g_menuDisplayCfg.y + 9;
+        decodeMessage(ptr[arg2], buffer, -1);
+        arg1 = func_801F0FEC(arg0, arg1, x, y, buffer, 7);
+    }
+    return arg1;
+}
 
 /**
  * @brief Configure item list display and register render callback.
