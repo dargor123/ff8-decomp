@@ -3656,9 +3656,42 @@ void func_801E8180(u8 *a0, s32 a1, s32 a2, s32 a3, s32 arg4) {
     func_801EFBB4(a1, a2, func_801E80D0);
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E820C);
+TSPRT *func_801E820C(P_TAG *arg0, TSPRT *arg1, s32 arg2, s32 arg3, s32 arg4) {
+    s32 x;
+    s32 y;
+    s32 status;
+    s32 color;
+    u8 *magicName;
+    x = arg2 + ((arg4 & 1) * 82);
+    y = arg3 + ((arg4 / 2) * 13);
+    status = func_801F2240(arg4);
+    color = func_801F3FB4(status);
+    magicName = getMagicNamePtr(arg4 + 64);
+    arg1 = drawDecodedText(arg0, arg1, x, y, magicName, color);
+    return arg1;
+}
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E82CC);
+void func_801E82CC(P_TAG* arg0, TSPRT* arg1, s32 arg2, s32 arg3, s32 arg4, u16 arg5) {
+    MenuDisplayConfig *cfg;
+    s32 x;
+    s32 y;
+    s32 i;
+    cfg = &g_menuDisplayCfg;
+    x = arg2 + 4;
+    y = arg3 + 10;
+    for (i = 0; i < 16; i++) {
+        if ((arg5 >> i) & 1) {
+            arg1 = func_801E820C(arg0, arg1, x, y, i);
+        }
+    } 
+    cfg->iconType = 73;
+    cfg->w = 168;
+    cfg->iconSubType = 0;
+    cfg->x = arg2;
+    cfg->y = arg3;
+    cfg->h = 120;
+    func_801EF9AC(arg0, arg1, arg4, g_menuTint[MENU_TINT_NORMAL]);
+}
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E83B4);
 
