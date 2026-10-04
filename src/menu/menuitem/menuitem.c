@@ -3671,7 +3671,7 @@ TSPRT *func_801E820C(P_TAG *arg0, TSPRT *arg1, s32 arg2, s32 arg3, s32 arg4) {
     return arg1;
 }
 
-void func_801E82CC(P_TAG* arg0, TSPRT* arg1, s32 arg2, s32 arg3, s32 arg4, u16 arg5) {
+TSPRT *func_801E82CC(P_TAG *arg0, TSPRT *arg1, s32 arg2, s32 arg3, s32 arg4, u16 arg5) {
     MenuDisplayConfig *cfg;
     s32 x;
     s32 y;
@@ -3690,7 +3690,8 @@ void func_801E82CC(P_TAG* arg0, TSPRT* arg1, s32 arg2, s32 arg3, s32 arg4, u16 a
     cfg->x = arg2;
     cfg->y = arg3;
     cfg->h = 120;
-    func_801EF9AC(arg0, arg1, arg4, g_menuTint[MENU_TINT_NORMAL]);
+    arg1 = func_801EF9AC(arg0, arg1, arg4, g_menuTint[MENU_TINT_NORMAL]);
+    return arg1;
 }
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E83B4);
