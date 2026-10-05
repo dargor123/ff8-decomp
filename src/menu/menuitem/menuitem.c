@@ -29,21 +29,41 @@ typedef struct {
 } ST_0;
 
 typedef struct {
-    s16 unk0;
-    s16 unk2;
-} ST_1;
-
-typedef struct {
-    u8 pad00[0x18];
-    u8 unk18;
+    u8 pad00[0x8];
+    u16 unk8; /**< 0x08: X coord */
+    u16 unkA; /**< 0x0A: Y coord */
+    u16 unkC;
+    u16 unkE;
+    u8 unk10;
+    u8 unk11;
+    u8 unk12;
+    u8 pad13[0x5];
+    u8 unk18; /**< 0x18: Weapon ID. */
     u8 unk19;
-    u8 unk1A;
+    u8 unk1A; /**< 0x1A: Zell limit break duel ID. */
     u8 pad1B[0x1];
     u16 unk1C;
     u8 unk1E;
     u8 unk1F;
     u16 unk20;
     u8 unk22;
+} ST_1;
+
+/**
+ * @brief Related to TSPRT code 0x62.
+ */
+typedef struct {
+    u8 pad[3];
+    u8 unk3;
+    s32 unk4;
+    u8 unk8;
+    u8 unk9;
+    u8 unkA;
+    u8 unkB;
+    s16 unkC;
+    u16 unkE;
+    s16 unk10;
+    s16 unk12;
 } ST_2;
 
 typedef struct {
@@ -3765,7 +3785,7 @@ s32 func_801E84A4(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
 }
 
 s32 func_801E859C(MenuItemState *s, void* arg1, void* arg2, s32 arg3, s32 arg4) {
-    arg2 = drawIcon(arg1, arg2, 77, arg3 + 114, arg4, g_menuTint[0]);
+    arg2 = drawIcon(arg1, arg2, 77, arg3 + 114, arg4, g_menuTint[MENU_TINT_NORMAL]);
     g_menuDisplayCfg.iconType = 76;
     g_menuDisplayCfg.iconSubType = 0;
     g_menuDisplayCfg.x = arg3;
@@ -3836,7 +3856,7 @@ void *func_801E8780(void *arg0, void *arg1, s32 arg2, s32 arg3, s32 arg4) {
     x += 13;
     y += 9;
 
-    arg1 = drawIcon(arg0, arg1, abl->category + 216, x, y - 2, g_menuTint[0]);
+    arg1 = drawIcon(arg0, arg1, abl->category + 216, x, y - 2, g_menuTint[MENU_TINT_NORMAL]);
     return func_801F0FEC(arg0, arg1, x + 13, y, getAbilityName(slot), color);
 }
 
@@ -3853,12 +3873,12 @@ void func_801E88AC(MenuItemState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     g_menuDisplayCfg.pageEnd = s->unk4F;
     g_menuDisplayCfg.scrollOffset = s->unk4C;
     if (D_801ECC10 >= 12) {
-        arg2 = func_801F5F30(arg1, arg2, arg3 + 40, arg4, g_menuTint[0], g_menuDisplayCfg.pageStart);
+        arg2 = func_801F5F30(arg1, arg2, arg3 + 40, arg4, g_menuTint[MENU_TINT_NORMAL], g_menuDisplayCfg.pageStart);
         arrows = 2;
         if (s->unk4E != 0) {
             arrows = 1;
         }
-        arg2 = func_801F5F60(arg1, arg2, g_menuTint[0], arrows);
+        arg2 = func_801F5F60(arg1, arg2, g_menuTint[MENU_TINT_NORMAL], arrows);
     }
     func_801EFBB4(arg1, arg2, func_801E8780);
 }
@@ -3876,7 +3896,7 @@ s32 func_801E89A4(s32 a0) {
     return *(u16 *)(base + a0 * 2 + 2) + base;
 }
 
-void *func_801E89C0(void *arg0, void *arg1, ST_1 *arg2, s32 color, ST_2 *arg4) {
+void *func_801E89C0(void *arg0, void *arg1, MenuDisplayConfig *cfg, s32 color, ST_1 *arg4) {
     u16 *buttons;
     s32 y;
     s32 x;
@@ -3886,8 +3906,8 @@ void *func_801E89C0(void *arg0, void *arg1, ST_1 *arg2, s32 color, ST_2 *arg4) {
         i = 0;
         g_gameState.mainData.limitBreaks.zellLimits |= 1 << arg4->unk1A;
         buttons = g_kernel.duel[arg4->unk1A].buttons;
-        x = arg2->unk0 + arg4->unk20;
-        y = arg2->unk2 + arg4->unk22;
+        x = cfg->x + arg4->unk20;
+        y = cfg->y + arg4->unk22;
         while (i < 5) {
             btn = *buttons++;
             if (btn == 0xFFFF) {
@@ -3904,7 +3924,7 @@ void *func_801E89C0(void *arg0, void *arg1, ST_1 *arg2, s32 color, ST_2 *arg4) {
     return arg1;
 }
 
-void *func_801E8AF0(void *arg0, void *arg1, ST_1 *arg2, s32 arg3, ST_2 *arg4) {
+void *func_801E8AF0(void *arg0, void *arg1, MenuDisplayConfig *cfg, s32 arg3, ST_1 *arg4) {
     s32 xBase;
     s32 yBase;
     WeaponRecipe *recipe;
@@ -3923,10 +3943,10 @@ void *func_801E8AF0(void *arg0, void *arg1, ST_1 *arg2, s32 arg3, ST_2 *arg4) {
 
     g_gameState.mainData.party.unlockedWeapons |= 1 << arg4->unk18;
 
-    xBase = arg2->unk0;
+    xBase = cfg->x;
     xBase += arg4->unk1C;
 
-    yBase = arg2->unk2;
+    yBase = cfg->y;
     yBase += arg4->unk1E;
 
     recipe = &D_801EB330;
@@ -3941,7 +3961,7 @@ void *func_801E8AF0(void *arg0, void *arg1, ST_1 *arg2, s32 arg3, ST_2 *arg4) {
             x = xBase;
             y = yBase - 2;
             val1 = func_801F6B28(id) + 0xDF;
-            arg1 = drawIcon(arg0, arg1, val1, x, y, g_menuTint[0]);
+            arg1 = drawIcon(arg0, arg1, val1, x, y, g_menuTint[MENU_TINT_NORMAL]);
             
             x = xBase + 0xE;
             y = yBase;
@@ -3958,16 +3978,106 @@ void *func_801E8AF0(void *arg0, void *arg1, ST_1 *arg2, s32 arg3, ST_2 *arg4) {
     return arg1;
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E8C88);
+void *func_801E8C88(void *arg0, ST_2 *arg1, MenuDisplayConfig *cfg, u32 arg3, ST_1 *arg4) {
+    s32 val1;
+    s32 val2;
+    s32 val3;
+
+    val1 = arg3 & 0xFF;
+    val2 = (arg3 >> 8) & 0xFF;
+    val3 = (arg3 >> 0x10) & 0xFF;
+
+    val1 = val1 * arg4->unk10 / 128;
+    val2 = val2 * arg4->unk11 / 128;
+    val3 = val3 * arg4->unk12 / 128;
+
+    val1 &= 0xFF;
+    val2 &= 0xFF;
+    val3 &= 0xFF;
+
+    if (arg4->unkE == 0 || arg4->unkC == 0) {
+        return arg1;
+    }
+
+    arg1->unk3 = 4;
+    arg1->unk4 = 0xE1000400;
+    arg1->unkB = 0x62;
+    arg1->unk8 = val1;
+    arg1->unk9 = val2;
+    arg1->unkA = val3;
+    arg1->unkC = cfg->x + arg4->unk8;
+    arg1->unkE = cfg->y + arg4->unkA;
+    arg1->unk10 = arg4->unkC;
+    arg1->unk12 = arg4->unkE;
+
+    addPrimFast(arg0, arg1, t3);
+
+    return arg1 + 1;
+}
 
 /** @brief Return base address of item sprite data (0x801CD000). */
 s32 func_801E8DA4(void) {
     return 0x801CD000;
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E8DB0);
+s32 func_801E8DB0(s32 arg0, s32 arg1, MenuDisplayConfig *cfg, u32 color, s32 arg4) {
+    s32 i;
+    u16 *ptr1;
+    u8 *ptr2;
+    s32 x;
+    s32 y;
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E8E98);
+    i = 0;
+    ptr1 = arg4 + 0x24;
+    ptr2 = arg4 + 0x27;
+    while (i < 4) {
+        if (ptr2[0] != 0xFF) {
+            x = cfg->x + ptr1[0];
+            y = cfg->y + ptr2[-1];
+            arg1 = func_800376A8(arg0, arg1, func_801E8DA4(), ptr2[0], x, y, color);
+        }
+        i++;
+        ptr2 += 4;
+        ptr1 += 2;
+    }
+    return arg1;
+}
+
+s32 func_801E8E98(void *arg0, s32 arg1, MenuDisplayConfig *cfg, s32 arg3, s32 arg4) {
+    s32 i;
+    u16 *ptr1;
+    u8 *ptr2;
+    s16 xBase;
+    s16 yBase;
+    s32 x;
+    s32 y;
+    s32 head;
+
+    i = 0;
+    ptr1 = arg4 + 0x34;
+    ptr2 = arg4 + 0x37;
+    while (i < 4) {
+        if (ptr2[0] != 0xFF) {
+            xBase = cfg->x;
+            yBase = cfg->y;
+            x = xBase + ptr1[0];
+            y = yBase + ptr2[-1];
+            if (i & 1) {
+                head = getDisplayListHead();
+                storeGpuPacket(arg1);
+            }
+            drawMessageText(arg0, x, y, func_801E89A4(ptr2[0]));
+            if (i & 1) {
+                arg1 = getDisplayListHead();
+                storeGpuPacket(head);
+            }
+        }
+        i++;
+        ptr2 += 4;
+        ptr1 += 2;
+    }
+    return arg1;
+}
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E8FA8);
 

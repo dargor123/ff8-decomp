@@ -29,9 +29,9 @@ extern u8 D_801EB17C[];
 extern u8 D_801EB188[];
 extern u8 D_801EB194[];
 extern s16 D_801EB1D8[];
-extern WeaponRecipe D_801EB330[WEAPON_RECIPE_COUNT];
-extern GfSaveData D_801EB4BC[];
-extern u8 D_801EC710[];
+extern WeaponRecipe D_801EB330[WEAPON_RECIPE_COUNT]; /**< Weapon recipes (mwepon.bin content). */
+extern GfSaveData D_801EB4BC[]; /**< Magazine pages (mmag.bin content). */
+extern u8 D_801EC710[]; /**< Items required to unlock Doomtrain GF (mthomas.bin content). */
 extern ItemSlot D_801ECB20[];
 extern AbilityListEntry D_801ECB60[];
 extern u8 func_801E2EA8(s32);
