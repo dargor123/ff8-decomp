@@ -29,7 +29,7 @@ extern u8 D_801EB17C[];
 extern u8 D_801EB188[];
 extern u8 D_801EB194[];
 extern s16 D_801EB1D8[];
-extern u8 D_801EB330[];
+extern WeaponRecipe D_801EB330[WEAPON_RECIPE_COUNT];
 extern GfSaveData D_801EB4BC[];
 extern u8 D_801EC710[];
 extern ItemSlot D_801ECB20[];
