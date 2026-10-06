@@ -29,77 +29,26 @@ typedef struct {
 } ST_0;
 
 /**
- * @brief Picture/text overlay drawn in the magazine page.
+ * @brief GPU composite primitive for weapon magazine paper mat.
  */
 typedef struct {
-    s16 x; /**< 0x01: X position. */
-    s8 y;/**< 0x03: Y position. */
-    s8 id; /**< 0x04: ID. */
-} MagazinePageOverlay;
-
-/**
- * @brief Weapon magazine page. Each entry repesents one page view (mmag.bin content).
- */
-typedef struct {
-    u16 windowX; /**< 0x00: Window X. */
-    u16 windowY; /**< 0x02: Window Y. */
-    u16 windowWidth; /**< 0x04: Window width. */
-    u16 windowHeight; /**< 0x06: Window height. */
-    u16 paperMatX; /**< 0x08: Paper mat X. */
-    u16 paperMatY; /**< 0x0A: Paper mat Y. */
-    u16 paperMatWidth; /**< 0x0C: Paper mat width. */
-    u16 paperMatHeight; /**< 0x0E: Paper mat height. */
-    u8 paperMatRed; /**< 0x10: Paper mat red. */
-    u8 paperMatGreen; /**< 0x11: Paper mat green. */
-    u8 paperMatBlue; /**< 0x12: Paper mat blue. */
-    u8 paperBgParamA; /**< 0x13: Paper Background parameter A. */
-    u8 paperBgParamB; /**< 0x14: Paper Background parameter B. */
-    u8 textFileIndex; /**< 0x15: Text file index. */
-    u8 pageTextureCategory; /**< 0x16: Page texture category. */
-    u8 pageTexture; /**< 0x17: Page texture page number. */
-    u8 weaponId; /**< 0x18: Weapon ID. */
-    u8 weaponLineSpacing; /**< 0x19: Weapon line spacing. */
-    u8 duelId; /**< 0x1A: Zell limit break duel ID. */
-    u8 angeloId; /**< 0x1B: Angelo ID. */
-    u16 weaponListX; /**< 0x1C: Weapon list X. */
-    u8 weaponListY; /**< 0x1E: Weapon list Y. */
-    u8 weaponXOffset; /**< 0x1F: Weapon quantity column X offset. */
-    u16 duelComboX; /**< 0x20: Duel combo X. */
-    u8 duelComboY; /**< 0x22: Duel combo Y. */
-    u8 footerFlag; /**< 0x23: Footer flag. */
-    MagazinePageOverlay pictureOverlays[4]; /**< 0x24: Picture overlays in the page. */
-    MagazinePageOverlay textOverlays[4]; /**< 0x34: Text overlays in the page. */
-} MagazinePageEntry; /** 0x44 bytes */
-
-/**
- * @brief 0x14 byte GPU primitive for weapon magazine paper mat.
- * 
- * GPU Render Rectangle Commands (GP0): $62 - Monochrome Rectangle
- * (Variable Size), Semi-Transparent
- */
-typedef struct {
-    u8 addr[3]; /**< 0x00: P_TAG addr. */
-    u8 len; /**< 0x03: P_TAG len. */
-    s32 drawMode; /**< 0x04: Texture page command. */
-    u8 r0; /**< 0x08: Color red. */
-    u8 g0; /**< 0x09: Color green. */
-    u8 b0; /**< 0x0A: Color blue. */
-    u8 code; /**< 0x0B: Op code. */
-    RECT rect; /**< 0x0C: Rectangle. */
+    DR_TPAGE tpage; /**< 0x00: Drawing texture page primitive. */
+    u8 r0;          /**< 0x08: Color red. */
+    u8 g0;          /**< 0x09: Color green. */
+    u8 b0;          /**< 0x0A: Color blue. */
+    u8 code;        /**< 0x0B: GP0 code. */
+    s16 x0;         /**< 0x0C: X coord. */
+    s16 y0;         /**< 0x0E: Y coord. */
+    s16 w;          /**< 0x10: Width. */
+    s16 h;          /**< 0x12: Height. */
 } PaperMatPrim; /* 0x14 */
 
 /**
- * @brief 0x20 byte GPU primitive used to draw a slice of a weapon magazine page.
- * 
- * GPU Render Rectangle Commands (GP0): $64 - Textured Rectangle
- * (Variable Size), Opaque, Texture-Blending
+ * @brief GPU composite primitive representing a slice of a weapon magazine page.
  */
 typedef struct {
-    u8 addr[3]; /**< 0x00: P_TAG addr. */
-    u8 len; /**< 0x03: P_TAG len. */
-    s32 tpageCode; /**< 0x04: Texture page command. */
-    s32 twinCode; /**< 0x08: Texture window command. */
-    SPRT sprt; /**< 0x0C: Sprite primitive. */
+    DR_TWIN twin; /**< 0x00: Drawing texture window primitive. */
+    SPRT sprt;    /**< 0x0C: Sprite primitive. */
 } PaperMatSlicePrim; /* 0x20 */
 
 typedef struct {
@@ -3129,11 +3078,11 @@ restart:
     }
 
     case 80: {
-        GfSaveData *gf;
-        gf = D_801EB4BC;
-        gf += func_801E2E70(s->unk65);
+        MagazinePageEntry *mag;
+        mag = D_801EB4BC;
+        mag += func_801E2E70(s->unk65);
         s->unk52 = func_801E2E70(s->unk65);
-        func_801E2CCC(((u8 *)gf->completeAbilities)[2], ((u8 *)gf->completeAbilities)[3]);
+        func_801E2CCC(mag->pageTextureCategory, mag->pageTexture);
         loadSubOverlay(7, 0x801CD000);
         loadSubOverlay(87, 0x801D1000);
         *statePtr = 81;
@@ -4035,16 +3984,16 @@ void *func_801E8C88(void *arg0, PaperMatPrim *arg1, MenuDisplayConfig *cfg, u32 
         return arg1;
     }
 
-    arg1->len = 4;
-    arg1->drawMode = 0xE1000400;
+    setlen(arg1, 4);
+    arg1->tpage.code[0] = 0xE1000400;
     arg1->code = 0x62;
     arg1->r0 = r0;
     arg1->g0 = g0;
     arg1->b0 = b0;
-    arg1->rect.x = cfg->x + arg4->paperMatX;
-    arg1->rect.y = cfg->y + arg4->paperMatY;
-    arg1->rect.w = arg4->paperMatWidth;
-    arg1->rect.h = arg4->paperMatHeight;
+    arg1->x0 = cfg->x + arg4->paperMatX;
+    arg1->y0 = cfg->y + arg4->paperMatY;
+    arg1->w = arg4->paperMatWidth;
+    arg1->h = arg4->paperMatHeight;
 
     addPrimFast(arg0, arg1, t3);
 
@@ -4056,33 +4005,33 @@ s32 func_801E8DA4(void) {
     return 0x801CD000;
 }
 
-s32 func_801E8DB0(s32 arg0, s32 arg1, MenuDisplayConfig *cfg, u32 color, s32 arg4) {
+s32 func_801E8DB0(s32 arg0, s32 arg1, MenuDisplayConfig *cfg, u32 color, MagazinePageEntry *arg4) {
     s32 i;
-    u16 *ptr1;
-    u8 *ptr2;
+    u16* picOverlayXPtr;
+    u8* picOverlayIdPtr;
     s32 x;
     s32 y;
 
     i = 0;
-    ptr1 = arg4 + 0x24;
-    ptr2 = arg4 + 0x27;
+    picOverlayXPtr = &arg4->pictureOverlays[0].x;
+    picOverlayIdPtr = &arg4->pictureOverlays[0].id;
     while (i < 4) {
-        if (ptr2[0] != 0xFF) {
-            x = cfg->x + ptr1[0];
-            y = cfg->y + ptr2[-1];
-            arg1 = func_800376A8(arg0, arg1, func_801E8DA4(), ptr2[0], x, y, color);
+        if (picOverlayIdPtr[0] != 0xFF) {
+            x = cfg->x + picOverlayXPtr[0];
+            y = cfg->y + picOverlayIdPtr[-1];
+            arg1 = func_800376A8(arg0, arg1, func_801E8DA4(), picOverlayIdPtr[0], x, y, color);
         }
         i++;
-        ptr2 += 4;
-        ptr1 += 2;
+        picOverlayIdPtr += 4;
+        picOverlayXPtr += 2;
     }
     return arg1;
 }
 
-s32 func_801E8E98(void *arg0, s32 arg1, MenuDisplayConfig *cfg, s32 arg3, s32 arg4) {
+s32 func_801E8E98(void *arg0, s32 arg1, MenuDisplayConfig *cfg, s32 arg3, MagazinePageEntry *arg4) {
     s32 i;
-    u16 *ptr1;
-    u8 *ptr2;
+    u16 *picOverlayXPtr;
+    u8 *picOverlayIdPtr;
     s16 xBase;
     s16 yBase;
     s32 x;
@@ -4090,49 +4039,46 @@ s32 func_801E8E98(void *arg0, s32 arg1, MenuDisplayConfig *cfg, s32 arg3, s32 ar
     s32 head;
 
     i = 0;
-    ptr1 = arg4 + 0x34;
-    ptr2 = arg4 + 0x37;
+    picOverlayXPtr = &arg4->textOverlays[0].x;
+    picOverlayIdPtr = &arg4->textOverlays[0].id;
     while (i < 4) {
-        if (ptr2[0] != 0xFF) {
+        if (picOverlayIdPtr[0] != 0xFF) {
             xBase = cfg->x;
             yBase = cfg->y;
-            x = xBase + ptr1[0];
-            y = yBase + ptr2[-1];
+            x = xBase + picOverlayXPtr[0];
+            y = yBase + picOverlayIdPtr[-1];
             if (i & 1) {
                 head = getDisplayListHead();
                 storeGpuPacket(arg1);
             }
-            drawMessageText(arg0, x, y, func_801E89A4(ptr2[0]));
+            drawMessageText(arg0, x, y, func_801E89A4(picOverlayIdPtr[0]));
             if (i & 1) {
                 arg1 = getDisplayListHead();
                 storeGpuPacket(head);
             }
         }
         i++;
-        ptr2 += 4;
-        ptr1 += 2;
+        picOverlayIdPtr += 4;
+        picOverlayXPtr += 2;
     }
     return arg1;
 }
 
 void *func_801E8FA8(void *ot, PaperMatSlicePrim *prim, MenuDisplayConfig *cfg, u32 color, MagazinePageEntry *mag) {
+    s32 clut;
+    s32 drawModeCmd;
+    s32 texWindowCmd;
     s32 winXRaw;
-    s32 tpageCmd;
     s32 winXSignAdjust;
+    s32 winYSignAdjust;
     s32 sliceXOffset;
     s32 sliceWidth;
-    s32 remainingWidth;
-    s32 winYSignAdjust;
-    s32 tpageBaseCmd;
-    s32 uvClutAttr;
-    s32 twinCmd;
     s32 horizontalOffset;
+    s32 remainingWidth;
 
-    tpageBaseCmd = 0xE1000480;
-    uvClutAttr = 0x36E0;
-
+    clut = 0x36E0;
     winXRaw = (mag->paperBgParamA + 0x380) * 4;
-    tpageCmd = (((mag->paperBgParamA + 0x380) & 0x3FF) >> 6) | tpageBaseCmd;
+    drawModeCmd = (((mag->paperBgParamA + 0x380) & 0x3FF) >> 6) | 0xE1000480;
     winXSignAdjust = winXRaw; 
     sliceXOffset = mag->paperBgParamB;
     if (winXSignAdjust < 0) {
@@ -4143,13 +4089,15 @@ void *func_801E8FA8(void *ot, PaperMatSlicePrim *prim, MenuDisplayConfig *cfg, u
     if (winYSignAdjust < 0) {
         winYSignAdjust += 0xFF;
     }
-    twinCmd = (winXRaw | (((sliceXOffset - (winYSignAdjust & 0x100)) >> 3) << 0xF) | 0xE200039C);
+    texWindowCmd = winXRaw | (((sliceXOffset - (winYSignAdjust & 0x100)) >> 3) << 0xF) | 0xE200039C;
     remainingWidth = mag->windowWidth;
-    prim->len = 2;
-    prim->tpageCode = -0x1E000000;
-    prim->twinCode = 0;
+
+    setlen(prim, 2);
+    prim->twin.code[0] = 0xE2000000;
+    prim->twin.code[1] = 0;
     addPrimFast(ot, prim, t6);
-    prim = (PaperMatSlicePrim*)&prim->sprt.tag;
+    prim = (PaperMatSlicePrim *)&prim->sprt.tag;
+
     horizontalOffset = 0;
     while (remainingWidth > 0) {
         sliceWidth = remainingWidth;
@@ -4157,15 +4105,15 @@ void *func_801E8FA8(void *ot, PaperMatSlicePrim *prim, MenuDisplayConfig *cfg, u
             sliceWidth = 0x40;
         }
         *(u32*)&prim->sprt.r0 = color;
-        prim->len = 7;
-        prim->tpageCode = tpageCmd;
-        prim->twinCode = twinCmd;
+        setlen(prim, 7);
+        prim->twin.code[0] = drawModeCmd;
+        prim->twin.code[1] = texWindowCmd;
         prim->sprt.tag = 0;
         prim->sprt.x0 = cfg->x + horizontalOffset;
         prim->sprt.y0 = cfg->y;
         prim->sprt.w = sliceWidth;
         prim->sprt.h = cfg->h;
-        prim->sprt.clut = uvClutAttr;
+        prim->sprt.clut = clut;
         prim->sprt.u0 = 0;
         prim->sprt.v0 = 0;
         remainingWidth -= sliceWidth;
