@@ -243,18 +243,6 @@ typedef struct {
     WeaponRecipeIngredient ingredients[WEAPON_RECIPE_INGREDIENT_COUNT]; /**< 0x04: ingredients required to craft the weapon. */
 } WeaponRecipe; /* 12 bytes */
 
-/**
- * @brief Tutorial section entry count (g_gameState.mainData.tutoEntryCount alias).
- *
- * Number of available tutorial entries in the current section. Read by
- * the menututo overlay. Divided by 10 (rounded up) gives the page count.
- * Declared u8 to match the underlying gamestate field; cast to s8 in
- * specific contexts where the original code used signed-byte arithmetic.
- */
-extern u8 D_800780AB;
-
-
-
 /* menumain-owned shared symbols (canonical signatures from menumain.c). */
 s32 func_801F6AFC(s32);
 s32 func_801EFBB4(s32, s32, MenuRowCallback);

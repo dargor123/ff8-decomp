@@ -429,7 +429,7 @@ u8 func_801E2EA8(s32 arg0) {
     u8 ret;
     switch (func_801E2E38(arg0)) {
     case 19:
-        if (!(func_80036EC0() & 8) || (D_8007809A & 1)) {
+        if (!(func_80036EC0() & 8) || (g_gameState.mainData.partyLockFlag & PARTY_LOCK_LOCKED)) {
             ret = func_801E2E54(arg0) & 0xFE;
         } else {
             ret = func_801E2E54(arg0);
@@ -443,7 +443,7 @@ u8 func_801E2EA8(s32 arg0) {
         break;
     case 12:
         ret = 17;
-        if (D_8007809A & 0x10) {
+        if (g_gameState.mainData.partyLockFlag & PARTY_LOCK_FLAG_10) {
             ret = 16;
         }
         break;
@@ -752,7 +752,7 @@ s32 func_801E35B8(s32 arg0, s32 arg1) {
         val4 = (u32)val3 >> 1;
     }
 
-    if (!(g_gameState.gfs[val2].exists & 1)) {
+    if (!(g_gameState.gfs[val2].exists & GF_EXISTS)) {
         return 0;
     }
      
@@ -1693,25 +1693,25 @@ void func_801E4C74(u8* src, u8* dst, s32 abilityId) {
 }
 
 void func_801E4D40(u8 *arg0, u8 *arg1, s32 arg2, s32 arg3, s32 arg4, AbilityListEntry *arg5) {
-    GfLearnData *gfLearnData;
+    JunctionableGfEntry *gf;
     s32 i;
     s32 j;
     s32 k;
     s32 slot;
     s32 levelReq;
 
-    gfLearnData = &D_80079D78[arg2];
+    gf = &g_kernel.junctionableGfs[arg2];
     func_801E4C74(arg0, arg1, arg3);
     arg1 = &arg1[btlStrlen(arg1)];
 
     for (i = 0; i < 21; i++) {
-        if (arg3 != gfLearnData->abilities[i].slot) {
+        if (arg3 != gf->abilities[i].abilityId) {
             continue;
         }
 
         for (j = 0; j < 21; j++) {
-            levelReq = gfLearnData->abilities[j].levelReq;
-            slot = gfLearnData->abilities[j].slot;
+            levelReq = gf->abilities[j].levelReq;
+            slot = gf->abilities[j].abilityId;
 
             if (levelReq == 0xFF || levelReq < 0x65) {
                 continue;
@@ -1911,7 +1911,7 @@ restart:
                     goto restart;
                 case 14:
                     state = 65;
-                    if (!(D_8007752D & 1)) {
+                    if (!(g_gameState.gfs[GF_DIABLOS].exists & GF_EXISTS)) {
                         if (D_8008520B == 0) {
                             sendSpuCommand(2);
                             D_8008520C = 1;
@@ -2048,7 +2048,7 @@ restart:
         }
         if (val1 & 0x40) {
             val2 &= 8;
-            if (D_8007809A & 1) {
+            if (g_gameState.mainData.partyLockFlag & PARTY_LOCK_LOCKED) {
                 val2 = 0;
             }
         }
@@ -2657,7 +2657,7 @@ restart:
         s32 val1;
         s32 val2;
         state = 65;
-        if (!(D_800776C5 & 1)) {
+        if (!(g_gameState.gfs[GF_DOOMTRAIN].exists & GF_EXISTS)) {
             ptr = D_801EC710;
             while (1) {
                 val1 = ptr[0];
@@ -3423,7 +3423,7 @@ restart:
         val1 = func_801E2E70(s->unk65);
         val1 = 1 << val1;
         state = 108;
-        if (D_80077E8C & val1) {
+        if (g_gameState.mainData.limitBreaks.quistisLimits & val1) {
             state = 109;
         }
         goto restart;
