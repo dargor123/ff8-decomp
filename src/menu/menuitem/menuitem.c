@@ -4178,9 +4178,92 @@ s32 func_801E91E4(s32 a0, s32 a1, s32 a2, s32 a3, u16 *src) {
     func_801E90D8(a0, a1, &g_menuDisplayCfg, g_menuTint[MENU_TINT_NORMAL], src);
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E9248);
+s32 func_801E9248(void *arg0, void *arg1, MagazinePageEntry *arg2) {
+    u8* msg;
+    s32 x;
+    s32 y;
+    u16 width;
+    u32 menuTint;
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E934C);
+    x = 0; if (x) { x++; x--; }
+
+    menuTint = g_menuTint[MENU_TINT_NORMAL];
+    msg = func_801F08D4(1, 9, 22, 0);
+    width = measureMessage(msg);
+    x = (336 - width) / 2;
+    x += 24;
+    y = 200;
+    arg1 = func_801F0FEC(arg0, arg1, x, y, msg, 7);
+    g_menuDisplayCfg.x = 24;
+    g_menuDisplayCfg.y = 196;
+    g_menuDisplayCfg.w = 336;
+    g_menuDisplayCfg.h = 20;
+    arg1 = func_8002B898(arg0, arg1, &g_menuDisplayCfg, menuTint);
+    return func_801E8FA8(arg0, arg1, &g_menuDisplayCfg, menuTint, arg2);
+}
+
+void *func_801E934C(void *arg0, void *arg1, s32 arg2, s32 arg3, s32 arg4, s32 arg5) {
+    u8 buffer[128];
+    s32 spA0;
+    s32 spA4;
+    u16 spA8;
+    s32 color;
+    s32 i;
+    s32 x;
+    s32 y;
+    MenuDisplayConfig *cfg;
+    s32 val1;
+    s32 val2;
+    s32 val3;
+    s32 mask;
+    u8 *msg;
+
+    cfg = &g_menuDisplayCfg;
+    if (arg4 >= 0) {
+        spA8 = func_801F57A4(arg4);
+        spA0 = func_801F57DC(arg4);
+        spA4 = func_801F58EC(arg4);
+        val3 = func_801F5938(arg4);
+        color = func_801F3FB4(spA8);
+        x = arg2 + 8;
+        y = arg3 + 8;
+        val1 = func_801F3ABC(val3, arg0, arg1, x, y, color);
+        x = arg2 + 72;
+        y = arg3 + 6;
+        arg1 = func_801F6418(arg4, arg0, val1, x, y);
+        if (arg5 >= 0) {
+            x = arg2 + 8;
+            y = arg3 + 23;
+            msg = func_801F08D4(1, 9, 31, 0);
+            func_801E2C0C(msg, buffer, 0, arg5, 0);
+            func_801E3EBC(arg4, 0, arg5);
+            val2 = D_801ECED8;
+            arg1 = func_801F0FEC(arg0, arg1, x, y, buffer, color);
+            x = arg2 + 164;
+            arg1 = drawNumberMenuTint(arg0, arg1, (y << 0x10) | (x & 0xFFFF), val2, color);
+        } else {
+            x = arg2 + 8;
+            y = arg3 + 23;
+            arg1 = func_801F3CE0(spA0, spA4, arg0, arg1, x, y, color);
+        }
+        x = arg2 + 82;
+        y = arg3 + 8;
+        mask = spA8 & 0x7E;
+        for (i = 0; i < 16; i++) {
+            if ((mask >> i) & 1) {
+                arg1 = drawIcon(arg0, arg1, i + 272, x, y, g_menuTint[MENU_TINT_NORMAL]);
+                x += 17;
+            }
+        }
+    }
+    cfg->iconType = 82;
+    cfg->iconSubType = 0;
+    cfg->x = arg2;
+    cfg->y = arg3;
+    cfg->w = 168;
+    cfg->h = 40;
+    return func_801EF9AC(arg0, arg1, 4096, g_menuTint[MENU_TINT_NORMAL]);
+}
 
 s32 func_801E95C4(MenuItemState *s, s32 arg1, s32 arg2) {
     s32 pkt;
