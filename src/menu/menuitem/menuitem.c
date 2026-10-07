@@ -67,8 +67,9 @@ typedef struct {
     s16 menuColorIntensity;
     s16 unk3E;
     s16 unk40;
-    u8 pad42[0x4];
-    s16 unk46;
+    u8 pad42[0x2];
+    u16 unk44;
+    u16 unk46;
     s16 unk48;
     u8 unk4A;
     s8 unk4B;
@@ -77,7 +78,7 @@ typedef struct {
     s8 unk4F;
     s16 unk50;
     u8 unk52;
-    s8 unk53;
+    u8 unk53;
     s16 unk54;
     u8 pad56[0x2];
     s16 unk58;
@@ -110,7 +111,7 @@ extern u8 D_800776C5;
 extern u16 D_80077E8C;
 
 s32 func_801E80D0(s32, s32, s32, s32, s32);
-s32 func_801E95C4(s32, s32, s32);
+s32 func_801E95C4(MenuItemState *s, s32, s32);
 void func_801E4EA4(MenuItemState*);
 
 /** @brief Store item menu state pointer. */
@@ -3565,7 +3566,7 @@ void *func_801E7D18(void *arg0, void *arg1, s32 arg2, s32 arg3, s32 arg4) {
     return arg1;
 }
 
-void func_801E7E74(MenuItemState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+s32 func_801E7E74(MenuItemState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     g_menuDisplayCfg.iconType = 76;
     g_menuDisplayCfg.iconSubType = 0;
     g_menuDisplayCfg.x = arg3;
@@ -3579,10 +3580,10 @@ void func_801E7E74(MenuItemState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     g_menuDisplayCfg.dataPtr = s->itemSlots;
     arg2 = func_801F5EFC(arg1, arg2, arg3 + 28, arg4, g_menuTint[MENU_TINT_NORMAL], s->unk4A);
     arg2 = func_801F5F60(arg1, arg2, g_menuTint[MENU_TINT_NORMAL], 3);
-    func_801EFBB4(arg1, arg2, func_801E7D18);
+    return func_801EFBB4(arg1, arg2, func_801E7D18);
 }
 
-void func_801E7F4C(MenuItemState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+s32 func_801E7F4C(MenuItemState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     g_menuDisplayCfg.iconType = 76;
     g_menuDisplayCfg.iconSubType = 0;
     g_menuDisplayCfg.x = arg3;
@@ -3596,10 +3597,10 @@ void func_801E7F4C(MenuItemState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     g_menuDisplayCfg.dataPtr = s->itemSlots;
     arg2 = func_801F5EFC(arg1, arg2, arg3 + 28, arg4, g_menuTint[MENU_TINT_NORMAL], s->unk52);
     arg2 = func_801F5F60(arg1, arg2, g_menuTint[MENU_TINT_NORMAL], 3);
-    func_801EFBB4(arg1, arg2, func_801E7D18);
+    return func_801EFBB4(arg1, arg2, func_801E7D18);
 }
 
-void func_801E8024(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+s32 func_801E8024(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     arg2 = func_801F5A38(arg1, arg2, arg3 + 26, arg4 + 6, 9, D_801EB1D8, 15);
     g_menuDisplayCfg.iconType = 0;
     g_menuDisplayCfg.iconSubType = 0;
@@ -3607,7 +3608,7 @@ void func_801E8024(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     g_menuDisplayCfg.y = arg4;
     g_menuDisplayCfg.w = 244;
     g_menuDisplayCfg.h = 18;
-    func_801EF9AC(arg1, arg2, 4096, g_menuTint[MENU_TINT_NORMAL]);
+    return func_801EF9AC(arg1, arg2, 4096, g_menuTint[MENU_TINT_NORMAL]);
 }
 
 /**
@@ -3654,7 +3655,7 @@ s32 func_801E80D0(s32 arg0, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
  * @param a3 X position for display config.
  * @param arg4 Y position for display config.
  */
-void func_801E8180(u8 *a0, s32 a1, s32 a2, s32 a3, s32 arg4) {
+s32 func_801E8180(u8 *a0, s32 a1, s32 a2, s32 a3, s32 arg4) {
     g_menuDisplayCfg.iconType = 0x55;
     g_menuDisplayCfg.iconSubType = 0;
     g_menuDisplayCfg.x = a3;
@@ -3666,7 +3667,7 @@ void func_801E8180(u8 *a0, s32 a1, s32 a2, s32 a3, s32 arg4) {
     g_menuDisplayCfg.y = arg4;
     g_menuDisplayCfg.scrollOffset = *(u16 *)(a0 + 0x48) + *(u16 *)(a0 + 0x4C) + *(u16 *)(a0 + 0x50);
     g_menuDisplayCfg.dataPtr = (s32)(a0 + 0x28);
-    func_801EFBB4(a1, a2, func_801E80D0);
+    return func_801EFBB4(a1, a2, func_801E80D0);
 }
 
 TSPRT *func_801E820C(P_TAG *arg0, TSPRT *arg1, s32 arg2, s32 arg3, s32 arg4) {
@@ -3773,7 +3774,7 @@ s32 func_801E859C(MenuItemState *s, void* arg1, void* arg2, s32 arg3, s32 arg4) 
     return func_801EFBB4(arg1, arg2, func_801E84A4);
 }
 
-void func_801E8684(MenuItemState *s, void *arg1, void *arg2) {
+s32 func_801E8684(MenuItemState *s, void *arg1, void *arg2) {
     s32 index;
     s32 xOffset;
     s32 x;
@@ -3835,7 +3836,7 @@ void *func_801E8780(void *arg0, void *arg1, s32 arg2, s32 arg3, s32 arg4) {
     return func_801F0FEC(arg0, arg1, x + 13, y, getAbilityName(slot), color);
 }
 
-void func_801E88AC(MenuItemState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+s32 func_801E88AC(MenuItemState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
     s32 arrows;
     g_menuDisplayCfg.iconType = 94;
     g_menuDisplayCfg.iconSubType = 0;
@@ -3855,7 +3856,7 @@ void func_801E88AC(MenuItemState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
         }
         arg2 = func_801F5F60(arg1, arg2, g_menuTint[MENU_TINT_NORMAL], arrows);
     }
-    func_801EFBB4(arg1, arg2, func_801E8780);
+    return func_801EFBB4(arg1, arg2, func_801E8780);
 }
 
 /**
@@ -4169,7 +4170,7 @@ void func_801E90D8(s32 a0, s32 a1, MenuDisplayConfig *cfg, s32 a3, s32 arg5) {
  * @param a3 Y offset to add to template Y.
  * @param arg5 Pointer to 4-halfword rectangle template.
  */
-void func_801E91E4(s32 a0, s32 a1, s32 a2, s32 a3, u16 *src) {
+s32 func_801E91E4(s32 a0, s32 a1, s32 a2, s32 a3, u16 *src) {
     g_menuDisplayCfg.x = src[0] + a2;
     g_menuDisplayCfg.y = src[1] + a3;
     g_menuDisplayCfg.w = src[2];
@@ -4181,7 +4182,126 @@ INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E9248);
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E934C);
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E95C4);
+s32 func_801E95C4(MenuItemState *s, s32 arg1, s32 arg2) {
+    s32 pkt;
+    s32 aux;
+
+    if (func_801F0D84() != 2) {
+        return arg2;
+    }
+
+    pkt = getDisplayListHead();
+
+    if (s->unk40 != 0) {
+        MagazinePageEntry *magazinePage;
+        s32 unk50;
+        s32 x;
+        s32 y;
+
+        func_801F1AFC();
+        setMenuBrightness(s->unk40);
+        x = 0;
+        y = 0;
+        unk50 = s->unk50;
+        if (unk50 != 0) {
+            aux = D_801FA3C8[(unk50 < 0 ? -unk50 : unk50) / 64];
+            aux = unk50 < 0 ? -aux : aux;
+            aux = aux * 384 / 4096;
+            if (unk50 > 0) {
+                x = aux - 384;
+            } else {
+                x = aux + 384;
+            }
+            magazinePage = D_801EB4BC;
+            magazinePage += s->unk53;
+            arg2 = func_801E91E4(arg1, arg2, x, y, magazinePage);
+            x = aux;
+        }
+        magazinePage = D_801EB4BC;
+        magazinePage += s->unk52;
+        arg2 = func_801E91E4(arg1, arg2, x, y, magazinePage);
+        if (magazinePage->footerFlag != 0) {
+            arg2 = func_801E9248(arg1, arg2, magazinePage);
+        }
+    } else {
+        s32 brightness;
+        s32 unk46;
+        s32 mask;
+        s32 x;
+        s32 y;
+
+        func_801F1AFC();
+        setMenuBrightness(s->menuColorIntensity);
+
+        if (s->unk30 != NULL) {
+            pkt = func_801F4168(arg1, pkt, s->unk30, 192, 100, 4096, 86);
+        }
+
+        if (s->unk66 >= 0) {
+            pkt = func_801F6FE4(arg1, pkt, 1, 4096);
+        }
+
+        if (s->unk6C != 0) {
+            arg2 = func_801E8684(s, arg1, arg2);
+        }
+
+        x = 24;
+        y = 10;
+        pkt = func_801E8024(s, arg1, pkt, x, y);
+
+        x = 30;
+        y = 29;
+        pkt = func_801E8180(s, arg1, pkt, x, y);
+
+        if (s->unk3E != 0) {
+            aux = s->unk3E * s->menuColorIntensity / 4096;
+            setMenuBrightness(aux);
+
+            x = 26;
+            y = 56;
+            brightness = D_801FA3C8[s->unk5E / 64];
+            x -= brightness * 190 / 4096;
+            if (brightness < 4096) {
+                arg2 = func_801E88AC(s, arg1, arg2, x, y);
+            }
+
+            if (s->unk5A < 4096) {
+                x = 192 + D_801FA3C8[s->unk5A / 64] * 190 / 4096;
+                func_801F0FD0(192, 358);
+                arg2 = func_801E7F4C(s, arg1, arg2, x, y);
+                func_801F0FD0(0, 0);
+            }
+
+            brightness = aux * s->unk5A / 4096;
+            setMenuBrightness(brightness);
+
+            x = 192;
+            y = 56;
+            unk46 = s->unk46;
+
+            mask = s->unk44;
+            if (func_801E2E54(s->unk65) & 0x40) {
+                mask &= 8;
+                if (g_gameState.mainData.partyLockFlag & PARTY_LOCK_LOCKED) {
+                    mask = 0;
+                }
+            }
+            
+            arg2 = func_801E83B4(arg1, arg2, x, y, 4096, s->unk65, mask, unk46);
+            setMenuBrightness(aux);
+            func_801F0FD0(26, 192);
+            y = 56;
+            arg2 = func_801E7E74(s, arg1, arg2, 26, y);
+            func_801F0FD0(0, 0);
+            setMenuBrightness(brightness);
+            pkt = func_801E934C(arg1, pkt, 192, 176, s->unk62, s->unk6B);
+            setMenuBrightness(s->menuColorIntensity);
+        }
+    }
+    func_801F1B10();
+    storeGpuPacket(pkt);
+    return arg2;
+}
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E9AAC);
 
