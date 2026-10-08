@@ -4440,7 +4440,38 @@ void func_801E9B98(void) {
  * @param a1 Maximum number of bytes to scan.
  * @return Count of leading non-null bytes, capped at a1-1.
  */
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E9C90);
+s32 func_801E9C90(u8* arg0, s32 arg1) {
+    s32 i;
+    s32 count;
+    u8* ptr;
+
+    ptr = arg0;
+    i = 0;
+    count = 0;
+
+    if (arg1 > 0) {
+        while (1) {
+            if (*ptr++ == 0) {
+                break;
+            }
+
+            i++;
+            count++;
+
+            if (i >= arg1) {
+                break;
+            }
+        }
+
+        if (count >= arg1) {
+            count = arg1 - 1;
+        }
+    } else {
+        count = arg1 - 1;
+    }
+
+    return count;
+}
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E9CD4);
 
