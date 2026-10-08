@@ -85,7 +85,7 @@ typedef struct {
     s16 unk5A;
     s16 unk5C;
     s16 unk5E;
-    u8 pad60[0x1];
+    s8 unk60;
     s8 unk61;
     s8 unk62;
     s8 unk63;
@@ -4386,7 +4386,45 @@ s32 func_801E95C4(MenuItemState *s, s32 arg1, s32 arg2) {
     return arg2;
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E9AAC);
+void func_801E9AAC(MenuItemState *s) {
+    u16 val1;
+    u16 availGfs;
+    s32 counter;
+    s32 i;
+    val1 = func_80036EC0();
+    availGfs = getGfAvailabilityMask();
+    s->unk44 = val1;
+    s->unk46 = availGfs;
+    counter = 0;
+    for (i = 0; i < 8; i++) {
+        if ((val1 >> i) & 1) {
+            counter++;
+        }
+    }
+    s->itemSlots = g_gameState.mainData.itemSlots;
+    s->unk60 = counter;
+    s->unk24 = g_gameState.mainData.battleOrder;
+    s->unk4A = 0;
+    s->unk4B = 0;
+    s->unk48 = 0;
+    s->unk52 = 0;
+    s->unk53 = 0;
+    s->unk50 = 0;
+    s->itemDesc = NULL;
+    s->previousItemDesc = NULL;
+    s->unk61 = 0;
+    s->unk65 = 0;
+    s->unk3E = 4096;
+    s->unk6C = 0;
+    s->unk62 = -1;
+    s->unk30 = NULL;
+    s->menuColorIntensity = 0;
+    s->unk66 = -1;
+    s->unk5E = 4096;
+    s->unk5A = 4096;
+    s->unk6B = -1;
+    func_801E2D54(s->itemSlots, s->unk24);
+}
 
 /**
  * @brief Initialize item menu system.
