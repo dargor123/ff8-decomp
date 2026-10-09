@@ -20,14 +20,6 @@
 #include "psxsdk/libetc.h"
 #include "battle_results/number.h"
 
-typedef struct {
-    u16 unk0;
-    u16 unk2;
-    u16 unk4;
-    u8 unk6;
-    u8 unk7;
-} ST_0;
-
 /**
  * @brief GPU composite primitive for weapon magazine paper mat.
  */
@@ -53,18 +45,18 @@ typedef struct {
 
 typedef struct {
     u8 pad00[0x10];
-    u16 state;
+    u16 state;      /**< 0x10: Current menu state. */
     u8 pad12[0x4];
-    u16 returnState;
+    u16 returnState; /**< 0x1C: Previous menu state. */
     u8 pad18[0x8];
-    ItemSlot *itemSlots;
+    ItemSlot *itemSlots; /**< 0x20: Item slots. */
     s32 unk24;
-    u8 *itemDesc;
-    u8 *previousItemDesc;  
+    u8 *itemDesc; /**< 0x28: Item description. */
+    u8 *previousItemDesc; /**< 0x2C: Previous item description (used for transition animations). */
     u8 *unk30;
     s32 unk34;
     s32 unk38;
-    s16 menuColorIntensity;
+    s16 menuColorIntensity; /**< 0x3C: Color intensity used for menu fade in/out animation. */
     s16 unk3E;
     s16 unk40;
     u8 pad42[0x2];
@@ -100,15 +92,37 @@ typedef struct {
     s16 unk6C;
 } MenuItemState;
 
+typedef struct {
+    u16 unk0;
+    u16 unk2;
+    u16 unk4;
+    u8 unk6;
+    u8 unk7;
+} UNKST_0; /* 0x8 */
+
+typedef struct {
+    u8 pad00[0x20];
+    u8 *unk20;
+    u8 *unk24;
+    u8 pad28[0x4];
+    u8 unk2C;
+    u8 unk2D;
+    u8 unk2E;
+    u8 unk2F;
+} UNKST_1;
+
+typedef struct {
+    u16 *a0;
+    s32 a1;
+} UNKST_2; /* 0x8 */
+
 extern u8 D_801ECC20[];
-extern ST_0 D_801EB1FC[];
+extern UNKST_0 D_801EB1FC[];
 extern CharacterData D_801ECE40;
 extern u8 D_801EB234[]; /**< Weapon ID's, indexed by char ID. */
 extern s32 D_801ECED8;
 extern u8 D_801EB1E4[];
-extern u8 D_8007752D;
-extern u8 D_800776C5;
-extern u16 D_80077E8C;
+extern UNKST_2 D_801EB320[];
 
 s32 func_801E80D0(s32, s32, s32, s32, s32);
 s32 func_801E95C4(MenuItemState *s, s32, s32);
@@ -1051,7 +1065,7 @@ void func_801E3E94(void) {
 s32 func_801E3EBC(s32 arg0, s32 arg1, s32 arg2) {
     BattleCharData buf;
     s32 ret;
-    ST_0 *st;
+    UNKST_0 *st;
     s32 i;
     s16* p1_16;
     s16* p2_16;
@@ -4562,7 +4576,25 @@ u8 *func_801E9E7C(s32 a0) {
     return func_801F08D4(1, 5, a0, 0);
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E9EA8);
+void func_801E9EA8(UNKST_1* arg0, s32 arg1) {
+    u8* ptr;
+    u8* msg;
+    s32 page;
+    s32 row;
+    s32 val1;
+
+    ptr = &arg0->unk24[func_801E9C90(arg0->unk24, arg0->unk20[0])];
+    row = arg0->unk2D % 7;
+    page = arg0->unk2D / 7;
+    if (arg1 != 0) {
+        msg = func_801E9E7C(D_801EB320[arg0->unk2C].a0[page]) + row;
+    } else {
+        msg = getMenuString(0xB);
+    }
+    *ptr++ = msg[0];
+    *ptr = 0;
+    if (ptr) { ptr++; ptr--; }
+}
 
 /**
  * @brief Initialize item sub-menu.
