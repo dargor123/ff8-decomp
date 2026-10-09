@@ -4542,7 +4542,20 @@ void func_801E9DE4(u8 *a0) {
  * @param a0 Pointer to a null-terminated byte string.
  * @return 1 if a mismatch is found, 0 otherwise.
  */
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E9E10);
+s32 func_801E9E10(u8* ptr) {
+    if (btlStrlen(ptr) != 0) {
+        while (1) {
+            s32 ch = *ptr++;
+            if (ch == 0) {
+                break;
+            }
+            if (ch != getMenuString(0xB)[0]) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
 
 /** @brief Look up string @p a0 in menu text category 5. */
 u8 *func_801E9E7C(s32 a0) {
