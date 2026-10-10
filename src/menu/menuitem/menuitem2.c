@@ -277,7 +277,6 @@ s32 func_801EA538(AnotherItemMenuState *s, void *ot, DR_TPAGE *prim, s32 arg3, s
 
             // dead code
             if (head3) { head3++; head3--; }
-            while(0);
 
             head3 = (s32)prim << 8;
             setAddrFast(prim, head2);
@@ -296,9 +295,47 @@ s32 func_801EA538(AnotherItemMenuState *s, void *ot, DR_TPAGE *prim, s32 arg3, s
     return func_801EF9AC(ot, prim, 0x1000, g_menuTint[0]);
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem2", func_801EA714);
+s32 func_801EA714(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    s32 x;
+    s32 y;
+    x = arg2 + 8;
+    y = arg3 + 8;
+    arg1 = func_801F0FEC(arg0, arg1, x, y, func_801E9E7C(7), 7);
+    g_menuDisplayCfg.iconType = 0x55;
+    g_menuDisplayCfg.iconSubType = 0;
+    g_menuDisplayCfg.x = arg2;
+    g_menuDisplayCfg.y = arg3;
+    g_menuDisplayCfg.w = 0x102;
+    g_menuDisplayCfg.h = 0x1A;
+    return func_801EF9AC(arg0, arg1, 0x1000, g_menuTint[0]);
+}
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem2", func_801EA7E0);
+s32 func_801EA7E0(AnotherItemMenuState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg4) {
+    s32 i;
+    s32 color;
+    s32 x;
+    s32 y;
+    MenuDisplayConfig *gs;
+    gs = &g_menuDisplayCfg;
+    x = arg3 + 0xA;
+    y = arg4 + 0xA;
+    for (i = 0; i < 6; i++) {
+        color = 7;
+        if (i == s->unk2C) {
+            color = 2;
+        }
+        arg2 = func_801F0FEC(arg1, arg2, x, y, func_801E9E7C(i), color);
+        y += 0x10;
+    }
+    gs->iconType = 0;
+    gs->iconSubType = 0;
+    gs->x = arg3;
+    gs->y = arg4;
+    gs->w = 0x50;
+    gs->h = 0x7D;
+    arg2 = func_801EF9AC(arg1, arg2, 0x1000, g_menuTint[0]);
+    return arg2;
+}
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem2", func_801EA8F0);
 
