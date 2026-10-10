@@ -11,6 +11,18 @@
 
 extern UNKST_3 D_801EB240[];
 
+static void func_801E9F94(AnotherItemMenuState *);
+static s32 func_801EA500(s32, s32, s32, s32, s32);
+static s32 func_801EA538(AnotherItemMenuState *, void *, DR_TPAGE *, s32, s32);
+static s32 func_801EA714(s32, s32, s32, s32);
+static s32 func_801EA7E0(AnotherItemMenuState *, s32, s32, s32, s32);
+static void *func_801EA8F0(void *, DR_TPAGE *, s32, s32, u16, s32);
+static DR_TPAGE *func_801EAA04(AnotherItemMenuState *, void *, DR_TPAGE *, s32, s32);
+static s32 func_801EAB00(s32, s32, s32, s32, s32);
+static s32 func_801EAB8C(s32, s32, s32, s32);
+static s32 func_801EAC54(s32, s32, s32);
+static void func_801EAD64(void);
+
 void func_801E9F94(AnotherItemMenuState *s) {
     UNKST_2 *st;
     u16 btnFlags;
