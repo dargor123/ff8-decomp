@@ -143,10 +143,20 @@ typedef struct {
     u8 unk7;
 } UNKST_0; /* 0x8 */
 
-
-
-
+extern u8 D_801EB1E4[];
+extern u8 D_801EB17C[];
+extern u8 D_801EB188[];
+extern u8 D_801EB194[];
+extern s16 D_801EB1D8[];
+extern UNKST_0 D_801EB1FC[];
+extern u8 D_801EB234[]; /**< Weapon ID's, indexed by char ID. */
+extern WeaponRecipe D_801EB330[WEAPON_RECIPE_COUNT]; /**< Weapon recipes (mwepon.bin content). */
+extern MagazinePageEntry D_801EB4BC[]; /**< Magazine pages (mmag.bin content). */
+extern u8 D_801EC710[]; /**< Items required to unlock Doomtrain GF (mthomas.bin content). */
+extern ItemSlot D_801ECB20[];
+extern AbilityListEntry D_801ECB60[];
 extern s32 D_801ECC10;
+extern u8 D_801ECC20[];
 extern s32 D_801ECE20;
 extern s32 D_801ECE24;
 extern s32 D_801ECE28;
@@ -154,28 +164,12 @@ extern s32 D_801ECE2C;
 extern s32 D_801ECE30;
 extern s32 D_801ECE34;
 extern s32 D_801ECE38;
+extern CharacterData D_801ECE40;
+extern s32 D_801ECED8;
 extern s32 D_801ECEDC;
 extern s32 D_801ECEE0;
 extern s32 D_801ECEE4;
 extern s32 D_801ECEE8;
-extern u8 D_801EB17C[];
-extern u8 D_801EB188[];
-extern u8 D_801EB194[];
-extern s16 D_801EB1D8[];
-extern WeaponRecipe D_801EB330[WEAPON_RECIPE_COUNT]; /**< Weapon recipes (mwepon.bin content). */
-extern MagazinePageEntry D_801EB4BC[]; /**< Magazine pages (mmag.bin content). */
-extern u8 D_801EC710[]; /**< Items required to unlock Doomtrain GF (mthomas.bin content). */
-extern ItemSlot D_801ECB20[];
-extern AbilityListEntry D_801ECB60[];
-
-
-extern u8 D_801ECC20[];
-extern UNKST_0 D_801EB1FC[];
-extern CharacterData D_801ECE40;
-extern u8 D_801EB234[]; /**< Weapon ID's, indexed by char ID. */
-extern s32 D_801ECED8;
-extern u8 D_801EB1E4[];
-
 
 static void func_801E2800(s32);
 static s32 func_801E280C(void);
