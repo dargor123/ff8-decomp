@@ -80,7 +80,7 @@ typedef struct {
     u8 unk2D;
     u8 unk2E;
     u8 unk2F;
-    s8 unk30;
+    u8 unk30;
 } AnotherItemMenuState;
 
 extern s32 D_801ECC10;

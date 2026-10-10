@@ -14,7 +14,7 @@
 
 void func_801E9F94(AnotherItemMenuState *s);
 s32  func_801EA500(s32 a0, s32 a1, s32 a2, s32 a3, s32 arg5);
-s32  func_801EA538(s32 a0, s32 a1, s32 a2, s32 a3, s32 arg5);
+s32 func_801EA538(AnotherItemMenuState *s, void *ot, DR_TPAGE *prim, s32 arg3, s32 arg4);
 s32  func_801EA714(s32 a0, s32 a1, s32 a2, s32 a3);
 s32  func_801EA7E0(s32 a0, s32 a1, s32 a2, s32 a3, s32 arg5);
 s32  func_801EAB00(s32 a0, s32 a1, s32 a2, s32 a3, s32 arg5);

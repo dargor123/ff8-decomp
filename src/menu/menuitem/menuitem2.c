@@ -238,7 +238,63 @@ s32 func_801EA500(s32 a0, s32 a1, s32 a2, s32 a3, s32 arg5) {
     return func_800375A0(a0, a1, arg5, a2, a3, g_menuTint[MENU_TINT_NORMAL]);
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem2", func_801EA538);
+s32 func_801EA538(AnotherItemMenuState *s, void *ot, DR_TPAGE *prim, s32 arg3, s32 arg4) {
+    s32 y;
+    s32 threshold;
+    s32 flag;
+    s32 i;
+    s32 x;
+    MenuDisplayConfig *gs;
+    u8* ptr;
+    u32 color;
+    s32 ch;
+    s32 head;
+    s32 head2;
+    s32 head3;
+    s32 primOffset;
+    primOffset = 0x14;
+    gs = &g_menuDisplayCfg;
+    x = arg3 + 0x12;
+    y = arg4 + 0xA;
+    flag = 1;
+    threshold = s->unk20->unk0;
+    ptr = s->unk24;
+    for (i = 0; i < threshold; i++) {
+        color = g_menuTint[0];
+        if (i == s->unk30 && (gs->animCounter & 1)) {
+            color = (color >> 1) & 0xFFFFFF;
+        }
+        ch = *ptr++;
+        if (ch == 0) {
+            flag = 0;
+        }
+        if (flag != 0) {
+            getAddrFast(ot, head);
+            head2 = func_801F0F20(head, prim, ch - 0x20, 7, (y << 0x10) | (x & 0xFFFF));
+            prim = (DR_TPAGE *)((u8 *)prim + primOffset);
+            setlen(prim, 1);
+            prim->code[0] = 0xE100041F;
+
+            // dead code
+            if (head3) { head3++; head3--; }
+            while(0);
+
+            head3 = (s32)prim << 8;
+            setAddrFast(prim, head2);
+            prim++;
+            setAddrFast(ot, head3);
+        }
+        prim = drawIcon(ot, prim, 0xD, x, y, color);
+        x += 0xE;
+    }
+    gs->iconType = 0x49;
+    gs->iconSubType = 0;
+    gs->x = arg3;
+    gs->y = arg4;
+    gs->w = 0x102;
+    gs->h = 0x20;
+    return func_801EF9AC(ot, prim, 0x1000, g_menuTint[0]);
+}
 
 INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem2", func_801EA714);
 
