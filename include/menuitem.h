@@ -56,6 +56,33 @@ typedef struct {
     MagazinePageOverlay textOverlays[4]; /**< 0x34: Text overlays in the page. */
 } MagazinePageEntry; /** 0x44 bytes */
 
+typedef struct {
+    u16 *a0;
+    s16 unk4;
+    s8 unk6;
+    u8 unk7;
+} UNKST_2; /* 0x8 */
+
+typedef struct {
+    u8 unk0;
+    u8 unk1;
+    u16 unk2;
+} UNKST_3;
+
+typedef struct {
+    u8 pad00[0x10];
+    u16 state; 
+    u8 pad[0xE];
+    UNKST_3 *unk20;
+    u8 *unk24;
+    s32 unk28;
+    u8 unk2C;
+    u8 unk2D;
+    u8 unk2E;
+    u8 unk2F;
+    s8 unk30;
+} AnotherItemMenuState;
+
 extern s32 D_801ECC10;
 extern s32 D_801ECE20;
 extern s32 D_801ECE24;
@@ -72,6 +99,7 @@ extern u8 D_801EB17C[];
 extern u8 D_801EB188[];
 extern u8 D_801EB194[];
 extern s16 D_801EB1D8[];
+extern UNKST_2 D_801EB320[];
 extern WeaponRecipe D_801EB330[WEAPON_RECIPE_COUNT]; /**< Weapon recipes (mwepon.bin content). */
 extern MagazinePageEntry D_801EB4BC[]; /**< Magazine pages (mmag.bin content). */
 extern u8 D_801EC710[]; /**< Items required to unlock Doomtrain GF (mthomas.bin content). */

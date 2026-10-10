@@ -100,29 +100,12 @@ typedef struct {
     u8 unk7;
 } UNKST_0; /* 0x8 */
 
-typedef struct {
-    u8 pad00[0x20];
-    u8 *unk20;
-    u8 *unk24;
-    u8 pad28[0x4];
-    u8 unk2C;
-    u8 unk2D;
-    u8 unk2E;
-    u8 unk2F;
-} UNKST_1;
-
-typedef struct {
-    u16 *a0;
-    s32 a1;
-} UNKST_2; /* 0x8 */
-
 extern u8 D_801ECC20[];
 extern UNKST_0 D_801EB1FC[];
 extern CharacterData D_801ECE40;
 extern u8 D_801EB234[]; /**< Weapon ID's, indexed by char ID. */
 extern s32 D_801ECED8;
 extern u8 D_801EB1E4[];
-extern UNKST_2 D_801EB320[];
 
 s32 func_801E80D0(s32, s32, s32, s32, s32);
 s32 func_801E95C4(MenuItemState *s, s32, s32);
@@ -4576,14 +4559,14 @@ u8 *func_801E9E7C(s32 a0) {
     return func_801F08D4(1, 5, a0, 0);
 }
 
-void func_801E9EA8(UNKST_1* arg0, s32 arg1) {
+void func_801E9EA8(AnotherItemMenuState *arg0, s32 arg1) {
     u8* ptr;
     u8* msg;
     s32 page;
     s32 row;
     s32 val1;
 
-    ptr = &arg0->unk24[func_801E9C90(arg0->unk24, arg0->unk20[0])];
+    ptr = &arg0->unk24[func_801E9C90(arg0->unk24, arg0->unk20->unk0)];
     row = arg0->unk2D % 7;
     page = arg0->unk2D / 7;
     if (arg1 != 0) {

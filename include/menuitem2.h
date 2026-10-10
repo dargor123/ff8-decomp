@@ -12,7 +12,7 @@
 #include "common.h"
 #include "menuitem.h"
 
-void func_801E9F94(s32 arg0);
+void func_801E9F94(AnotherItemMenuState *s);
 s32  func_801EA500(s32 a0, s32 a1, s32 a2, s32 a3, s32 arg5);
 s32  func_801EA538(s32 a0, s32 a1, s32 a2, s32 a3, s32 arg5);
 s32  func_801EA714(s32 a0, s32 a1, s32 a2, s32 a3);
