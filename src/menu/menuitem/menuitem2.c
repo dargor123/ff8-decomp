@@ -9,6 +9,8 @@
  * 0x801EB1A0 onward are used only by the functions below, which confirms it.
  */
 
+extern UNKST_3 D_801EB240[];
+
 void func_801E9F94(AnotherItemMenuState *s) {
     UNKST_2 *st;
     u16 btnFlags;
@@ -97,15 +99,13 @@ void func_801E9F94(AnotherItemMenuState *s) {
             }
             if (cfgFlags & 4) {
                 s32 val1;
-                s32 val2;
                 sendSpuCommand(1);
                 val1 = s->unk2C;
                 val1--;
                 if (val1 < 0) {
                     val1 += 2;
                 }
-                val2 = val1 + ((u32)val1 >> 0x1F);
-                val1 -= (val2 >> 1) * 2;
+                val1 = val1 % 2;
                 s->unk2C = val1;
             }
             if (cfgFlags & 0x800) {
@@ -133,15 +133,13 @@ void func_801E9F94(AnotherItemMenuState *s) {
         }
         if (cfgFlags & 4) {
             s32 val1;
-            s32 val2;
             sendSpuCommand(1);
             val1 = s->unk2C;
             val1--;
             if (val1 < 0) {
                 val1 += 2;
             }
-            val2 = val1 + ((u32)val1 >> 0x1F);
-            val1 -= (val2 >> 1) * 2;
+            val1 = val1 % 2;
             s->unk2C = val1;
         }
         if (btnFlags & 0x4000) {
@@ -337,9 +335,73 @@ s32 func_801EA7E0(AnotherItemMenuState *s, s32 arg1, s32 arg2, s32 arg3, s32 arg
     return arg2;
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem2", func_801EA8F0);
+void* func_801EA8F0(void *ot, DR_TPAGE *prim, s32 x, s32 y, u16 arg4, s32 arg5) {
+    s32 head;
+    s32 head2;
+    s32 i;
+    s32 ch;
+    u8* ptr;
+    u32 clutFlags;
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem2", func_801EAA04);
+    ptr = func_801E9E7C(arg4);
+    getAddrFast(ot, head);
+    clutFlags = 7;
+
+    // dead code 1
+    x++; x--;
+
+    for (i = 0; i < 7; i++) {
+        ch = *ptr++;
+        getNibbleValue(ch - 0x20);
+        head = func_801F0F20(head, prim, ch - 0x20, clutFlags, (y << 0x10) | (x & 0xFFFF));
+        prim = (DR_TPAGE *)((u8 *)prim + 0x14);
+        x += 0x12;
+    }
+    setlen(prim, 1);
+    prim->code[0] = 0xE100041F;
+
+    // dead code 2
+    if (head2) { head2++; head2--; }
+
+    head2 = (s32)prim << 8;
+    setAddrFast(prim, head);
+    head = head2;
+
+    // dead code 3
+    if (head2) { head2++; head2--; }
+    
+    prim++;
+    setAddrFast(ot, head);
+    return prim;
+}
+
+DR_TPAGE *func_801EAA04(AnotherItemMenuState *s, void *ot, DR_TPAGE *prim, s32 arg3, s32 arg4) {
+    UNKST_2 *st;
+    u16 value;
+    s32 i;
+    s32 unk4;
+    u16 *ptr;
+    s32 unk6;
+    s32 x;
+    s32 y;
+    i = 0;
+    st = &D_801EB320[s->unk2C];
+    ptr = st->a0;
+    unk4 = st->unk4;
+    unk6 = st->unk6;
+    while (1) {
+        value = *ptr++;
+        if (value == 0xFFFF) {
+            break;
+        }
+        x = arg3 + unk4 * (i % 2);
+        y = arg4 + (i / 2) * 16;
+        y += (i / 4) * 8;
+        prim = func_801EA8F0(ot, prim, x, y, value, unk6);
+        i++;
+    }
+    return prim;
+}
 
 /**
  * @brief Render a menu panel with text and display configuration.
@@ -368,7 +430,20 @@ s32 func_801EAB00(s32 a0, s32 a1, s32 a2, s32 a3, s32 arg5) {
     return func_801EF9AC(a1, result, 0x1000, g_menuTint[MENU_TINT_NORMAL]);
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem2", func_801EAB8C);
+s32 func_801EAB8C(s32 arg0, s32 arg1, s32 arg2, s32 arg3) {
+    s32 x;
+    s32 y;
+    x = arg2 + 7;
+    y = arg3 + 6;
+    arg1 = func_801F0FEC(arg0, arg1, x, y, func_801E9E7C(6), 7);
+    g_menuDisplayCfg.iconType = 0;
+    g_menuDisplayCfg.iconSubType = 0;
+    g_menuDisplayCfg.x = arg2;
+    g_menuDisplayCfg.y = arg3;
+    g_menuDisplayCfg.w = 0x5A;
+    g_menuDisplayCfg.h = 0x16;
+    return func_801EF9AC(arg0, arg1, 0x1000, g_menuTint[0]);
+}
 
 /**
  * @brief Render item detail sub-menu with multiple panel sections.
@@ -420,4 +495,31 @@ s32 func_801EAC54(s32 a0, s32 a1, s32 a2) {
  * sets up the data table pointer, string, and various byte fields, then
  * calls func_801E9F94 to render.
  */
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem2", func_801EAD64);
+void func_801EAD64(void) {
+    AnotherItemMenuState *s;
+    UNKST_3* st;
+    u32 val1;
+    u8* msg;
+    GameState *gs;
+    s = func_801F179C(func_801E9F94, func_801EAC54);
+    func_801F0948(0);
+    val1 = func_801F000C() & 0x7F;
+    if (val1 - 3 < 0x10) {
+        setFieldFlag(val1 + 0x46);
+    }
+    if (s != NULL) {
+        gs = &g_gameState;
+        s->unk20 = &D_801EB240[func_801F000C() & 0x7F];
+        s->unk24 = &gs->pad000[s->unk20->unk4];
+        msg = func_801E9E7C(s->unk20->unk2);
+        if (!(func_801F000C() & 0x80)) {
+            copyString(s->unk24, msg);
+        }
+        s->unk2C = 0;
+        s->unk2F = 0;
+        s->unk2D = 0;
+        s->unk28 = 0;
+        s->unk2E = s->unk2C;
+        func_801E9F94(s);
+    }
+}

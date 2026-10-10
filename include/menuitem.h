@@ -58,8 +58,8 @@ typedef struct {
 
 typedef struct {
     u16 *a0;
-    s16 unk4;
-    s8 unk6;
+    u16 unk4;
+    u8 unk6;
     u8 unk7;
 } UNKST_2; /* 0x8 */
 
@@ -67,7 +67,9 @@ typedef struct {
     u8 unk0;
     u8 unk1;
     u16 unk2;
-} UNKST_3;
+    u16 unk4;
+    u8 pad6[2];
+} UNKST_3; /* 0x8 */
 
 typedef struct {
     u8 pad00[0x10];

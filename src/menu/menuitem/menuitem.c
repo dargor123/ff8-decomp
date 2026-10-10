@@ -4508,7 +4508,37 @@ s32 func_801E9C90(u8* arg0, s32 arg1) {
     return count;
 }
 
-INCLUDE_ASM("asm/ovl/menuitem/nonmatchings/menuitem", func_801E9CD4);
+void func_801E9CD4(AnotherItemMenuState *s) {
+    s32 y;
+    s32 w;
+    s32 rest;
+    s32 div14;
+    s32 div28;
+    s32 y1;
+    s32 y3;
+
+    if (s->unk2F == 0) {
+        rest = s->unk2D % 14;
+        div14 = s->unk2D / 14;
+        y1 = rest / 7;
+        div28 = s->unk2D / 28;
+        
+        w = div14 * 16;
+        w += div28 * 8;
+        w += 0x62;
+        
+        rest = s->unk2D % 7;
+        y3 = y1 * 63;
+        y = (rest * 9 + y3) * 2;
+        y += 0x72;
+    } else {
+        y = 0x22;
+        w = s->unk2E * 0x10;
+        w += 0x62;
+    }
+    
+    func_801F0994(0, y, w);
+}
 
 /**
  * @brief Find the last non-zero byte in a string and set it to zero.
