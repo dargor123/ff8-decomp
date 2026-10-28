@@ -5,17 +5,17 @@
 #include "snd_note.h"
 #include "snd_track.h"
 
-s32 func_80016DB4(s32 a0, SoundSeqTrack *a1);
-s32 func_80016E08(s32 a0, SoundSeqTrack *a1);
-void func_80016E5C(void);
-s32 sndGetBankGroup(s32 a0);
-void sndInitTrack(SoundSeqTrack *track, s32 bankId);
-s32 sndBuildVoiceMask(SoundSeqTrack *tracks, s32 a1);
-void func_8001708C(u8 *data, u32 mask);
-void func_80017880(SoundSeqTrack *track, s32 *params, u32 bit, s32 bankId);
-void sndReleaseVoiceFromTracks(s32 voiceId);
-void func_80017C9C(s32 *a0, s32 *a1, s32 a2);
-void func_80017DB0(u8 *seq, s32 swap);
+static s32 func_80016DB4(s32 a0, SoundSeqTrack *a1);
+static s32 func_80016E08(s32 a0, SoundSeqTrack *a1);
+static void func_80016E5C(void);
+static s32 sndGetBankGroup(s32 a0);
+static void sndInitTrack(SoundSeqTrack *track, s32 bankId);
+static s32 sndBuildVoiceMask(SoundSeqTrack *tracks, s32 a1);
+static void func_8001708C(u8 *data, u32 mask);
+static void func_80017880(SoundSeqTrack *track, s32 *params, u32 bit, s32 bankId);
+static void sndReleaseVoiceFromTracks(s32 voiceId);
+static void func_80017C9C(s32 *a0, s32 *a1, s32 a2);
+static void func_80017DB0(u8 *seq, s32 swap);
 
 typedef struct {
     /* 0x00 */ u32 unk00;
@@ -41,7 +41,7 @@ extern SoundSeqTrack D_80075080[];
  * @param a1 Pointer to the sequence track structure.
  * @return The (possibly adjusted) instrument index.
  */
-s32 func_80016DB4(s32 a0, SoundSeqTrack *a1) {
+static s32 func_80016DB4(s32 a0, SoundSeqTrack *a1) {
     if (a0 & 0x400) {
         if ((u32)(a1->instrument - 0x40) < 0x40) {
             s32 adj = 0x20000;
@@ -63,7 +63,7 @@ s32 func_80016DB4(s32 a0, SoundSeqTrack *a1) {
  * @param a1 Pointer to the sequence track structure.
  * @return The (possibly adjusted) instrument index.
  */
-s32 func_80016E08(s32 a0, SoundSeqTrack *a1) {
+static s32 func_80016E08(s32 a0, SoundSeqTrack *a1) {
     if (a0 & 0x400) {
         if ((u32)(a1->instrument - 0x60) < 0x20) {
             s32 adj = (s32)0xFFFE0000;
@@ -75,7 +75,7 @@ s32 func_80016E08(s32 a0, SoundSeqTrack *a1) {
     return a1->instrument;
 }
 
-void func_80016E5C(void) {
+static void func_80016E5C(void) {
     SoundMusicConfig *second;
     SoundSeqTrack *track;
     u32 freed;
@@ -124,7 +124,7 @@ void func_80016E5C(void) {
  * @param a0 Sound bank or instrument identifier to look up.
  * @return 1 if in group 1, 2 if in group 2, 0 if not found or @p a0 is 0.
  */
-s32 sndGetBankGroup(s32 a0) {
+static s32 sndGetBankGroup(s32 a0) {
     s32 ret = 0;
     if (a0 == 0) return ret;
     if (a0 == D_80074EB8[1] || a0 == D_80074EB8[4]) {
@@ -147,7 +147,7 @@ s32 sndGetBankGroup(s32 a0) {
  * @param a0 Pointer to the track structure (stride 0x110).
  * @param a1 Instrument bank ID to assign to this track.
  */
-void sndInitTrack(SoundSeqTrack *track, s32 bankId) {
+static void sndInitTrack(SoundSeqTrack *track, s32 bankId) {
     track->pitchBend = 0x6E00;
     track->panShifted = 0x32000000;
     *(s32 *)track = bankId;
@@ -189,7 +189,7 @@ void sndInitTrack(SoundSeqTrack *track, s32 bankId) {
  * @param a1 Bitmask of tracks to include (bit N = track N).
  * @return Bitmask of SPU voices used by the selected tracks.
  */
-s32 sndBuildVoiceMask(SoundSeqTrack *tracks, s32 a1) {
+static s32 sndBuildVoiceMask(SoundSeqTrack *tracks, s32 a1) {
     u32 i = 0;
     s32 result = 0;
     s32 bit = 1;
@@ -206,7 +206,7 @@ s32 sndBuildVoiceMask(SoundSeqTrack *tracks, s32 a1) {
     return result;
 }
 
-void func_8001708C(u8 *data, u32 mask) {
+static void func_8001708C(u8 *data, u32 mask) {
     SoundMusicConfig *config;
     SoundSeqTrack *track;
     func_8001A1E8_data *seq;
@@ -450,7 +450,7 @@ void func_800174E4(s32 id, u32 mode) {
     D_80077288[2] |= 0x110;
 }
 
-void func_80017880(SoundSeqTrack *track, s32 *params, u32 bit, s32 bankId) {
+static void func_80017880(SoundSeqTrack *track, s32 *params, u32 bit, s32 bankId) {
     u32 i;
 
     track->keyOffMask = params[0];
@@ -501,7 +501,7 @@ void func_80017880(SoundSeqTrack *track, s32 *params, u32 bit, s32 bankId) {
  *
  * @param a0 SPU voice index to release (0-23).
  */
-void sndReleaseVoiceFromTracks(s32 voiceId) {
+static void sndReleaseVoiceFromTracks(s32 voiceId) {
     s32 i;
     SoundSeqTrack *track;
 
@@ -600,7 +600,7 @@ void func_80017AAC(s32 *cmd, s32 sfx1, s32 sfx2, s32 noStop) {
  * @param a1 Output pointer for second sample address.
  * @param a2 Instrument index (low 10 bits used).
  */
-void func_80017C9C(s32 *a0, s32 *a1, s32 a2) {
+static void func_80017C9C(s32 *a0, s32 *a1, s32 a2) {
     s32 val;
 
     a2 &= 0x3FF;
@@ -664,7 +664,7 @@ void func_80017D5C(void) {
     }
 }
 
-void func_80017DB0(u8 *seq, s32 swap) {
+static void func_80017DB0(u8 *seq, s32 swap) {
     SoundSeqTrack *track;
     SoundMusicConfig *config;
     func_8001A1E8_data *old;
