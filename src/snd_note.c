@@ -4,6 +4,7 @@
 #include "snd_bank.h"
 
 extern s16 D_8007507A;
+
 /**
  * @brief Sets the CD audio input volume on the SPU to the current global value.
  *
@@ -17,14 +18,63 @@ void sndSetCdVolume(void) {
     *(s16 *)0x1F801DB2 = val;
 }
 
-INCLUDE_ASM("asm/nonmatchings/snd_note", func_8001A57C);
+void func_8001A57C(u32 *src, u32 *dst, u32 size) {
+    u32 w0;
+    u32 w1;
+    u32 w2;
+    u32 w3;
 
-INCLUDE_ASM("asm/nonmatchings/snd_note", func_8001A5FC);
+    size >>= 2;
+    while (size >> 2) {
+        w0 = src[0];
+        w1 = src[1];
+        w2 = src[2];
+        w3 = src[3];
+        dst[0] = w0;
+        dst[1] = w1;
+        dst[2] = w2;
+        dst[3] = w3;
+        src += 4;
+        dst += 4;
+        size -= 4;
+    }
+    while (size != 0) {
+        *dst++ = *src++;
+        size--;
+    }
+}
+
+void func_8001A5FC(u32 *a, u32 *b, u32 size) {
+    u32 a0;
+    u32 b0;
+    u32 a1;
+    u32 b1;
+
+    size >>= 2;
+    while (size >> 1) {
+        a0 = a[0];
+        b0 = b[0];
+        a1 = a[1];
+        b1 = b[1];
+        b[0] = a0;
+        b[1] = a1;
+        a[0] = b0;
+        a[1] = b1;
+        a += 2;
+        b += 2;
+        size -= 2;
+    }
+    if (size != 0) {
+        a0 = *a;
+        b0 = *b;
+        *b = a0;
+        *a = b0;
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/snd_note", func_8001A674);
 
 INCLUDE_ASM("asm/nonmatchings/snd_note", func_8001AA28);
-
 
 void func_8001ACCC(SoundMusicConfig *track, SoundSeqTrack *tracks) {
     s32 savedUnk04;
