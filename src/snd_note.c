@@ -1,11 +1,21 @@
 #include "common.h"
+#include "psxsdk/libapi.h"
+#include "psxsdk/libetc.h"
+#include "psxsdk/kernel.h"
 #include "sound.h"
 #include "snd_note.h"
 #include "snd_bank.h"
 #include "snd_dma.h"
 #include "snd_init.h"
+#include "snd_voice.h"
+
+void func_8001BAA8(SoundSeqTrack *track, u32 bit);
 
 extern s16 D_8007507A;
+extern s32 D_800516A0;
+extern u16 D_800516A4;
+extern s32 D_800516A8[];
+extern u8 D_80077286;
 
 /**
  * @brief Sets the CD audio input volume on the SPU to the current global value.
@@ -176,7 +186,80 @@ void func_8001A674(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/snd_note", func_8001AA28);
+u32 func_8001AA28(SoundSeqTrack *tracks, s32 isSecond) {
+    SoundMusicConfig *config;
+    SoundSeqTrack *track;
+    u32 active;
+    u32 bit;
+    u32 tempo;
+    u32 mul;
+    u32 update;
+    u32 flags;
+
+    tempo = (u16)(g_sndSeqState->unk20 >> 16);
+    mul = D_80077286;
+    if (mul != 0) {
+        if (mul < 0x80) {
+            tempo += (tempo * mul) >> 7;
+        } else {
+            tempo = (tempo * mul) >> 8;
+        }
+    }
+    config = g_sndSeqState;
+    update = config->unk28 + tempo;
+    config->unk28 = update;
+    if ((update & 0xFFFF0000) != 0 || (D_800772F4 & 4)) {
+        config->unk28 = update & 0xFFFF;
+        do {
+            track = tracks;
+            bit = 1;
+            active = g_sndSeqState->unk04;
+            do {
+                if (active & bit) {
+                    track->volume--;
+                    track->volumeBase--;
+                    if (track->volume == 0) {
+                        func_8001BAA8(track, bit);
+                    } else if (track->volumeBase == 0) {
+                        g_sndSeqState->unk18 |= bit;
+                    }
+                    func_800151C4(track, bit, 0);
+                    active &= ~bit;
+                }
+                track++;
+                bit <<= 1;
+            } while (active != 0);
+            config = g_sndSeqState;
+            if (config->unk5C != 0) {
+                config->unk5C--;
+                config->unk20 += config->unk24;
+            }
+            config = g_sndSeqState;
+            if (config->unk5A != 0) {
+                config->unk5A--;
+                config->unk48 += config->unk4C;
+                flags = D_80077288[2];
+                if (isSecond == 0) {
+                    // matching hack
+                    do { D_80077288[2] = flags | 0x80; } while (0);
+                }
+            }
+            if (g_sndSeqState->unk68 != 0) {
+                if (++g_sndSeqState->unk6A == g_sndSeqState->unk68) {
+                    g_sndSeqState->unk6A = 0;
+                    if (++g_sndSeqState->unk66 == g_sndSeqState->unk64) {
+                        g_sndSeqState->unk66 = 0;
+                        g_sndSeqState->unk6C++;
+                        if (isSecond == 0 && D_80074EB0 != 0) {
+                            D_80074EB0--;
+                        }
+                    }
+                }
+            }
+        } while (isSecond == 0 && D_80074EB0 != 0);
+    }
+    return g_sndSeqState->unk04;
+}
 
 void func_8001ACCC(SoundMusicConfig *track, SoundSeqTrack *tracks) {
     s32 savedUnk04;
@@ -202,7 +285,112 @@ void func_8001ACCC(SoundMusicConfig *track, SoundSeqTrack *tracks) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/snd_note", func_8001AD60);
+s32 func_8001AD60(void) {
+    SoundMusicConfig *config;
+    SoundSeqTrack *track;
+    u32 active;
+    u32 bit;
+    u32 update;
+    s32 ticks;
+    s32 rcnt;
+
+    rcnt = GetRCnt(RCntCNT2);
+    D_80072F60[1] = D_80072F60[0];
+    D_80072F60[0] = VSync(-1);
+    active = D_80072F60[0] - D_80072F60[1];
+    ticks = 1;
+    if (active != 0) {
+        if (active < 9) {
+            bit = active * 4;
+            if ((u32)D_80072F68 < bit) {
+                ticks += bit - D_80072F68;
+            }
+            D_80072F68 = (u32)D_80072F68 % bit;
+        }
+    }
+    do {
+        ticks--;
+        D_80072F68++;
+        D_800516A4++;
+        if ((g_sndSeqState->unk18 | D_80075028.unk0C) != 0 || (D_80073CA8 != NULL && D_80073CA8->unk18 != 0)) {
+            func_80016A7C();
+        }
+        if (D_80073CA8 != NULL && D_80073CA8->unk04 == 0) {
+            D_80073CA8 = NULL;
+        }
+        if ((D_80077288[2] | g_sndSeqState->unk14 | D_80075028.unk08) != 0) {
+            func_800164D8();
+        } else if (D_80073CA8 != NULL && D_80073CA8->unk14 != 0) {
+            func_800164D8();
+        }
+        if (g_sndSeqState->unk04 != 0) {
+            func_8001AA28(D_80070D60, 0);
+        }
+        if (D_80073CA8 != NULL) {
+            if (D_80073CA8->unk04 != 0) {
+                g_sndSeqState = D_80073CA8;
+                func_8001AA28(D_80073C34, 1);
+                g_sndSeqState = &D_80073D70;
+            }
+            if ((D_80077288[1] & 0x100) && (D_800516A4 & 3) == 0) {
+                func_8001ACCC(D_80073CA8, D_80073C34);
+                if (D_80073CA8->unk04 == 0) {
+                    D_80077288[1] &= ~0x100;
+                }
+            }
+            if ((g_sndSeqState->unk04 | g_sndSeqState->unk1C) == 0 && D_80073CA8->unk04 != 0) {
+                func_8001A57C((u32 *)D_80073CA8, (u32 *)g_sndSeqState, 0x70);
+                func_8001A57C((u32 *)D_80073C34, (u32 *)D_80070D60, 0x2200);
+                config = D_80073CA8;
+                D_80073CA8 = NULL;
+                config->unk5E = 0;
+                config->unk04 = 0;
+            }
+        }
+        if (D_80075028.unk00 != 0) {
+            active = D_80075028.unk00;
+            update = D_80075028.unk18 + (u16)(D_80075028.unk14 >> 16);
+            D_80075028.unk18 = update;
+            if ((update & 0xFFFF0000) != 0 || (D_800772F4 & 4)) {
+                D_80075028.unk18 = update & 0xFFFF;
+                bit = 0x1000;
+                track = D_80072F70;
+                do {
+                    if (active & bit) {
+                        if (!(D_800772F4 & 2) || (track->keyOnMask & 0x2000000)) {
+                            track->unk54++;
+                            track->volume--;
+                            track->volumeBase--;
+                            if (track->volume == 0) {
+                                func_8001BAA8(track, bit);
+                            } else if (track->volumeBase == 0) {
+                                D_80075028.unk0C |= bit;
+                                D_80075028.unk08 &= ~bit;
+                            }
+                            func_800151C4(track, bit, 1);
+                        }
+                        active ^= bit;
+                    }
+                    track++;
+                    bit <<= 1;
+                } while (active != 0);
+            }
+        }
+        if ((D_800516A4 & 3) == 0) {
+            func_8001A674();
+        }
+    } while (ticks != 0);
+    rcnt = GetRCnt(RCntCNT2) - rcnt;
+    if (rcnt <= 0) {
+        rcnt += 0x44E8;
+    }
+    D_800516A8[0] = D_800516A8[1];
+    D_800516A8[1] = D_800516A8[2];
+    D_800516A8[2] = D_800516A8[3];
+    D_800516A8[3] = rcnt;
+    D_800516A0 = D_800516A8[0] + D_800516A8[1] + D_800516A8[2] + rcnt;
+    return rcnt;
+}
 
 INCLUDE_ASM("asm/nonmatchings/snd_note", func_8001B1F4);
 
