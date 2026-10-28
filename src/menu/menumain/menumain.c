@@ -24,7 +24,6 @@
 /* Main-executable symbols without an owner header yet. */
 extern u8 D_80056290[];
 extern u8 D_800562A4;
-extern s32 D_8005F138;
 
 /** @brief The persistent statuses the menu draws as icons: all but KO. */
 #define STATUS_ICON_MASK (STATUS_POISON | STATUS_PETRIFY | STATUS_DARKNESS | STATUS_SILENCE | \
@@ -440,22 +439,19 @@ s32 func_801F0028(void) {
  * advances it by 0xA0 bytes. Sets up the draw-list entry at
  * offset 0x74 and links the panel into the global list (g_activeDrawEnv).
  */
-void func_801F0038(void)
-{
-    s32 val = D_801FA3C0;
-    s32 base = D_801FA280;
-    s32 new_var;
+void func_801F0038(void) {
+    DisplayDrawEnvData *val = D_801FA3C0;
+    DisplayDrawEnvData *base = &D_801FA280[0];
     s32 temp;
     if (val == base) {
-        base = (s32)D_801FA280 + 0xA0;
+        base = &D_801FA280[1];
     }
     D_801FA3C0 = base;
-    ClearOTag(base + 0x74, 9);
-    new_var = D_801FA3C0;
-    temp = *((s32 *) (new_var + 0x98));
-    *((s32 *) (new_var + 0x70)) = new_var + 0x74;
-    g_activeDrawEnv = (DRAWENV *)(new_var + 0x14);
-    *((s32 *) (new_var + 0x9C)) = temp;
+    ClearOTag(&D_801FA3C0->unk74, 9);
+    temp = D_801FA3C0->unk98;
+    D_801FA3C0->unk70 = &D_801FA3C0->unk74;
+    g_activeDrawEnv = &D_801FA3C0->drawEnv;
+    D_801FA3C0->unk9C = temp;
 }
 
 /**
@@ -467,20 +463,39 @@ void func_801F0038(void)
  */
 void func_801F00A0(void)
 {
-    s32 val;
+    DisplayDrawEnvData *val;
     s32 arg;
     DrawSync(0);
     VSync(0);
-    PutDispEnv(D_801FA3C0);
-    PutDrawEnv(D_801FA3C0 + 0x14);
+    PutDispEnv(&D_801FA3C0->dispEnv);
+    PutDrawEnv(&D_801FA3C0->drawEnv);
     val = D_801FA3C0;
-    D_8005F138 = val;
-    arg = *(s32 *)(val + 0x70);
-    g_activeDrawEnv = (DRAWENV *)(val + 0x14);
+    D_8005F138 = &val->dispEnv;
+    arg = val->unk70;
+    g_activeDrawEnv = &val->drawEnv;
     DrawOTag(arg);
 }
 
-INCLUDE_ASM("asm/ovl/menumain/nonmatchings/menumain", func_801F010C);
+void func_801F010C(s32 width) {
+    s32 i;
+    s32 yOffset;
+    SetDefDispEnv(&D_801FA280[0].dispEnv, 0, 0, width, 216);
+    SetDefDispEnv(&D_801FA280[1].dispEnv, 512, 0, width, 216);
+    SetDefDrawEnv(&D_801FA280[0].drawEnv, 512, 0, width, 216);
+    SetDefDrawEnv(&D_801FA280[1].drawEnv, 0, 0, width, 216);
+    yOffset = 12;
+    if (width == 384) {
+        yOffset = 8;
+    }
+    for (i = 0; i < 2; i++) {
+        D_801FA280[i].drawEnv.isbg = 1;
+        D_801FA280[i].dispEnv.screen.h = 216;
+        D_801FA280[i].dispEnv.screen.y += yOffset;
+        if (GetVideoMode() == 1) {
+            D_801FA280[i].dispEnv.screen.y += 24;
+        }
+    }
+}
 
 /**
  * @brief Initialize main menu panel system.
@@ -489,11 +504,9 @@ INCLUDE_ASM("asm/ovl/menumain/nonmatchings/menumain", func_801F010C);
  * offsets 0x98 and 0x138 in D_801FA280, then resets state.
  */
 void func_801F0224(void) {
-    s32 base;
     func_801F010C(0x180);
-    base = (s32)D_801FA280;
-    *(s32 *)(base + 0x98) = (s32)0x801B2000;
-    *(s32 *)(base + 0x138) = (s32)0x801B8800;
+    D_801FA280[0].unk98 = 0x801B2000;
+    D_801FA280[1].unk98 = 0x801B8800;
     SetVibrationIntensity(0, 0, 0);
 }
 

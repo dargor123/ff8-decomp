@@ -42,7 +42,7 @@ extern volatile u16   g_bufferIndex; /* volatile for codegen match (forces sign 
 extern volatile u8    g_fadeMode;    /* volatile for codegen match (forces reload each access) */
 extern u32            g_orderingTablePtrs[];
 extern DRAWENV       *g_activeDrawEnv;  /**< Draw env of the buffer currently being built. */
-extern s32            D_8005F138;       /**< Active display-environment window (holds a @c DISPENV*). */
+extern DISPENV       *D_8005F138;       /**< Active display-environment window (holds a @c DISPENV*). */
 
 /* VSync callback state owned by main.c. */
 extern u8             g_vsyncSkip;

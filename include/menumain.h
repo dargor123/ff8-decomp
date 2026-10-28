@@ -200,6 +200,16 @@ typedef struct {
     u8 pad1E[0x2];
 } MenuCharData; /* 0x20 bytes */
 
+typedef struct {
+    DISPENV dispEnv; /**< 0x00 */
+    DRAWENV drawEnv; /**< 0x14 */
+    s32 *unk70; /**< 0x70 */
+    s32 unk74; /**< 0x74 */
+    u8 pad78[0x20]; /**< 0x78 */
+    s32 unk98; /**< 0x98 */
+    s32 unk9C; /**< 0x9C */
+} DisplayDrawEnvData; /* 0xA0 bytes */
+
 extern MItemEntry D_801F889C[];
 extern u8  D_801F8BB8[];
 extern u8  D_801FA278;
@@ -207,11 +217,11 @@ extern u8  D_801FA279;
 extern u8  D_801FA27A;
 extern u8  D_801FA27B;
 extern u8  D_801FA27C;
-extern u8  D_801FA280[];
+extern DisplayDrawEnvData D_801FA280[];
 extern MenuTask *D_801FA450;    /**< Head of the active menu-task list. */
 extern MenuTask D_801FA4D0;     /**< Menu-task list head node. */
 extern MenuTask D_801FA550[10]; /**< Menu-task pool. */
-extern s32 D_801FA3C0;
+extern DisplayDrawEnvData *D_801FA3C0;
 extern u8  D_801FAA10;
 extern s8  D_801FAA11;
 extern u16 D_801FAA12;
