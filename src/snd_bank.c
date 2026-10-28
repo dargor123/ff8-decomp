@@ -17,9 +17,18 @@ void sndReleaseVoiceFromTracks(s32 voiceId);
 void func_80017C9C(s32 *a0, s32 *a1, s32 a2);
 void func_80017DB0(u8 *seq, s32 swap);
 
+typedef struct {
+    /* 0x00 */ u32 unk00;
+    /* 0x04 */ s32 unk04;
+    /* 0x08 */ s32 unk08;
+    /* 0x0C */ s32 unk0C;
+    /* 0x10 */ s32 unk10[4];
+} func_80018784_data;
+
 extern s32 D_80073DE4;
 extern u8 D_800517F0[];
 extern s8 D_8005182F[];
+extern u8 D_80051778[];
 extern SoundSeqTrack D_80075080[];
 
 /**
@@ -816,9 +825,54 @@ void func_80018234(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/snd_bank", func_80018358);
+void func_80018358(s32 *args) {
+    if (g_sndSeqState->unk04 != 0 && (D_80073CA8 == NULL || D_80073CA8->unk5E == 0)) {
+        D_80073CA8 = &D_80073DF0;
+        D_80073C34 = D_80075080;
+        func_8001A57C((u32 *)g_sndSeqState, (u32 *)&D_80073DF0, 0x70);
+        func_8001A57C((u32 *)D_80070D60, (u32 *)D_80073C34, 0x2200);
+    }
+    func_8001708C((u8 *)args[0], -1);
+    g_sndSeqState->unk50 = (args[4] & 0x7F) << 16;
+    g_sndSeqState->unk58 = 0;
+    g_sndSeqState->unk5E = args[2];
+    func_80016E5C();
+    D_80077288[1] &= ~0x100;
+}
 
-INCLUDE_ASM("asm/nonmatchings/snd_bank", func_80018438);
+void func_80018438(SndVoice *voice) {
+    s32 flags;
+    s32 steps;
+
+    if (D_80073DF0.unk5E != 0 && D_80073DF0.unk5E == voice->params[2]) {
+        D_80073CA8 = &D_80073DF0;
+        D_80073C34 = D_80075080;
+        func_80017DB0((u8 *)voice->params[0], 1);
+    } else {
+        if (g_sndSeqState->unk04 != 0 && (D_80073CA8 == NULL || D_80073CA8->unk5E == 0)) {
+            D_80073CA8 = &D_80073DF0;
+            D_80073C34 = D_80075080;
+            func_8001A57C((u32 *)g_sndSeqState, (u32 *)&D_80073DF0, 0x70);
+            func_8001A57C((u32 *)D_80070D60, (u32 *)D_80073C34, 0x2200);
+        }
+        func_8001708C((u8 *)voice->params[0], -1);
+        g_sndSeqState->unk5E = voice->params[2];
+    }
+    flags = D_80077288[1] & ~0x100;
+    D_80077288[1] = flags;
+    if (D_80073CA8 != NULL) {
+        g_sndCmdArgs[5] = D_80073CA8->unk5E;
+        steps = voice->unk10;
+        D_80074F10.unk00 = 0x7F0000;
+        D_80077288[1] = flags | 0x100;
+        D_80074F10.unk08 = steps;
+        D_80074F10.unk04 = (s32)0xFF810000 / steps;
+    }
+    g_sndSeqState->unk50 = 0;
+    g_sndSeqState->unk58 = voice->unk10;
+    g_sndSeqState->unk54 = (u32)((voice->unk14 & 0x7F) << 16) / (u32)voice->unk10;
+    func_80016E5C();
+}
 
 /**
  * @brief Process a sound voice and compute the remaining play count.
@@ -897,7 +951,53 @@ void sndPlaySoundByIndex(s32 *a0) {
     func_80017AAC(a0, local10, local14, 0);
 }
 
-INCLUDE_ASM("asm/nonmatchings/snd_bank", func_80018784);
+void func_80018784(s32 *args) {
+    func_80018784_data *set;
+    u16 *cur;
+    u8 *base;
+    s32 seq;
+    s32 data;
+    s32 *offsets;
+    s32 count;
+
+    args[4] = sndGetBankGroup(((func_80018784_data *)args[0])->unk08);
+    set = (func_80018784_data *)args[0];
+    base = (u8 *)set->unk10;
+    offsets = (s32 *)base;
+    base += sizeof(set->unk10);
+    count = set->unk04;
+    cur = (u16 *)(base + offsets[0]);
+    if (*cur != 0xFFFF) {
+        seq = *cur + (s32)cur + 4;
+    } else {
+        seq = 0;
+    }
+    cur++;
+    if (*cur != 0xFFFF) {
+        data = *cur + (s32)cur + 2;
+    } else {
+        data = 0;
+    }
+    func_80017AAC(args, seq, data, 0);
+    count--;
+    while (count != 0) {
+        offsets++;
+        cur = (u16 *)(base + *offsets);
+        if (*cur != 0xFFFF) {
+            seq = *cur + (s32)cur + 4;
+        } else {
+            seq = 0;
+        }
+        cur++;
+        if (*cur != 0xFFFF) {
+            data = *cur + (s32)cur + 2;
+        } else {
+            data = 0;
+        }
+        func_80017AAC(args, seq, data, 1);
+        count--;
+    }
+}
 
 /** @brief Calls func_800174E4 with two words loaded from the input pointer. */
 void sndStopTrack(s32 *a0) {
@@ -915,7 +1015,78 @@ void sndClearVoicePool(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/snd_bank", func_80018908);
+void func_80018908(void) {
+    VoicePoolEntry *entry;
+    u32 active;
+    u32 mask;
+    u32 bit;
+    u8 *p;
+    s32 val;
+    s32 i;
+    s32 voice;
+
+    // matching hack
+    for (i = 12; i != 0; i--) {
+        D_80074F20[i - 1].cmd = 0;
+    }
+    mask = 0xFFF000;
+    // matching hack
+    do {
+        active = D_80075028.unk00 & mask;
+    } while (0);
+    if (active != 0) {
+        bit = 0x1000;
+        voice = 0;
+        do {
+            if (active & bit) {
+                p = D_80072F70[voice].unk00;
+                val = 1;
+                while (val != 0) {
+                    if (*p < 0xA0) {
+                        val = 1;
+                    } else {
+                        val = D_80051778[*p - 0xA0];
+                        if (val == 0) {
+                            break;
+                        }
+                    }
+                    p += val;
+                }
+                if (*p == 0xCA) {
+                    i = 0;
+                    val = D_80072F70[voice].keyOffMask;
+                    val += val >= 0;
+                    if (D_80074F20[0].cmd != 0) {
+                        entry = D_80074F20;
+                        while (1) {
+                            if (entry->cmd == val) {
+                                val = 0;
+                                break;
+                            }
+                            i++;
+                            entry++;
+                            if (i >= 12) {
+                                break;
+                            }
+                            if (entry->cmd == 0) {
+                                break;
+                            }
+                        }
+                    }
+                    if (val != 0) {
+                        D_80074F20[i].cmd = val;
+                        D_80074F20[i].arg1 = D_80072F70[voice].keyOnMask;
+                        D_80074F20[i].field8 = (s8)(D_80072F70[voice].expression >> 8);
+                        D_80074F20[i].fieldC = D_80072F70[voice].notePitch >> 8;
+                    }
+                }
+                active &= ~bit;
+            }
+            bit <<= 1;
+            voice++;
+        } while (active != 0);
+    }
+}
 
 /**
  * @brief Sets volume/pan on the active sequence and marks dirty tracks.
@@ -927,11 +1098,86 @@ INCLUDE_ASM("asm/nonmatchings/snd_bank", func_80018908);
  *
  * @param a0 Pointer to a 2-word config struct: [seqId, volumeParam].
  */
-INCLUDE_ASM("asm/nonmatchings/snd_bank", func_80018A74);
+void func_80018A74(s32 *args) {
+    SoundMusicConfig *config;
+    SoundSeqTrack *tracks;
+    s32 id;
 
-INCLUDE_ASM("asm/nonmatchings/snd_bank", func_80018B28);
+    id = args[0];
+    if (id == 0 || id == g_sndSeqState->unk5E) {
+        config = g_sndSeqState;
+        tracks = D_80070D60;
+        config->unk50 = (args[1] & 0x7F) << 16;
+        config->unk58 = 0;
+        func_80017D14(config, tracks);
+    } else if (D_80073CA8 != NULL && id != 0 && id == D_80073CA8->unk5E) {
+        config = D_80073CA8;
+        tracks = D_80073C34;
+        config->unk50 = (args[1] & 0x7F) << 16;
+        config->unk58 = 0;
+        func_80017D14(config, tracks);
+    }
+}
 
-INCLUDE_ASM("asm/nonmatchings/snd_bank", func_80018C48);
+void func_80018B28(s32 *args) {
+    SoundMusicConfig *config;
+    SoundSeqTrack *tracks;
+    s32 step;
+    s32 steps;
+    s32 target;
+    s32 id;
+
+    steps = 1;
+    if (args[1] != 0) {
+        steps = args[1];
+    }
+    target = (args[2] & 0x7F) << 16;
+    id = args[0];
+    if (id == 0 || id == g_sndSeqState->unk5E) {
+        config = g_sndSeqState;
+        tracks = D_80070D60;
+        config->unk58 = steps;
+        target -= config->unk50;
+        step = target / steps;
+        config->unk54 = step;
+        func_80017D14(config, tracks);
+    } else if (D_80073CA8 != NULL && id != 0 && id == D_80073CA8->unk5E) {
+        config = D_80073CA8;
+        tracks = D_80073C34;
+        config->unk58 = steps;
+        target -= config->unk50;
+        step = target / steps;
+        config->unk54 = step;
+        func_80017D14(config, tracks);
+    }
+}
+
+void func_80018C48(s32 *args) {
+    SoundMusicConfig *config;
+    SoundSeqTrack *tracks;
+    s32 steps = 1;
+    s32 id;
+    s32 start;
+
+    if (args[1] != 0) {
+        steps = args[1];
+    }
+    id = args[0];
+    if (id == 0 || id == g_sndSeqState->unk5E) {
+        config = g_sndSeqState;
+        tracks = D_80070D60;
+    } else if (D_80073CA8 != NULL && id != 0 && id == D_80073CA8->unk5E) {
+        config = D_80073CA8;
+        tracks = D_80073C34;
+    } else {
+        return;
+    }
+    start = (args[2] & 0x7F) << 16;
+    config->unk50 = start;
+    config->unk54 = (((args[3] & 0x7F) << 16) - start) / steps;
+    config->unk58 = steps;
+    func_80017D14(config, tracks);
+}
 
 /**
  * @brief Clears the sound fade counter and sets SPU transfer address.
@@ -956,11 +1202,58 @@ void sndSetFadeAndTransfer(u16 *a0) {
  *
  * @param a0 Pointer to a fade config structure.
  */
-INCLUDE_ASM("asm/nonmatchings/snd_bank", func_80018D74);
+void func_80018D74(s32 *args) {
+    s32 steps = 1;
 
-INCLUDE_ASM("asm/nonmatchings/snd_bank", func_80018DDC);
+    if (args[0] != 0) {
+        steps = args[0];
+    }
+    D_80074FE4 = steps;
+    D_80074FE0 = (((u16)args[1] << 16) - D_80075078) / steps;
+}
 
-INCLUDE_ASM("asm/nonmatchings/snd_bank", func_80018E4C);
+void func_80018DDC(s32 *args) {
+    s32 steps = 1;
+    s32 target;
+    s32 start;
+
+    if (args[0] != 0) {
+        steps = args[0];
+    }
+    target = (u16)args[2] << 16;
+    start = (u16)args[1] << 16;
+    D_80074FE4 = steps;
+    D_80075078 = start;
+    D_80074FE0 = (target - start) / steps;
+}
+
+void func_80018E4C(s32 *args) {
+    u32 bit = 0x1000;
+    SoundSeqTrack *track = D_80072F70;
+    u32 active = D_80075028.unk00;
+    u32 i;
+    u16 val;
+
+    if (args[1] != 0) {
+        for (i = 0; i < 12; i++, track++, bit <<= 1) {
+            if ((active & bit) && (track->keyOnMask & args[1])) {
+                val = args[2];
+                track->exprFade = 0;
+                track->expression = (val & 0x7F) << 8;
+                track->unkF4.updateFlags |= 3;
+            }
+        }
+    } else {
+        for (i = 0; i < 12; i++, track++, bit <<= 1) {
+            if ((active & bit) && track->keyOffMask == args[0]) {
+                val = args[2];
+                track->exprFade = 0;
+                track->expression = (val & 0x7F) << 8;
+                track->unkF4.updateFlags |= 3;
+            }
+        }
+    }
+}
 
 INCLUDE_ASM("asm/nonmatchings/snd_bank", func_80018F34);
 
