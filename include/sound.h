@@ -33,6 +33,28 @@ typedef struct {
     /* 0x1A */ s16 volRight;      /**< Right channel volume. */
 } SndVoiceParam; /* 0x1C = 28 bytes */
 
+typedef struct {
+    /* 0x00 */ u8 unk00;
+    /* 0x01 */ u8 unk01;
+    /* 0x02 */ u8 unk02;
+    /* 0x03 */ u8 unk03;
+    /* 0x04 */ u8 unk04;
+    /* 0x05 */ u8 unk05;
+    /* 0x06 */ u8 unk06;
+    /* 0x07 */ u8 unk07;
+} func_8001B42C_entry;
+
+typedef struct {
+    /* 0x00 */ u8 unk00;
+    /* 0x01 */ u8 unk01;
+    /* 0x02 */ u8 unk02;
+    /* 0x03 */ u8 unk03;
+    /* 0x04 */ u8 unk04;
+    /* 0x05 */ u8 unk05;
+    /* 0x06 */ u8 unk06;
+    /* 0x07 */ u8 unk07;
+} func_8001B820_entry;
+
 /**
  * @brief Sound sequence track (D_80070D60, stride 272 bytes).
  *
@@ -42,7 +64,7 @@ typedef struct {
 typedef struct {
     /* 0x00 */ u8 *unk00;
     /* 0x04 */ u8 *unk04[4];
-    /* 0x14 */ u8 *unk14;
+    /* 0x14 */ func_8001B42C_entry *unk14;
     /* 0x18 */ s16 *unk18;
     /* 0x1C */ s16 *unk1C;
     /* 0x20 */ s16 *unk20;
@@ -144,7 +166,8 @@ extern SoundSeqTrack D_80072F70[];
 typedef struct {
     /* 0x00 */ s32 sampleAddr;    /**< SPU sample start address. */
     /* 0x04 */ s32 loopAddr;      /**< SPU sample loop address. */
-    /* 0x08 */ u8 pad08[4];       /**< Unknown. */
+    /* 0x08 */ s16 unk08;
+    /* 0x0A */ s16 unk0A;
     /* 0x0C */ u16 adsrLow;       /**< ADSR envelope low halfword. */
     /* 0x0E */ u16 adsrHigh;      /**< ADSR envelope high halfword. */
 } SndInstrument; /* 16 bytes */
@@ -210,8 +233,8 @@ typedef struct {
     /* 0x28 */ s32 unk28;
     /* 0x2C */ s32 unk2C;
     /* 0x30 */ s32 unk30;
-    /* 0x34 */ s32 unk34;
-    /* 0x38 */ s32 unk38;
+    /* 0x34 */ func_8001B820_entry *unk34;
+    /* 0x38 */ s8 *unk38;
     /* 0x3C */ u32 unk3C;
     /* 0x40 */ u32 unk40;
     /* 0x44 */ u32 unk44;
@@ -291,6 +314,8 @@ typedef struct {
 extern UnkStruct80073CB0 D_80073CB0[];
 extern SoundMusicConfig *D_800772F8[];
 extern u32 D_800772A4;
+extern s16 *D_80052258[];
+extern s32 D_800772D8;
 extern s16 D_80051854[];
 extern s16 D_80051954;
 
@@ -343,7 +368,7 @@ typedef struct {
     /* 0x38 */ s32 frameCounter;   /**< Frame counter; wraps back to 0 at loopLimit. */
     /* 0x3C */ s32 loopLimit;      /**< Loop/sector limit (sectorCount >> 12). */
     /* 0x40 */ s32 panVolume;      /**< Raw pan/volume value. */
-    /* 0x44 */ u8 pad44[0x04];
+    /* 0x44 */ s32 unk44;
     /* 0x48 */ s32 panTarget;      /**< Pan target (cleared when setting pan). */
     /* 0x4C */ u8 pad4C[0x0C];
     /* 0x58 */ s32 savedPitch;     /**< Saved pitch value for voice restore. */

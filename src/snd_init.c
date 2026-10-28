@@ -2,6 +2,7 @@
 #include "psxsdk/libspu.h"
 #include "snd_init.h"
 #include "snd_dma.h"
+#include "snd_note.h"
 #include "snd_param.h"
 #include "snd_track.h"
 
@@ -881,7 +882,7 @@ s32 sndStreamBank(u8 *srcPtr, u32 numBytes, s32 waitDma) {
         if (D_80077358.spuAddr == 0) {
             if (sndValidateBank((u32 *)srcPtr) == 0) {
                 sndSelectBankSlot(srcPtr, &val1, &val2);
-                func_8001A57C(srcPtr, (s32)&D_80074FE8, 0x40);
+                func_8001A57C((u32 *)srcPtr, (u32 *)D_80074FE8, 0x40);
                 srcPtr += 0x40;
                 D_80074FE8[4] = val2;
                 D_80077358.spuAddr = val2;
@@ -1251,7 +1252,7 @@ s32 sndUploadSampleBank(u8 *bank, s32 slot) {
             SpuSetTransferStartAddr(spuAddr);
             sndDmaWriteSpu(bank, desc->spuAddr);
             desc->spuLoadedAddr = spuAddr;
-            func_8001A57C(desc, (s32)D_80073C38, 0x70);
+            func_8001A57C((u32 *)desc, (u32 *)D_80073C38, 0x70);
         }
     } else {
         D_80073C58 = 0;
