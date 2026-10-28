@@ -9,7 +9,14 @@
 #include "snd_init.h"
 #include "snd_voice.h"
 
-void func_8001BAA8(SoundSeqTrack *track, u32 bit);
+static void func_8001A674(void);
+static u32 func_8001AA28(SoundSeqTrack *tracks, s32 isSecond);
+static void func_8001ACCC(SoundMusicConfig *track, SoundSeqTrack *tracks);
+static u8 func_8001B1F4(SoundSeqTrack *track);
+static void func_8001B42C(SoundSeqTrack *track, u32 key);
+static s32 func_8001B690(SndInstrument *inst, s32 key, u32 fineTuning, s32 *out);
+static s32 func_8001B820(SoundSeqTrack *track, u32 bit, s32 idx);
+static void func_8001BAA8(SoundSeqTrack *track, u32 bit);
 
 extern s16 D_8007507A;
 extern s32 D_800516A0;
@@ -90,7 +97,7 @@ void func_8001A5FC(u32 *a, u32 *b, u32 size) {
     }
 }
 
-void func_8001A674(void) {
+static void func_8001A674(void) {
     SoundMusicConfig *config;
     SoundStream *stream;
     SoundSeqTrack *track;
@@ -192,7 +199,7 @@ void func_8001A674(void) {
     }
 }
 
-u32 func_8001AA28(SoundSeqTrack *tracks, s32 isSecond) {
+static u32 func_8001AA28(SoundSeqTrack *tracks, s32 isSecond) {
     SoundMusicConfig *config;
     SoundSeqTrack *track;
     u32 active;
@@ -267,7 +274,7 @@ u32 func_8001AA28(SoundSeqTrack *tracks, s32 isSecond) {
     return g_sndSeqState->unk04;
 }
 
-void func_8001ACCC(SoundMusicConfig *track, SoundSeqTrack *tracks) {
+static void func_8001ACCC(SoundMusicConfig *track, SoundSeqTrack *tracks) {
     s32 savedUnk04;
     s32 newVal;
 
@@ -398,7 +405,7 @@ s32 func_8001AD60(void) {
     return rcnt;
 }
 
-u8 func_8001B1F4(SoundSeqTrack *track) {
+static u8 func_8001B1F4(SoundSeqTrack *track) {
     u8 *p = track->unk00;
     u32 loopId = track->panEnvSpeed;
     u32 op;
@@ -530,7 +537,7 @@ s32 sndAdjustNoteOctave(s32 a0, s32 a1) {
     return a1;
 }
 
-void func_8001B42C(SoundSeqTrack *track, u32 key) {
+static void func_8001B42C(SoundSeqTrack *track, u32 key) {
     func_8001B42C_entry *entry;
     SndInstrument *inst;
     s32 flags;
@@ -605,7 +612,7 @@ void func_8001B42C(SoundSeqTrack *track, u32 key) {
     track->unkF4.sweep = entry->unk07;
 }
 
-s32 func_8001B690(SndInstrument *inst, s32 key, u32 fineTuning, s32 *out) {
+static s32 func_8001B690(SndInstrument *inst, s32 key, u32 fineTuning, s32 *out) {
     s32 pitch;
     s32 note;
     s32 octave;
@@ -651,7 +658,7 @@ s32 func_8001B690(SndInstrument *inst, s32 key, u32 fineTuning, s32 *out) {
     return pitch & 0xFFFF;
 }
 
-s32 func_8001B820(SoundSeqTrack *track, u32 bit, s32 idx) {
+static s32 func_8001B820(SoundSeqTrack *track, u32 bit, s32 idx) {
     func_8001B820_entry *entry;
     SndInstrument *inst;
     s32 flags;
@@ -710,7 +717,7 @@ s32 func_8001B820(SoundSeqTrack *track, u32 bit, s32 idx) {
     return pitch;
 }
 
-void func_8001BAA8(SoundSeqTrack *track, u32 bit) {
+static void func_8001BAA8(SoundSeqTrack *track, u32 bit) {
     u32 op;
     u32 value;
     u32 depth;
