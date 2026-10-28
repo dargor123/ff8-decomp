@@ -220,6 +220,22 @@ typedef struct {
 } VoicePoolEntry; /* 16 bytes */
 
 typedef struct {
+    /* 0x00 */ u32 unk00;
+    /* 0x04 */ u16 unk04;
+    /* 0x06 */ u16 unk06;
+    /* 0x08 */ u16 unk08;
+    /* 0x0A */ u8 pad0A[0x0A];
+    /* 0x14 */ s32 unk14;
+    /* 0x18 */ u8 pad18[0x08];
+    /* 0x20 */ u32 unk20;
+    /* 0x24 */ u32 unk24;
+    /* 0x28 */ u32 unk28;
+    /* 0x2C */ u8 pad2C[0x04];
+    /* 0x30 */ s32 unk30;
+    /* 0x34 */ s32 unk34;
+} func_8001A1E8_data;
+
+typedef struct {
     /* 0x00 */ s32 unk00;
     /* 0x04 */ u32 unk04;
     /* 0x08 */ u32 unk08;
@@ -231,8 +247,8 @@ typedef struct {
     /* 0x20 */ s32 unk20;
     /* 0x24 */ s32 unk24;
     /* 0x28 */ s32 unk28;
-    /* 0x2C */ s32 unk2C;
-    /* 0x30 */ s32 unk30;
+    /* 0x2C */ func_8001A1E8_data *unk2C;
+    /* 0x30 */ s16 *unk30;
     /* 0x34 */ func_8001B820_entry *unk34;
     /* 0x38 */ s8 *unk38;
     /* 0x3C */ u32 unk3C;
