@@ -261,8 +261,8 @@ s32 *func_800BFBBC(u8 *entity, Eline *eline, u16 *a2, s32 mode) {
         D_80085228 = D_800DE8D9;
         D_800852F8 = D_800DE8DA;
         D_80085391 = D_800DE8D8;
-        D_800852F0 = (u16 *)D_800DE4E4;
-        D_80085380 = (s32 *)D_800DE4E8;
+        D_800852F0 = D_800DE4E4;
+        D_80085380 = D_800DE4E8;
         g_battleConfig.unk2 = g_fieldVars->fieldB6;
         D_80085384 = (Dline *)func_800BE7F4((Eline *)eline);
         D_800852F4 = (Bganime *)func_800BEA84(D_80085384);
@@ -289,7 +289,7 @@ s32 *func_800BFBBC(u8 *entity, Eline *eline, u16 *a2, s32 mode) {
                 if (g_gameState.battleParty[i] == e->field_0x255) {
                     e->posX = g_fieldEntity.position_x << 12;
                     e->posY = g_fieldEntity.position_y << 12;
-                    e->field_0x241 = g_fieldEntity.anim_state;
+                    e->field_0x241 = g_fieldEntity.facingDirection;
                     rot = g_fieldEntity.spawnTriIdx;
                     e->context.flags |= 4;
                     e->triIdx = rot;

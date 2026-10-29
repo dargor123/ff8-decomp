@@ -25,7 +25,6 @@ extern u8   D_800516B8[];
 extern CdlATV g_cdMixVolume;
 extern u8   D_80073C38[];
 extern s32  D_80073C58;
-extern s32 *D_80073CA8;
 extern s32  D_80073DE0[];
 extern s16  D_80073E60;
 extern s16  D_80073E62;
@@ -37,11 +36,13 @@ extern s32  D_80074EC0;          /* bank-ID slot for mode 2 (D_80074EB8[2]) */
 extern s32  D_80074EC4;          /* func_80014190: bank-ID slot, default mode */
 extern s32  D_80074EC8;          /* func_80014190: bank-ID slot, mode 1 */
 extern s32  D_80074ECC;          /* func_80014190: bank-ID slot, mode 2 */
-extern s32  D_80074ED4;
+extern volatile s32 D_80074ED4;
+extern s32 D_80074FE0;
+extern s16 D_80074FE4;
 extern s32  D_80074FE8[];        /* parsed bank header (level/addr/counts) */
 extern s32  D_80074FF8;          /* decode work buffer / scratch pointer */
-extern s32  D_80075028[];
-extern s32  g_sndCmdArgs[4];    /* sound-command argument buffer (filled per command, read by the dispatcher) */
+extern s32 D_80075078;
+extern s32  g_sndCmdArgs[6];    /* sound-command argument buffer (filled per command, read by the dispatcher) */
 extern s32  D_80077288[];
 extern s32  D_8007728C;
 extern s32  D_800772CC;
@@ -150,7 +151,7 @@ extern void sndCmdDA(s32 arg0, s32 arg1, s32 arg2);
 extern void sndCmdF0(void);
 extern s32 sndSelectBankSlot(SndBankDesc *desc, s32 *outLevel, s32 *outAddr);
 extern s32 sndResetState(void);
-extern s32 sndStreamBank(s32 srcPtr, u32 numBytes, s32 waitDma);
+extern s32 sndStreamBank(u8 *srcPtr, u32 numBytes, s32 waitDma);
 extern s32 sndProcessAudio(s32 bank, s32 arg1);
 extern s32 sndUploadBank(SndBankDesc *desc, s32 arg1);
 extern void sndSetPlaybackAddr(s32 arg0, s32 arg1);
@@ -162,7 +163,7 @@ extern void sndCmdE2(void);
 extern void sndCmdE4(s32 value);
 extern void sndCmdE5(s32 arg0, s32 value);
 extern void sndCmdE6(s32 value);
-extern s32 sndUploadSampleBank(s32 bank, s32 slot);
+extern s32 sndUploadSampleBank(u8 *bank, s32 slot);
 extern void sndCmdED(s32 volume, s32 arg1);
 extern void sndCmdEC(s32 bank, s32 instrument, s32 slot, s32 arg3);
 extern s32 sndInitIrq(s32 arg0, s32 value);

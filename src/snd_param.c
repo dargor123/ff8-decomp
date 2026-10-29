@@ -1,18 +1,21 @@
 #include "common.h"
+#include "psxsdk/libspu.h"
 #include "sound.h"
+#include "snd_param.h"
+#include "snd_bank.h"
+#include "snd_dma.h"
+#include "snd_init.h"
+#include "snd_track.h"
 
-extern s32 D_80075028;
-extern u16 D_80073E62;
-extern s32 D_80077284;
-extern u16 D_80073E60;
-extern s32 D_80077280;
-extern u8 D_80070D60[];
-extern s32 D_80073CA8;
-extern u8 *D_80073C34;
-extern s32 D_8007728C;
-extern s32 D_800772A4;
-extern s32 D_800772F4;
-extern s32 D_8007507C;
+typedef struct {
+    /* 0x00 */ u32 unk00;
+    /* 0x04 */ u16 unk04;
+    /* 0x06 */ u16 unk06;
+    /* 0x08 */ u16 unk08;
+} func_8001A1E8_data;
+
+extern SndVoice D_80074E68;
+extern void (*D_80052298[])(SndVoice *voice);
 
 /**
  * @brief Clears D_80073E62, stores *a0 << 16 into D_80077284.
@@ -24,9 +27,28 @@ void sndSetVolumeFade(s8 *a0) {
     D_80077284 = val << 16;
 }
 
-INCLUDE_ASM("asm/nonmatchings/snd_param", func_80019934);
+void func_80019934(s32 *args) {
+    s32 steps = 1;
 
-INCLUDE_ASM("asm/nonmatchings/snd_param", func_8001999C);
+    if (args[0] != 0) {
+        steps = args[0];
+    }
+    D_80073DEC = (((s8)args[1] << 16) - D_80077284) / steps;
+    D_80073E62 = steps;
+}
+
+void func_8001999C(s32 *args) {
+    s32 steps = 1;
+    s32 start;
+
+    if (args[1] != 0) {
+        steps = args[0];
+    }
+    start = (s8)args[1] << 16;
+    D_80077284 = start;
+    D_80073DEC = (((s8)args[2] << 16) - start) / steps;
+    D_80073E62 = steps;
+}
 
 /**
  * @brief Clears D_80073E60, stores *a0 << 16 into D_80077280.
@@ -38,9 +60,28 @@ void sndSetPanFade(s8 *a0) {
     D_80077280 = val << 16;
 }
 
-INCLUDE_ASM("asm/nonmatchings/snd_param", func_80019A2C);
+void func_80019A2C(s32 *args) {
+    s32 steps = 1;
 
-INCLUDE_ASM("asm/nonmatchings/snd_param", func_80019A94);
+    if (args[0] != 0) {
+        steps = args[0];
+    }
+    D_80073DE8 = (((s8)args[1] << 16) - D_80077280) / steps;
+    D_80073E60 = steps;
+}
+
+void func_80019A94(s32 *args) {
+    s32 steps = 1;
+    s32 start;
+
+    if (args[1] != 0) {
+        steps = args[0];
+    }
+    start = (s8)args[1] << 16;
+    D_80077280 = start;
+    D_80073DE8 = (((s8)args[2] << 16) - start) / steps;
+    D_80073E60 = steps;
+}
 
 /**
  * @brief Transfers sound data for main and optional secondary sound sources.
@@ -50,7 +91,7 @@ INCLUDE_ASM("asm/nonmatchings/snd_param", func_80019A94);
  */
 void sndTransferData(void) {
     func_80017410(g_sndSeqState, D_80070D60, 0);
-    if (D_80073CA8 != 0) {
+    if (D_80073CA8 != NULL) {
         func_80017410(D_80073CA8, D_80073C34, 0);
     }
 }
@@ -65,7 +106,7 @@ void sndTransferData(void) {
  */
 void sndTransferDataWithMode(s32 *a0) {
     func_80017410(g_sndSeqState, D_80070D60, *a0);
-    if (D_80073CA8 != 0 && *a0 != 0) {
+    if (D_80073CA8 != NULL && *a0 != 0) {
         func_80017410(D_80073CA8, D_80073C34, *a0);
     }
 }
@@ -75,12 +116,25 @@ void sndTransferDataWithMode(s32 *a0) {
  *
  * Iterates over 12 CD-audio tracks (D_80072F70, stride 0x110). For each
  * track whose voice bit is set in D_80075028 but does NOT have the
- * 0x2000000 flag in its keyOnMask, ORs the bit into D_80075028+0xC
+ * 0x2000000 flag in its keyOnMask, ORs the bit into D_80075028.unk0C
  * (pending clear mask), calls sndTrackClearVoiceBits, and zeroes the
  * track's flags field at offset 0x30. Sets hardware update flag 0x110
  * in D_80077288+8.
  */
-INCLUDE_ASM("asm/nonmatchings/snd_param", func_80019BC0);
+void func_80019BC0(void) {
+    SoundSeqTrack *track = D_80072F70;
+    u32 bit = 0x1000;
+    u32 i;
+
+    for (i = 0; i < 12; i++, track++, bit <<= 1) {
+        if ((D_80075028.unk00 & bit) && !(track->keyOnMask & 0x2000000)) {
+            D_80075028.unk0C |= bit;
+            sndTrackClearVoiceBits(track, bit);
+            track->flags = 0;
+        }
+    }
+    D_80077288[2] |= 0x110;
+}
 
 /**
  * @brief Starts sound playback mode 1 for primary and optional secondary sources.
@@ -91,7 +145,7 @@ INCLUDE_ASM("asm/nonmatchings/snd_param", func_80019BC0);
 void sndStartPlaybackMode1(void) {
     D_8007728C = 1;
     func_80017D14(g_sndSeqState, D_80070D60);
-    if (D_80073CA8 != 0) {
+    if (D_80073CA8 != NULL) {
         func_80017D14(D_80073CA8, D_80073C34);
     }
     func_80017D5C();
@@ -106,7 +160,7 @@ void sndStartPlaybackMode1(void) {
 void sndStartPlaybackMode2(void) {
     D_8007728C = 2;
     func_80017D14(g_sndSeqState, D_80070D60);
-    if (D_80073CA8 != 0) {
+    if (D_80073CA8 != NULL) {
         func_80017D14(D_80073CA8, D_80073C34);
     }
     func_80017D5C();
@@ -134,7 +188,7 @@ void sndSetTempoAllTracks(s32 *a0) {
 
 /** @brief Copies halfword from a0 to offset 0x60 in struct pointed to by g_sndSeqState. */
 void sndSetSequenceOffset(u16 *a0) {
-    g_sndSeqState->voiceActive = *a0;
+    g_sndSeqState->unk60 = *a0;
 }
 
 /**
@@ -150,11 +204,11 @@ void func_80019DB0(void) {
     s32 unusedMask;
     s32 bit;
     s32 voice;
-    SoundSeqTrack *ptr;
+    SoundMusicConfig *ptr;
     s32 tmp;
 
-    if (g_sndSeqState->instParams != 0) {
-        unusedMask = ~(D_80075028 | D_800772A4) & 0xFFFFFF;
+    if (g_sndSeqState->unk04 != 0) {
+        unusedMask = ~(D_80075028.unk00 | D_800772A4) & 0xFFFFFF;
         if (unusedMask != 0) {
             bit = 1;
             voice = 0;
@@ -171,9 +225,9 @@ void func_80019DB0(void) {
             } while (unusedMask != 0);
         }
         ptr = g_sndSeqState;
-        tmp = ptr->instParams;
-        ptr->instParams = 0;
-        ptr->keyOnPending = tmp;
+        tmp = ptr->unk04;
+        ptr->unk04 = 0;
+        ptr->unk1C = tmp;
     }
     D_800772F4 |= 1;
 }
@@ -186,7 +240,32 @@ void func_80019DB0(void) {
  * Moves the mask from field 0x1C to field 0x04 and sets the hardware
  * update flag. Clears bit 0 of D_800772F4.
  */
-INCLUDE_ASM("asm/nonmatchings/snd_param", func_80019EA0);
+void func_80019EA0(void) {
+    SoundSeqTrack *track;
+    u32 stored = g_sndSeqState->unk1C;
+    u32 pending;
+    u32 bit;
+    u32 saved;
+
+    if (stored != 0) {
+        pending = stored;
+        bit = 1;
+        track = D_80070D60;
+        do {
+            if (pending & bit) {
+                pending &= ~bit;
+                track->unkF4.updateFlags |= 0x2B13;
+            }
+            bit <<= 1;
+            track++;
+        } while (pending != 0);
+        saved = g_sndSeqState->unk1C;
+        g_sndSeqState->unk1C = 0;
+        g_sndSeqState->unk04 = saved;
+        D_80077288[2] |= 0x100;
+    }
+    D_800772F4 &= ~1;
+}
 
 /**
  * @brief Silences CD-audio voices and clears pending voice bits.
@@ -194,7 +273,7 @@ INCLUDE_ASM("asm/nonmatchings/snd_param", func_80019EA0);
  * Reads the voice activation bitmask from D_80075028. For each bit, checks
  * if the corresponding CD-audio track (D_80072F70, stride 0x110) has the
  * 0x2000000 flag set in its keyOnMask (offset 0x24). If so, clears that
- * bit from the mask. Then stores the remaining mask to D_80075028+0x10,
+ * bit from the mask. Then stores the remaining mask to D_80075028.unk10,
  * clears those bits from D_80075028, and silences each remaining voice
  * (starting from voice 12) via SPU register writes.
  * Sets bit 1 of D_800772F4.
@@ -205,10 +284,9 @@ void func_80019F3C(void) {
     s32 voice;
     s32 counter;
     s32 *trackPtr;
-    s32 *ctrlPtr;
 
-    if (D_80075028 != 0) {
-        voiceMask = D_80075028;
+    if (D_80075028.unk00 != 0) {
+        voiceMask = D_80075028.unk00;
         trackPtr = (s32 *)((s32)D_80072F70);
         bit = 0x1000;
         counter = 0;
@@ -225,9 +303,8 @@ void func_80019F3C(void) {
 
         bit = 0x1000;
         voice = 12;
-        ctrlPtr = (s32 *)((s32)&D_80075028);
-        ctrlPtr[4] = voiceMask;
-        D_80075028 &= ~voiceMask;
+        D_80075028.unk10 = voiceMask;
+        D_80075028.unk00 &= ~voiceMask;
         if (voiceMask != 0) {
             do {
                 if (voiceMask & bit) {
@@ -245,7 +322,32 @@ void func_80019F3C(void) {
     D_800772F4 |= 2;
 }
 
-INCLUDE_ASM("asm/nonmatchings/snd_param", func_8001A058);
+void func_8001A058(void) {
+    SoundSeqTrack *track;
+    u32 stored = D_80075028.unk10;
+    u32 pending;
+    u32 bit;
+    u32 saved;
+
+    if (stored != 0) {
+        pending = stored;
+        bit = 0x1000;
+        track = D_80072F70;
+        do {
+            if (pending & bit) {
+                pending &= ~bit;
+                track->unkF4.updateFlags |= 0x2B13;
+            }
+            bit <<= 1;
+            track++;
+        } while (pending != 0);
+        saved = D_80075028.unk10;
+        D_80075028.unk10 = 0;
+        D_80075028.unk00 |= saved;
+        D_80077288[2] |= 0x100;
+    }
+    D_800772F4 &= ~2;
+}
 
 /**
  * @brief Mutes two consecutive SPU voices if the stream is active.
@@ -282,7 +384,7 @@ void sndStub(void) {
 /**
  * @brief Configures the SPU reverb mode if it differs from the current setting.
  *
- * Queries the current reverb mode via func_8003ED54. If the current mode
+ * Queries the current reverb mode via SpuGetReverbModeType. If the current mode
  * differs from @p a0, disables reverb, sets the new mode type (with 0x100
  * flag to apply immediately), and re-enables reverb.
  *
@@ -290,7 +392,7 @@ void sndStub(void) {
  */
 void sndSetReverbMode(s32 a0) {
     s32 current;
-    func_8003ED54(&current);
+    SpuGetReverbModeType(&current);
     if (current != a0) {
         SpuSetReverb(0);
         SpuSetReverbModeType(a0 | 0x100);
@@ -298,5 +400,103 @@ void sndSetReverbMode(s32 a0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/snd_param", func_8001A1E8);
+s32 func_8001A1E8(u32 cmd) {
+    func_8001A1E8_data *seq;
+    SndVoice *block;
+    s32 result;
+    s32 val;
+
+    result = 0;
+    DisableEvent(D_8005169C);
+    cmd &= 0xFF;
+    block = &D_80074E68;
+    switch (cmd) {
+    case 0x10:
+    case 0x12:
+    case 0x14:
+    case 0x19:
+    case 0x1A:
+        if (sndValidateBank((u32 *)g_sndCmdArgs[0]) == 0) {
+            seq = (func_8001A1E8_data *)g_sndCmdArgs[0];
+            if (g_sndSeqState->unk5E != seq->unk04 || (D_80073CA8 != NULL && D_80073CA8->unk5E != g_sndSeqState->unk5E)) {
+                if (cmd != 0x19) {
+                    sndSetReverbMode(seq->unk08);
+                }
+                block->params[0] = (s32)seq;
+                block->params[2] = seq->unk04;
+                switch (cmd) {
+                case 0x14:
+                    val = -1;
+                    if (g_sndCmdArgs[1] != 0) {
+                        val = g_sndCmdArgs[1] | 1;
+                    }
+                    block->playCount = val;
+                    block->unk10 = g_sndCmdArgs[2];
+                    break;
+                case 0x12:
+                    block->playCount = g_sndCmdArgs[1];
+                    break;
+                case 0x19:
+                    block->unk10 = g_sndCmdArgs[1];
+                    break;
+                case 0x1A:
+                    val = g_sndCmdArgs[1];
+                    if (val == 0) {
+                        val = 1;
+                    }
+                    block->unk10 = val;
+                    block->unk14 = g_sndCmdArgs[2];
+                    break;
+                }
+                result = seq->unk04;
+            } else {
+                cmd = 0;
+                result = cmd;
+            }
+        } else {
+            cmd = 0;
+            result = -1;
+        }
+        break;
+    case 0xD8:
+        block->params[0] = g_sndCmdArgs[0];
+        D_80052298[0xD0](block);
+        cmd = 0xD4;
+        break;
+    case 0xD9:
+        block->params[0] = g_sndCmdArgs[0];
+        block->params[1] = g_sndCmdArgs[1];
+        D_80052298[0xD1](block);
+        cmd = 0xD5;
+        break;
+    case 0xDA:
+        block->params[0] = g_sndCmdArgs[0];
+        block->params[1] = g_sndCmdArgs[1];
+        block->params[2] = g_sndCmdArgs[2];
+        D_80052298[0xD2](block);
+        cmd = 0xD6;
+        break;
+    case 0x99:
+        D_80052298[0x9B](block);
+        D_80052298[0x9D](block);
+        cmd = 0x9F;
+        break;
+    case 0x98:
+        D_80052298[0x9A](block);
+        D_80052298[0x9C](block);
+        cmd = 0x9E;
+        break;
+    default:
+        block->params[0] = g_sndCmdArgs[0];
+        block->params[1] = g_sndCmdArgs[1];
+        block->params[2] = g_sndCmdArgs[2];
+        block->playCount = g_sndCmdArgs[3];
+        block->unk10 = g_sndCmdArgs[4];
+        block->unk14 = g_sndCmdArgs[5];
+        break;
+    }
+    D_80052298[cmd](block);
+    EnableEvent(D_8005169C);
+    return result;
+}
 
