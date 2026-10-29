@@ -362,6 +362,20 @@ typedef struct {
     /* 0x24 */ u8 pad24[0x1C];     /**< Remaining header padding (total header = 0x40 bytes). */
 } SndBankDesc; /* 0x40 bytes */
 
+typedef struct {
+    /* 0x00 */ u32 unk00;
+    /* 0x04 */ s32 unk04;
+    /* 0x08 */ u8 pad08[0x08];
+    /* 0x10 */ u32 unk10;
+    /* 0x14 */ u32 unk14;
+    /* 0x18 */ s32 unk18;
+    /* 0x1C */ u16 unk1C;
+    /* 0x1E */ u16 pad1E;
+    /* 0x20 */ s32 unk20;
+    /* 0x24 */ s32 unk24;
+    /* 0x28 */ s32 unk28;
+} func_8001E0CC_data;
+
 /**
  * @brief CD audio / streaming sound state (@c g_sndStream).
  *
@@ -370,11 +384,13 @@ typedef struct {
  */
 typedef struct {
     /* 0x00 */ u8 *spuBaseAddr;    /**< SPU base address for stream. */
-    /* 0x04 */ s32 unk04;
+    /* 0x04 */ u8 *unk04;
     /* 0x08 */ s32 flags;          /**< Control flags (bit 24 gates the tick IRQ callback). */
     /* 0x0C */ s32 active;         /**< Active/IRQ voice bitmask (nonzero = playing). */
     /* 0x10 */ s32 voiceIdx;       /**< First SPU voice index for this stream. */
-    /* 0x14 */ u8 pad14[0x0C];
+    /* 0x14 */ u32 unk14;
+    /* 0x18 */ s32 unk18;
+    /* 0x1C */ s32 unk1C;
     /* 0x20 */ s32 unk20;
     /* 0x24 */ s32 tickCounter;    /**< Tick counter (incremented each frame). */
     /* 0x28 */ s32 tickCount;      /**< Running tick accumulator. */
@@ -386,7 +402,8 @@ typedef struct {
     /* 0x40 */ s32 panVolume;      /**< Raw pan/volume value. */
     /* 0x44 */ s32 unk44;
     /* 0x48 */ s32 panTarget;      /**< Pan target (cleared when setting pan). */
-    /* 0x4C */ u8 pad4C[0x0C];
+    /* 0x4C */ s32 unk4C;
+    /* 0x50 */ u8 pad50[0x08];
     /* 0x58 */ s32 savedPitch;     /**< Saved pitch value for voice restore. */
     /* 0x5C */ u8 pad5C[0x04];
 } SoundStream; /* 0x60 = 96 bytes */

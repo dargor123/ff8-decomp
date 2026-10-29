@@ -4,12 +4,16 @@
 #include "snd_track.h"
 #include "snd_bank.h"
 #include "snd_note.h"
+#include "snd_init.h"
+#include "snd_dma.h"
 
-extern s32 D_80077288[];
+extern s32 D_800772F0;
 extern s32 D_80074EE8[];
 extern s8 D_80051824[];
 
 void sndStreamSetupMono(void);
+void sndStreamSetupStereo(void);
+void sndStreamSetupStereoAlt(void);
 void sndStreamCallbackMonoLow(void);
 void sndStreamCallbackStereoLow(void);
 void sndStreamCallbackStereoAltLow(void);
@@ -33,8 +37,6 @@ void sndTrackSetInstrumentParams(SoundSeqTrack *track, SndInstrument *inst, s32 
     track->unkF4.updateFlags |= 0x1FF80;
     track->unkF4.adsrHigh = v;
 }
-
-extern SndInstrument D_80073E68[];
 
 /**
  * @brief Applies an instrument table entry to a sequence track.
@@ -1580,7 +1582,29 @@ void sndStreamDisableIrq(void) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/snd_track", func_8001DFF4);
+s32 func_8001DFF4(void) {
+    u32 mask;
+    u32 bit;
+    s32 i;
+
+    while (1) {
+        mask = D_80075028.unk00 | D_80075028.unk10;
+        bit = 0xC00000;
+        for (i = 11; i != 0; i--) {
+            if (!(mask & bit)) {
+                break;
+            }
+            bit >>= 1;
+        }
+        if (i != 0) {
+            return i + 11;
+        }
+        func_800174E4(0, 0x40000000);
+        if (mask == (D_80075028.unk00 | D_80075028.unk10)) {
+            return -1;
+        }
+    }
+}
 
 /**
  * @brief Sets up SPU transfer at address 0x2100, registers callback
@@ -1593,11 +1617,112 @@ void sndStreamBeginTransfer(void) {
     SpuWrite(addr, 0x800);
 }
 
-INCLUDE_ASM("asm/nonmatchings/snd_track", func_8001E0CC);
+void func_8001E0CC(u8 *data, s32 pan, s32 reverb) {
+    func_8001E0CC_data *hdr;
+    s32 voice;
+    s32 mask;
+    s32 size;
 
-INCLUDE_ASM("asm/nonmatchings/snd_track", func_8001E308);
+    voice = func_8001DFF4();
+    if (voice == -1) {
+        return;
+    }
+    g_sndStream.unk4C = pan;
+    SpuSetIRQ(0);
+    SpuSetIRQCallback(0);
+    hdr = (func_8001E0CC_data *)data;
+    g_sndStream.spuBaseAddr = (u8 *)hdr + 0x40;
+    g_sndStream.unk14 = hdr->unk10;
+    mask = (1 << voice) | (1 << (voice + 1));
+    g_sndStream.unk18 = hdr->unk20;
+    g_sndStream.voiceIdx = voice;
+    g_sndStream.active = mask;
+    spuSetIrqAddr(mask);
+    g_sndStream.flags = hdr->unk18;
+    g_sndStream.savedPitch = hdr->unk1C;
+    g_sndStream.voiceIdx = voice;
+    g_sndStream.active = mask;
+    spuSetIrqAddr(mask);
+    SpuSetTransferMode(0);
+    SpuSetTransferStartAddr(0x1100);
+    D_80074ED4 = 1;
+    g_sndStream.unk04 = (g_sndStream.flags & 2) ? g_sndStream.spuBaseAddr + hdr->unk14 : 0;
+    if (g_sndStream.flags & 1) {
+        g_sndStream.unk1C = (g_sndStream.flags & 2) ? g_sndStream.unk14 - (hdr->unk14 >> 1) : 0;
+        SpuSetTransferCallback(sndStreamSetupStereo);
+        size = 0x2000;
+    } else {
+        g_sndStream.unk1C = (g_sndStream.flags & 2) ? g_sndStream.unk14 - hdr->unk14 : 0;
+        SpuSetTransferCallback(sndStreamBeginTransfer);
+        size = 0x800;
+    }
+    SpuWrite(g_sndStream.spuBaseAddr, size);
+    if (reverb != 0) {
+        D_80075028.unk20 |= g_sndStream.active;
+    } else {
+        D_80075028.unk20 &= ~g_sndStream.active;
+    }
+    D_80075028.unk24 &= ~D_800772A4;
+    D_80075028.unk1C &= ~D_800772A4;
+    D_80077288[2] |= 0x100;
+}
 
-INCLUDE_ASM("asm/nonmatchings/snd_track", func_8001E4C4);
+void func_8001E308(s32 voice, s32 mode, u32 startAddr, u32 repeatAddr) {
+    s16 volL;
+    s16 volR;
+    s32 pan;
+    s32 left;
+    s32 right;
+
+    if (D_8007728C & 2) {
+        volL = volR = (D_800772D8 * D_80051954) >> 16;
+    } else if (mode == 1) {
+        volL = D_800772D8 >> 1;
+        volR = 0;
+    } else if (mode == 2) {
+        volL = 0;
+        volR = D_800772D8 >> 1;
+    } else if (mode == 3) {
+        volL = D_800772D8 >> 1;
+        volL = volR = (volL >> 1) + (volL >> 2);
+    } else {
+        pan = (g_sndStream.unk4C >> 8) & 0xFF;
+        left = g_sndStream.panVolume * D_80051854[pan];
+        right = g_sndStream.panVolume * D_80051854[pan ^ 0xFF];
+        volL = left >> 16;
+        volR = right >> 16;
+    }
+    spuSetVoiceVolume(voice, volL, volR, 0);
+    spuSetVoicePitch(voice, D_800772F0);
+    spuSetVoiceStartAddr(voice, startAddr);
+    spuSetVoiceRepeatAddr(voice, repeatAddr);
+    spuSetVoiceAttack(voice, 0, 1);
+    spuSetVoiceDecayShift(voice, 0xF);
+    spuSetVoiceSustainLevel(voice, 0xF);
+    spuSetVoiceSustainMode(voice, 0x7F, 3);
+    spuSetVoiceReleaseMode(voice, 6, 3);
+}
+
+void func_8001E4C4(s32 size, s32 irqAddr, void (*callback)(void)) {
+    SoundStream *stream = &g_sndStream;
+
+    if (stream->active != 0) {
+        SpuSetTransferCallback(NULL);
+        D_80074ED4 = 0;
+        if (stream->unk14 > 0x1000) {
+            stream->unk14 -= 0x1000;
+            g_sndStream.spuBaseAddr += size;
+            SpuSetIRQCallback(callback);
+        } else {
+            SpuSetIRQCallback(sndStreamDisableIrq);
+            irqAddr = 0x1030;
+            stream->unk14 = 0;
+        }
+        SpuSetIRQAddr(irqAddr + 8);
+        spuSetReverbWorkAddr(D_800772A4);
+        SpuSetIRQ(1);
+    }
+}
 
 /**
  * @brief Sets up SPU voice parameters for both channels, then registers
@@ -1621,7 +1746,32 @@ void sndStreamSetupStereo(void) {
     func_8001E4C4(0x2000, 0x2100, sndStreamCallbackStereoLow);
 }
 
-INCLUDE_ASM("asm/nonmatchings/snd_track", func_8001E65C);
+void func_8001E65C(s32 addr, s32 repeatAddr, s32 size, void (*callback)(void)) {
+    if (g_sndStream.active != 0 && g_sndStream.unk14 != 0) {
+        SpuSetTransferStartAddr(addr);
+        sndDmaSetActive();
+        SpuWrite(g_sndStream.spuBaseAddr, size);
+        SpuSetIRQ(0);
+        if (g_sndStream.unk14 > 0x800) {
+            SpuSetIRQCallback(callback);
+            g_sndStream.unk14 -= 0x800;
+            g_sndStream.spuBaseAddr += size;
+        } else if (g_sndStream.unk04 != 0) {
+            SpuSetIRQCallback(callback);
+            g_sndStream.spuBaseAddr = g_sndStream.unk04;
+            g_sndStream.unk14 = g_sndStream.unk1C;
+        } else {
+            SpuSetIRQCallback(sndStreamDisableIrq);
+            repeatAddr = 0x1030;
+            addr = repeatAddr;
+            g_sndStream.unk14 = 0;
+        }
+        spuSetVoiceRepeatAddr(g_sndStream.voiceIdx, addr);
+        spuSetVoiceRepeatAddr(g_sndStream.voiceIdx + 1, repeatAddr);
+        SpuSetIRQAddr(addr + 8);
+        SpuSetIRQ(1);
+    }
+}
 
 void sndStreamCallbackMonoHigh(void);
 
@@ -1653,7 +1803,7 @@ void sndStreamCallbackStereoHigh(void) {
  * @param a0 Pointer to 3-word struct: [data_ptr, loop_flag, callback].
  */
 void sndStreamStartPlayback(s32 *a0) {
-    func_8001E0CC(a0[0], a0[1], a0[2]);
+    func_8001E0CC((u8 *)a0[0], a0[1], a0[2]);
     D_80075028.unk00 &= ~g_sndStream.active;
 }
 
@@ -1683,9 +1833,46 @@ void sndStreamSetPanVolume(s32 *a0) {
     }
 }
 
-INCLUDE_ASM("asm/nonmatchings/snd_track", func_8001E940);
+void func_8001E940(s32 *args) {
+    s16 steps = 1;
 
-INCLUDE_ASM("asm/nonmatchings/snd_track", func_8001E9C0);
+    if (args[0] != 0) {
+        steps = ((u16 *)args)[0];
+    }
+    g_sndStream.unk44 = (s16)((s16)(((u16 *)args)[2] - (u16)g_sndStream.panVolume) / steps);
+    g_sndStream.panTarget = steps;
+}
+
+void func_8001E9C0(s32 *args) {
+    SoundStream *stream = &g_sndStream;
+    s32 val;
+    s32 pan;
+    s32 vol;
+    s32 left;
+    s32 right;
+
+    val = args[0];
+    stream->unk4C = val;
+    if (stream->active != 0) {
+        if (D_8007728C & 2) {
+            vol = (stream->panVolume * D_80051954) >> 16;
+            spuSetVoiceVolume(stream->voiceIdx, vol, vol, 0);
+            spuSetVoiceVolume(stream->voiceIdx + 1, vol, vol, 0);
+        } else if (stream->flags & 1) {
+            vol = stream->panVolume;
+            vol <<= 15;
+            vol >>= 16;
+            spuSetVoiceVolume(stream->voiceIdx, vol, 0, 0);
+            spuSetVoiceVolume(stream->voiceIdx + 1, 0, vol, 0);
+        } else {
+            pan = (u8)(val >> 8);
+            left = (stream->panVolume * D_80051854[pan]) >> 16;
+            right = (stream->panVolume * D_80051854[pan ^ 0xFF]) >> 16;
+            spuSetVoiceVolume(stream->voiceIdx, left, right, 0);
+            spuSetVoiceVolume(stream->voiceIdx + 1, left, right, 0);
+        }
+    }
+}
 
 /** @brief Sets SPU IRQ address to 0x1038 and registers sndStreamDisableIrq as the IRQ callback. */
 void sndStreamSetupIrq(void) {
@@ -1693,11 +1880,124 @@ void sndStreamSetupIrq(void) {
     SpuSetIRQCallback(sndStreamDisableIrq);
 }
 
-INCLUDE_ASM("asm/nonmatchings/snd_track", func_8001EB38);
+void func_8001EB38(void) {
+    s32 irqAddr;
 
-INCLUDE_ASM("asm/nonmatchings/snd_track", func_8001EC0C);
+    if (g_sndStream.unk14 > 0x2000) {
+        SpuSetTransferStartAddr(g_sndStream.unk2C + 0x2000);
+        sndDmaWriteSpu(g_sndStream.spuBaseAddr, g_sndStream.unk14 - 0x2000);
+        irqAddr = g_sndStream.unk2C + 0x1FF8;
+    } else {
+        irqAddr = g_sndStream.unk2C + (g_sndStream.unk14 >> 1) + 8;
+    }
+    func_8001E308(g_sndStream.voiceIdx, 0, g_sndStream.unk2C, 0x1030);
+    func_8001E308(g_sndStream.voiceIdx + 1, 0, g_sndStream.unk2C, 0x1030);
+    SpuSetIRQAddr(irqAddr);
+    SpuSetIRQCallback(sndStreamSetupIrq);
+    spuSetReverbWorkAddr(g_sndStream.active);
+    SpuSetIRQ(1);
+}
 
-INCLUDE_ASM("asm/nonmatchings/snd_track", func_8001EDD4);
+void func_8001EC0C(func_8001E0CC_data *hdr, s32 pan, s32 spuAddr, s32 reverb) {
+    SoundStream *stream;
+    s32 voice;
+    s32 mask;
+    u32 tmp;
+
+    voice = func_8001DFF4();
+    if (voice == -1) {
+        return;
+    }
+    SpuSetIRQ(0);
+    SpuSetIRQCallback(0);
+    stream = &g_sndStream;
+    tmp = stream->active;
+    stream->unk4C = pan;
+    g_sndStream.spuBaseAddr = (u8 *)hdr + 0x40;
+    stream->unk14 = hdr->unk10;
+    mask = (1 << voice) | (1 << (voice + 1));
+    stream->unk18 = hdr->unk20;
+    stream->voiceIdx = voice;
+    stream->active = mask;
+    spuSetIrqAddr(mask | tmp);
+    stream->flags = hdr->unk18;
+    stream->savedPitch = hdr->unk1C;
+    stream->unk2C = spuAddr;
+    SpuSetTransferMode(0);
+    SpuSetTransferStartAddr(spuAddr);
+    D_80074ED4 = 1;
+    SpuSetTransferCallback(func_8001EB38);
+    tmp = stream->unk14;
+    if (tmp > 0x2000) {
+        tmp = 0x2000;
+    }
+    SpuWrite(g_sndStream.spuBaseAddr, tmp);
+    g_sndStream.spuBaseAddr += tmp;
+    if (reverb != 0) {
+        D_80075028.unk20 |= stream->active;
+    } else {
+        D_80075028.unk20 &= ~stream->active;
+    }
+    D_80075028.unk24 &= ~D_800772A4;
+    D_80075028.unk1C &= ~D_800772A4;
+    D_80077288[2] |= 0x100;
+}
+
+void func_8001EDD4(s32 unused, s32 reverb) {
+    func_8001E0CC_data *hdr;
+    s32 voice;
+    s32 mask;
+    s32 prev;
+    s32 flags;
+
+    if (D_80073C38.unk20 == 0) {
+        return;
+    }
+    voice = func_8001DFF4();
+    if (voice == -1) {
+        return;
+    }
+    SpuSetIRQ(0);
+    SpuSetIRQCallback(0);
+    mask = (1 << voice) | (1 << (voice + 1));
+    prev = g_sndStream.active;
+    g_sndStream.voiceIdx = voice;
+    g_sndStream.active = mask;
+    spuSetIrqAddr(mask | prev);
+    hdr = &D_80073C38;
+    g_sndStream.flags = hdr->unk18;
+    g_sndStream.savedPitch = hdr->unk1C;
+    if (reverb != 0) {
+        D_80075028.unk20 |= g_sndStream.active;
+    } else {
+        D_80075028.unk20 &= ~g_sndStream.active;
+    }
+    D_80075028.unk24 &= ~g_sndStream.active;
+    D_80075028.unk1C &= ~g_sndStream.active;
+    D_80077288[2] |= 0x100;
+    SpuSetIRQAddr(hdr->unk20 + (hdr->unk10 >> 1) + 8);
+    SpuSetIRQCallback(sndStreamSetupIrq);
+    flags = hdr->unk18;
+    if (flags & 1) {
+        if (flags & 2) {
+            func_8001E308(g_sndStream.voiceIdx, 1, hdr->unk20, hdr->unk20 + hdr->unk14);
+            func_8001E308(g_sndStream.voiceIdx + 1, 2, hdr->unk20 + hdr->unk24, hdr->unk20 + hdr->unk24 + hdr->unk14);
+        } else {
+            func_8001E308(g_sndStream.voiceIdx, 1, hdr->unk20, 0x1030);
+            func_8001E308(g_sndStream.voiceIdx + 1, 2, hdr->unk20 + hdr->unk24, 0x1030);
+        }
+    } else {
+        if (flags & 2) {
+            func_8001E308(g_sndStream.voiceIdx, 3, hdr->unk20, hdr->unk20 + hdr->unk14);
+            func_8001E308(g_sndStream.voiceIdx + 1, 3, hdr->unk20, hdr->unk20 + hdr->unk14);
+        } else {
+            func_8001E308(g_sndStream.voiceIdx, 3, hdr->unk20, 0x1030);
+            func_8001E308(g_sndStream.voiceIdx + 1, 3, hdr->unk20, 0x1030);
+        }
+    }
+    spuSetReverbWorkAddr(g_sndStream.active);
+    SpuSetIRQ(1);
+}
 
 /**
  * @brief Unpacks struct fields into 4 args, calls func_8001EC0C, then clears
@@ -1705,7 +2005,7 @@ INCLUDE_ASM("asm/nonmatchings/snd_track", func_8001EDD4);
  * @param a0 Pointer to 4-word struct.
  */
 void sndStreamStartPlayback4(s32 *a0) {
-    func_8001EC0C(a0[0], a0[1], a0[2], a0[3]);
+    func_8001EC0C((func_8001E0CC_data *)a0[0], a0[1], a0[2], a0[3]);
     D_80075028.unk00 &= ~g_sndStream.active;
 }
 
@@ -1738,9 +2038,65 @@ s32 sndStreamAdvanceLoopCounter(s32 *counter) {
     return *counter;
 }
 
-INCLUDE_ASM("asm/nonmatchings/snd_track", func_8001F118);
+void func_8001F118(void) {
+    SoundStream *stream;
+    func_8001E0CC_data *hdr;
+    s32 voice;
+    s32 vol;
+    s32 mask;
 
-INCLUDE_ASM("asm/nonmatchings/snd_track", func_8001F2A8);
+    voice = func_8001DFF4();
+    if (voice == -1) {
+        return;
+    }
+    SpuSetIRQ(0);
+    SpuSetIRQCallback(0);
+    hdr = (func_8001E0CC_data *)(g_sndStream.unk2C + 0x100);
+    if (hdr->unk28 != 0 && g_sndStream.panTarget == 0) {
+        vol = g_sndStream.panVolume;
+        g_sndStream.panVolume = 0;
+        sndCmdE5(hdr->unk28, vol >> 8);
+    }
+    stream = &g_sndStream;
+    g_sndStream.spuBaseAddr = (u8 *)stream->unk2C;
+    stream->unk14 = hdr->unk10;
+    mask = (1 << voice) | (1 << (voice + 1));
+    stream->unk18 = hdr->unk20;
+    stream->voiceIdx = voice;
+    stream->active = mask;
+    stream->unk34 = 0;
+    spuSetIrqAddr(mask);
+    stream->flags = hdr->unk18;
+    stream->savedPitch = hdr->unk1C;
+    SpuSetTransferMode(0);
+    SpuSetTransferStartAddr(0x1100);
+    D_80074ED4 = 1;
+    SpuSetTransferCallback(sndStreamSetupStereoAlt);
+    SpuWrite(g_sndStream.spuBaseAddr + 0x170, 0x2000);
+    D_80075028.unk20 &= ~stream->active;
+    D_80075028.unk24 &= ~stream->active;
+    D_80075028.unk1C &= ~stream->active;
+    D_80077288[2] |= 0x100;
+    sndStreamAdvanceLoopCounter(&stream->unk34);
+    sndStreamAdvanceLoopCounter(&stream->unk34);
+}
+
+void func_8001F2A8(s32 offset, s32 addr, void (*callback)(void)) {
+    if (g_sndStream.active != 0) {
+        SpuSetTransferCallback(0);
+        D_80074ED4 = 0;
+        if (g_sndStream.unk14 > 0xD20) {
+            g_sndStream.spuBaseAddr += offset;
+            SpuSetIRQCallback(callback);
+        } else {
+            SpuSetIRQCallback(sndStreamDisableIrq);
+            addr = 0x1030;
+        }
+        SpuSetIRQAddr(addr + 8);
+        spuSetReverbWorkAddr(g_sndStream.active);
+        SpuSetIRQ(1);
+    }
+}
 
 /**
  * @brief Sets up SPU voice parameters for dual-channel streaming, then calls
@@ -1753,7 +2109,36 @@ void sndStreamSetupStereoAlt(void) {
     func_8001F2A8(0x2000, 0x2100, sndStreamCallbackStereoAltLow);
 }
 
-INCLUDE_ASM("asm/nonmatchings/snd_track", func_8001F3D4);
+void func_8001F3D4(s32 addr, s32 repeatAddr, s32 size, void (*callback)(void)) {
+    func_8001E0CC_data *hdr;
+
+    if (g_sndStream.active != 0) {
+        hdr = (func_8001E0CC_data *)(g_sndStream.spuBaseAddr + 0x100);
+        if (hdr->unk00 == 0x4F414B41) {
+            SpuSetIRQ(0);
+            SpuSetTransferStartAddr(addr);
+            sndDmaSetActive();
+            sndStreamAdvanceLoopCounter(&g_sndStream.unk34);
+            SpuWrite(g_sndStream.spuBaseAddr + 0x170, size - 0x170);
+            g_sndStream.unk20 = hdr->unk04;
+            if (hdr->unk10 > 0x690) {
+                SpuSetIRQCallback(callback);
+                g_sndStream.spuBaseAddr += size;
+                if (g_sndStream.unk34 == 0) {
+                    g_sndStream.spuBaseAddr = (u8 *)g_sndStream.unk2C;
+                }
+            } else {
+                SpuSetIRQCallback(sndStreamDisableIrq);
+                repeatAddr = 0x1030;
+                addr = repeatAddr;
+            }
+            spuSetVoiceRepeatAddr(g_sndStream.voiceIdx, addr);
+            spuSetVoiceRepeatAddr(g_sndStream.voiceIdx + 1, repeatAddr);
+            SpuSetIRQAddr(addr + 8);
+            SpuSetIRQ(1);
+        }
+    }
+}
 
 void sndStreamCallbackStereoAltHigh(void);
 
