@@ -5,7 +5,7 @@
 </p>
 
 ## About
-[![Markdown Logo](https://img.shields.io/discord/1499425449984393438?style=plastic&logo=discord&label=Discord)](https://discord.gg/juRjsHgXuV)
+[![Markdown Logo](https://img.shields.io/discord/1499425449984393438?style=plastic&logo=discord&label=Discord)](https://discord.gg/6KQ6nkuzn6)
 
 
 This is a work-in-progress decompilation project of Final Fantasy VIII (PS1, USA `SLUS_008.92`).
