@@ -25,6 +25,10 @@
 extern u8 D_80056290[];
 extern u8 D_800562A4;
 
+extern DISPENV D_80085150; // duplicated from overlay.c
+
+extern RECT D_801F7E64;
+
 /** @brief The persistent statuses the menu draws as icons: all but KO. */
 #define STATUS_ICON_MASK (STATUS_POISON | STATUS_PETRIFY | STATUS_DARKNESS | STATUS_SILENCE | \
     STATUS_BERSERK | STATUS_ZOMBIE)
@@ -89,6 +93,13 @@ typedef struct {
     (metrics) = (s8)((metrics) >> 24); \
     setXY0(p, (x) + (metrics), (y) + bits_); \
 } while (0)
+
+#define gte_ldfcdir_uniform( x ) __asm__ volatile (      \
+    "ctc2   %0, $21;"                                     \
+    "ctc2   %0, $22;"                                     \
+    "ctc2   %0, $23"                                      \
+    :                                                     \
+    : "r"( x ) )
 
 static inline void *DrawIconFromTable(void *ot, TSPRT *head, IconTable *table, s32 idx, s32 x, s32 y, u32 color) {
     void *cellAddr = table;
@@ -433,20 +444,16 @@ s32 func_801F0028(void) {
 /* ======================================================================== */
 
 /**
- * @brief Open/advance the current menu panel window.
- *
- * If the active window pointer (D_801FA3C0) equals D_801FA280 base,
- * advances it by 0xA0 bytes. Sets up the draw-list entry at
- * offset 0x74 and links the panel into the global list (g_activeDrawEnv).
+ * @brief Selects the next display/draw environment.
  */
 void func_801F0038(void) {
-    DisplayDrawEnvData *val = D_801FA3C0;
-    DisplayDrawEnvData *base = &D_801FA280[0];
+    DisplayDrawEnvData *current = D_801FA3C0;
+    DisplayDrawEnvData *next = &D_801FA280[0];
     s32 temp;
-    if (val == base) {
-        base = &D_801FA280[1];
+    if (current == next) {
+        next = &D_801FA280[1];
     }
-    D_801FA3C0 = base;
+    D_801FA3C0 = next;
     ClearOTag(&D_801FA3C0->unk74, 9);
     temp = D_801FA3C0->unk98;
     D_801FA3C0->unk70 = &D_801FA3C0->unk74;
@@ -887,8 +894,8 @@ s32 func_801F16AC(s32 ctx, s32 dl) {
  * @note Calls through an unspecified-args cast with no arguments — the
  *       original passes whatever $a0/$a1 hold (the callee's ctx/dl inputs
  *       are dead this frame); an ANSI call would emit argument setup. */
-void func_801F175C(void) {
-    ((s32 (*)())func_801F16AC)();
+s32 *func_801F175C(s32 *a0, s32 a1) {
+    return func_801F16AC(a0, a1);
 }
 
 /** @brief Clear 22 panel callback entries starting at a0[8]. */

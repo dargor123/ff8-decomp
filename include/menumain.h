@@ -217,11 +217,11 @@ extern u8  D_801FA279;
 extern u8  D_801FA27A;
 extern u8  D_801FA27B;
 extern u8  D_801FA27C;
-extern DisplayDrawEnvData D_801FA280[];
+extern DisplayDrawEnvData D_801FA280[2]; /**< Environment buffers used for double buffering (alternates between display and draw). */
 extern MenuTask *D_801FA450;    /**< Head of the active menu-task list. */
 extern MenuTask D_801FA4D0;     /**< Menu-task list head node. */
 extern MenuTask D_801FA550[10]; /**< Menu-task pool. */
-extern DisplayDrawEnvData *D_801FA3C0;
+extern DisplayDrawEnvData *D_801FA3C0; /**< The current environment buffer. */
 extern u8  D_801FAA10;
 extern s8  D_801FAA11;
 extern u16 D_801FAA12;
