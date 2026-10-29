@@ -1,6 +1,9 @@
 #include "common.h"
 #include "memcard.h"
 #include "menu.h"
+#include "menumain.h"
+#include "menumain2.h"
+#include "menumain3.h"
 #include "gamestate.h"
 #include "battle.h"
 #include "ui/icon.h"
@@ -51,6 +54,8 @@
 
 static inline s32 fixedToInt(s32 v);
 static inline s32 signedEase(s32 t);
+
+extern u8 D_801EF1B0[];
 
 /**
  * @brief Decode FF8 encoded text string with escape sequence handling.

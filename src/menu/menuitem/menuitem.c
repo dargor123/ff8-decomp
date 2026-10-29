@@ -12,6 +12,8 @@
 #include "kernel.h"
 #include "menu.h"
 #include "menumain.h"
+#include "menumain2.h"
+#include "menumain3.h"
 #include "numstr.h"
 #include "overlay.h"
 #include "party_stats.h"

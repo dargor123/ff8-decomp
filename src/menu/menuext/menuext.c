@@ -2,9 +2,11 @@
 #include "battle_results/number.h"
 #include "menu.h"
 #include "menumain.h"
+#include "menumain2.h"
 #include "character.h"
 #include "menuext.h"
 #include "gamestate.h"
+#include "psxsdk/libgte.h"
 
 extern u8 D_801E8C10[];
 extern u8 D_801E8C20[];

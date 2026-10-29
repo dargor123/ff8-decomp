@@ -2,10 +2,13 @@
 #include "battle_results/number.h"
 #include "gamestate.h"
 #include "overlay.h"
+#include "menu.h"
 #include "menumain.h"
+#include "menumain2.h"
 #include "menututo.h"
 #include "numstr.h"
 #include "psxsdk/libetc.h"
+#include "psxsdk/libgte.h"
 #include "ui/text.h"
 
 /**

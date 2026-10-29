@@ -6,6 +6,8 @@
 #include "gf.h"
 #include "menu.h"
 #include "menumain.h"
+#include "menumain2.h"
+#include "menumain3.h"
 #include "card.h"
 #include "menumgc.h"
 #include "numstr.h"
