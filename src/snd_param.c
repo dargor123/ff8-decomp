@@ -7,13 +7,6 @@
 #include "snd_init.h"
 #include "snd_track.h"
 
-typedef struct {
-    /* 0x00 */ u32 unk00;
-    /* 0x04 */ u16 unk04;
-    /* 0x06 */ u16 unk06;
-    /* 0x08 */ u16 unk08;
-} func_8001A1E8_data;
-
 extern SndVoice D_80074E68;
 extern void (*D_80052298[])(SndVoice *voice);
 
