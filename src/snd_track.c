@@ -7,16 +7,35 @@
 #include "snd_init.h"
 #include "snd_dma.h"
 
+static void sndTrackSetInstrumentParams(SoundSeqTrack *track, SndInstrument *inst, s32 a2);
+static s32 sndTrackTransposePercussion(s32 a0, s32 a1);
+static void sndStreamDisableIrq(void);
+static s32 func_8001DFF4(void);
+static void sndStreamBeginTransfer(void);
+static void func_8001E0CC(u8 *data, s32 pan, s32 reverb);
+static void func_8001E308(s32 voice, s32 mode, u32 startAddr, u32 repeatAddr);
+static void func_8001E4C4(s32 size, s32 irqAddr, void (*callback)(void));
+static void sndStreamSetupMono(void);
+static void sndStreamSetupStereo(void);
+static void func_8001E65C(s32 addr, s32 repeatAddr, s32 size, void (*callback)(void));
+static void sndStreamCallbackMonoLow(void);
+static void sndStreamCallbackMonoHigh(void);
+static void sndStreamCallbackStereoLow(void);
+static void sndStreamCallbackStereoHigh(void);
+static void sndStreamSetupIrq(void);
+static void func_8001EB38(void);
+static void func_8001EC0C(func_8001E0CC_data *hdr, s32 pan, s32 spuAddr, s32 reverb);
+static void func_8001EDD4(s32 unused, s32 reverb);
+static s32 sndStreamAdvanceLoopCounter(s32 *counter);
+static void func_8001F2A8(s32 offset, s32 addr, void (*callback)(void));
+static void sndStreamSetupStereoAlt(void);
+static void func_8001F3D4(s32 addr, s32 repeatAddr, s32 size, void (*callback)(void));
+static void sndStreamCallbackStereoAltLow(void);
+static void sndStreamCallbackStereoAltHigh(void);
+
 extern s32 D_800772F0;
 extern s32 D_80074EE8[];
 extern s8 D_80051824[];
-
-void sndStreamSetupMono(void);
-void sndStreamSetupStereo(void);
-void sndStreamSetupStereoAlt(void);
-void sndStreamCallbackMonoLow(void);
-void sndStreamCallbackStereoLow(void);
-void sndStreamCallbackStereoAltLow(void);
 
 /**
  * @brief Copy instrument parameters from a table entry into a track structure.
@@ -28,7 +47,7 @@ void sndStreamCallbackStereoAltLow(void);
  * @param a1 Pointer to the instrument table entry (16 bytes).
  * @param a2 Initial instrument configuration value.
  */
-void sndTrackSetInstrumentParams(SoundSeqTrack *track, SndInstrument *inst, s32 a2) {
+static void sndTrackSetInstrumentParams(SoundSeqTrack *track, SndInstrument *inst, s32 a2) {
     u16 v;
     track->unkF4.startAddr = a2;
     track->unkF4.repeatAddr = inst->loopAddr;
@@ -88,7 +107,7 @@ void sndTrackClearVoiceBits(SoundSeqTrack *track, s32 a1) {
  * @param a1 Note or percussion instrument index.
  * @return Transposed note value, or @p a1 unchanged if outside valid ranges.
  */
-s32 sndTrackTransposePercussion(s32 a0, s32 a1) {
+static s32 sndTrackTransposePercussion(s32 a0, s32 a1) {
     if ((u32)(a1 - 0x80) < 0x30 || (u32)(a1 - 0xD0) < 0x30) {
         if (a0 & 2) {
             return a1 + 0x10;
@@ -1570,7 +1589,7 @@ void sndTrackResetSequence(SoundSeqTrack *track, u32 mask) {
  * value, clears the corresponding bits in D_80075028.unk20, marks dirty flags,
  * and zeroes the IRQ voice mask.
  */
-void sndStreamDisableIrq(void) {
+static void sndStreamDisableIrq(void) {
     SoundStream *s0 = &g_sndStream;
     if (s0->active != 0) {
         SpuSetIRQ(0);
@@ -1582,7 +1601,7 @@ void sndStreamDisableIrq(void) {
     }
 }
 
-s32 func_8001DFF4(void) {
+static s32 func_8001DFF4(void) {
     u32 mask;
     u32 bit;
     s32 i;
@@ -1610,14 +1629,14 @@ s32 func_8001DFF4(void) {
  * @brief Sets up SPU transfer at address 0x2100, registers callback
  *        sndStreamSetupMono, and initiates DMA transfer of 0x800 bytes.
  */
-void sndStreamBeginTransfer(void) {
+static void sndStreamBeginTransfer(void) {
     u8 *addr = g_sndStream.spuBaseAddr + 0x800;
     SpuSetTransferStartAddr(0x2100);
     SpuSetTransferCallback(sndStreamSetupMono);
     SpuWrite(addr, 0x800);
 }
 
-void func_8001E0CC(u8 *data, s32 pan, s32 reverb) {
+static void func_8001E0CC(u8 *data, s32 pan, s32 reverb) {
     func_8001E0CC_data *hdr;
     s32 voice;
     s32 mask;
@@ -1667,7 +1686,7 @@ void func_8001E0CC(u8 *data, s32 pan, s32 reverb) {
     D_80077288[2] |= 0x100;
 }
 
-void func_8001E308(s32 voice, s32 mode, u32 startAddr, u32 repeatAddr) {
+static void func_8001E308(s32 voice, s32 mode, u32 startAddr, u32 repeatAddr) {
     s16 volL;
     s16 volR;
     s32 pan;
@@ -1703,7 +1722,7 @@ void func_8001E308(s32 voice, s32 mode, u32 startAddr, u32 repeatAddr) {
     spuSetVoiceReleaseMode(voice, 6, 3);
 }
 
-void func_8001E4C4(s32 size, s32 irqAddr, void (*callback)(void)) {
+static void func_8001E4C4(s32 size, s32 irqAddr, void (*callback)(void)) {
     SoundStream *stream = &g_sndStream;
 
     if (stream->active != 0) {
@@ -1728,7 +1747,7 @@ void func_8001E4C4(s32 size, s32 irqAddr, void (*callback)(void)) {
  * @brief Sets up SPU voice parameters for both channels, then registers
  *        callback for 0x1000-byte streaming at addresses 0x1100/0x2100.
  */
-void sndStreamSetupMono(void) {
+static void sndStreamSetupMono(void) {
     SoundStream *base = &g_sndStream;
     func_8001E308(base->voiceIdx, 0, 0x1100, 0x2100);
     func_8001E308(base->voiceIdx + 1, 0, 0x1100, 0x2100);
@@ -1739,14 +1758,14 @@ void sndStreamSetupMono(void) {
  * @brief Sets up SPU voice parameters for dual-channel streaming, then registers
  *        callback for 0x2000-byte streaming at addresses 0x1100-0x2900.
  */
-void sndStreamSetupStereo(void) {
+static void sndStreamSetupStereo(void) {
     SoundStream *base = &g_sndStream;
     func_8001E308(base->voiceIdx, 1, 0x1100, 0x2100);
     func_8001E308(base->voiceIdx + 1, 2, 0x1900, 0x2900);
     func_8001E4C4(0x2000, 0x2100, sndStreamCallbackStereoLow);
 }
 
-void func_8001E65C(s32 addr, s32 repeatAddr, s32 size, void (*callback)(void)) {
+static void func_8001E65C(s32 addr, s32 repeatAddr, s32 size, void (*callback)(void)) {
     if (g_sndStream.active != 0 && g_sndStream.unk14 != 0) {
         SpuSetTransferStartAddr(addr);
         sndDmaSetActive();
@@ -1773,27 +1792,25 @@ void func_8001E65C(s32 addr, s32 repeatAddr, s32 size, void (*callback)(void)) {
     }
 }
 
-void sndStreamCallbackMonoHigh(void);
 
 /** @brief Calls func_8001E65C with SPU transfer params (0x1100, 0x1100, 0x800) and callback sndStreamCallbackMonoHigh. */
-void sndStreamCallbackMonoLow(void) {
+static void sndStreamCallbackMonoLow(void) {
     func_8001E65C(0x1100, 0x1100, 0x800, sndStreamCallbackMonoHigh);
 }
 
 /** @brief Calls func_8001E65C with SPU transfer params (0x2100, 0x2100, 0x800) and callback sndStreamCallbackMonoLow. */
-void sndStreamCallbackMonoHigh(void) {
+static void sndStreamCallbackMonoHigh(void) {
     func_8001E65C(0x2100, 0x2100, 0x800, sndStreamCallbackMonoLow);
 }
 
-void sndStreamCallbackStereoHigh(void);
 
 /** @brief Calls func_8001E65C with SPU transfer params (0x1100, 0x1900, 0x1000) and callback sndStreamCallbackStereoHigh. */
-void sndStreamCallbackStereoLow(void) {
+static void sndStreamCallbackStereoLow(void) {
     func_8001E65C(0x1100, 0x1900, 0x1000, sndStreamCallbackStereoHigh);
 }
 
 /** @brief Calls func_8001E65C with SPU transfer params (0x2100, 0x2900, 0x1000) and callback sndStreamCallbackStereoLow. */
-void sndStreamCallbackStereoHigh(void) {
+static void sndStreamCallbackStereoHigh(void) {
     func_8001E65C(0x2100, 0x2900, 0x1000, sndStreamCallbackStereoLow);
 }
 
@@ -1875,12 +1892,12 @@ void func_8001E9C0(s32 *args) {
 }
 
 /** @brief Sets SPU IRQ address to 0x1038 and registers sndStreamDisableIrq as the IRQ callback. */
-void sndStreamSetupIrq(void) {
+static void sndStreamSetupIrq(void) {
     SpuSetIRQAddr(0x1038);
     SpuSetIRQCallback(sndStreamDisableIrq);
 }
 
-void func_8001EB38(void) {
+static void func_8001EB38(void) {
     s32 irqAddr;
 
     if (g_sndStream.unk14 > 0x2000) {
@@ -1898,7 +1915,7 @@ void func_8001EB38(void) {
     SpuSetIRQ(1);
 }
 
-void func_8001EC0C(func_8001E0CC_data *hdr, s32 pan, s32 spuAddr, s32 reverb) {
+static void func_8001EC0C(func_8001E0CC_data *hdr, s32 pan, s32 spuAddr, s32 reverb) {
     SoundStream *stream;
     s32 voice;
     s32 mask;
@@ -1943,7 +1960,7 @@ void func_8001EC0C(func_8001E0CC_data *hdr, s32 pan, s32 spuAddr, s32 reverb) {
     D_80077288[2] |= 0x100;
 }
 
-void func_8001EDD4(s32 unused, s32 reverb) {
+static void func_8001EDD4(s32 unused, s32 reverb) {
     func_8001E0CC_data *hdr;
     s32 voice;
     s32 mask;
@@ -2028,7 +2045,7 @@ void sndStreamStartPlayback2(s32 *a0) {
  * @param counter Pointer to the current loop/repeat index.
  * @return The new value of @p counter after increment and possible wraparound.
  */
-s32 sndStreamAdvanceLoopCounter(s32 *counter) {
+static s32 sndStreamAdvanceLoopCounter(s32 *counter) {
     SoundStream *base = &g_sndStream;
     base->tickCount++;
     (*counter)++;
@@ -2081,7 +2098,7 @@ void func_8001F118(void) {
     sndStreamAdvanceLoopCounter(&stream->unk34);
 }
 
-void func_8001F2A8(s32 offset, s32 addr, void (*callback)(void)) {
+static void func_8001F2A8(s32 offset, s32 addr, void (*callback)(void)) {
     if (g_sndStream.active != 0) {
         SpuSetTransferCallback(0);
         D_80074ED4 = 0;
@@ -2102,14 +2119,14 @@ void func_8001F2A8(s32 offset, s32 addr, void (*callback)(void)) {
  * @brief Sets up SPU voice parameters for dual-channel streaming, then calls
  *        func_8001F2A8 with callback sndStreamCallbackStereoAltLow.
  */
-void sndStreamSetupStereoAlt(void) {
+static void sndStreamSetupStereoAlt(void) {
     SoundStream *base = &g_sndStream;
     func_8001E308(base->voiceIdx, 1, 0x1100, 0x2100);
     func_8001E308(base->voiceIdx + 1, 2, 0x1900, 0x2900);
     func_8001F2A8(0x2000, 0x2100, sndStreamCallbackStereoAltLow);
 }
 
-void func_8001F3D4(s32 addr, s32 repeatAddr, s32 size, void (*callback)(void)) {
+static void func_8001F3D4(s32 addr, s32 repeatAddr, s32 size, void (*callback)(void)) {
     func_8001E0CC_data *hdr;
 
     if (g_sndStream.active != 0) {
@@ -2140,15 +2157,14 @@ void func_8001F3D4(s32 addr, s32 repeatAddr, s32 size, void (*callback)(void)) {
     }
 }
 
-void sndStreamCallbackStereoAltHigh(void);
 
 /** @brief Calls func_8001F3D4 with SPU transfer params (0x1100, 0x1900, 0x1000) and callback sndStreamCallbackStereoAltHigh. */
-void sndStreamCallbackStereoAltLow(void) {
+static void sndStreamCallbackStereoAltLow(void) {
     func_8001F3D4(0x1100, 0x1900, 0x1000, sndStreamCallbackStereoAltHigh);
 }
 
 /** @brief Calls func_8001F3D4 with SPU transfer params (0x2100, 0x2900, 0x1000) and callback sndStreamCallbackStereoAltLow. */
-void sndStreamCallbackStereoAltHigh(void) {
+static void sndStreamCallbackStereoAltHigh(void) {
     func_8001F3D4(0x2100, 0x2900, 0x1000, sndStreamCallbackStereoAltLow);
 }
 
