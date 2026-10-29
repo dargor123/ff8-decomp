@@ -7,7 +7,7 @@
 
 extern s32 D_80077288[];
 extern s32 D_80074EE8[];
-extern u8 D_80051824;
+extern s8 D_80051824[];
 
 void sndStreamSetupMono(void);
 void sndStreamCallbackMonoLow(void);
@@ -890,8 +890,8 @@ void sndTrackAdjustVolume(SoundSeqTrack *track) {
  * @param a0 Pointer to stream state.
  */
 void sndTrackCheckBankFlags(SoundSeqTrack *track) {
-    s32 check = g_sndSeqState->unk34;
-    if (check != 0) {
+    func_8001B820_entry *check = g_sndSeqState->unk34;
+    if (check != NULL) {
         track->flags = (track->flags & (s32)0xE6FFEFF7) | 8;
     }
 }
@@ -1122,15 +1122,15 @@ void sndTrackSetSustainFlag(SoundSeqTrack *track) {
 }
 
 /**
- * @brief Reads one byte from stream, advances cursor, adds D_80051824 base
- *        to get address, stores into field +0x38 of g_sndSeqState.
+ * @brief Reads one byte from stream, advances cursor, and stores the address
+ *        of that entry of D_80051824 in g_sndSeqState->unk38.
  * @param a0 Pointer to stream state.
  */
 void sndTrackReadBankAddress(SoundSeqTrack *track) {
     u8 *ptr = *(u8 **)track;
     s32 val = *ptr;
     *(u8 **)track = ptr + 1;
-    g_sndSeqState->unk38 = val + (s32)&D_80051824;
+    g_sndSeqState->unk38 = &D_80051824[val];
 }
 
 /** @brief ORs a1 into the word at g_sndSeqState+0x8 (set flags).

@@ -10,6 +10,9 @@ typedef struct TCBH { struct TCB *entry;   long flag; } TCBH;
 typedef struct TCB  { s32 status; u8 pad04[0xBC]; } TCB;
 
 #define TcbStACTIVE 0x4000
+
+#define DescRC 0xf2000000
+#define RCntCNT2 (DescRC | 0x02)
 #define KERNEL_TOT  ((ToT *)0x100)
 
 #endif /* KERNEL_H */
