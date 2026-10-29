@@ -1086,7 +1086,7 @@ binaries:
     subsegments:
     - [0x0, c, effect_022]
     - [0x8E58, .rodata, effect_022]
-    - [0x8E74, bin, effect_022]
+    - [0x8F80, bin, effect_022]
   - [0x43DC8]
 - name: effect_023
   sha1: 77449628c073c52aa3eddc5e0aabb31c3aa23e5d

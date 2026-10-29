@@ -53,7 +53,9 @@ typedef struct EffectModel {
     /* 0x5A */ u16 unk05A;        /**< How many strands an effect builds from it. */
     /* 0x5C */ u8 pad05C[0x63 - 0x5C];
     /* 0x63 */ u8 unk063;
-    /* 0x64 */ u8 pad064[0x100 - 0x64];
+    /** 0x64 */ u8 pad064[0x86 - 0x64];
+    /** 0x86 */ s16 unk086;
+    /** 0x88 */ u8 pad088[0x100 - 0x88];
 } EffectModel; /* >= 0x100 */
 
 /** @brief One member of an animated part list; stride 24. */
@@ -277,7 +279,10 @@ typedef struct EffectEntity {
     /* 0x7A */ s16 unk07A;
     /* 0x7C */ s16 unk07C;
     /* 0x7E */ s16 unk07E;
-    /* 0x80 */ u8 pad080[0xC4 - 0x80];
+    /** 0x80 */ s16 unk080;
+    /** 0x82 */ u8 pad082[0x8C - 0x82];
+    /** 0x8C */ s16 unk08C;
+    /** 0x8E */ u8 pad08E[0xC4 - 0x8E];
     /* 0xC4 */ s16 unk0C4;
     /* 0xC6 */ u8 pad0C6[0x100 - 0xC6];
 } EffectEntity; /* >= 0x100 */
