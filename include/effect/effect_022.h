@@ -14,7 +14,6 @@ extern u8 D_801BB308;
 extern u8 D_801C7308;
 extern u8 D_801E3D88[];
 extern u8 D_801E3DA8[];
-extern u8 *D_801E3DDC;
 extern u8 *D_801E3DE0;
 extern u8 *D_801E3DE4;
 extern s32 D_801E3DE8;
@@ -34,12 +33,6 @@ extern s32 D_801ED348;
 extern s32 D_801F3108;
 extern EffectRender D_801F3118;
 
-void func_801A1508(EffectRender *arg0, void *arg1, EffectRenderPart *arg2, void *arg3, BattleEffectSlot *arg4, s32 arg5);
-void func_801A1E00(EffectRender *arg0);
-void func_801A1F3C(EffectEntity *arg0);
-void *func_801A1F64(void *arg0, void *arg1, s32 arg2, EffectEntity *arg3);
-void func_801A22B4(EffectEntity *arg0);
-s32 func_801A5644(EffectEntity *arg0);
 s32 func_801A6AC0(EffectEntity *arg0);
 s32 func_801A722C(EffectEntity *arg0);
 s32 func_801A7580(EffectEntity *arg0);
@@ -54,5 +47,6 @@ void func_801A8C00(EffectEntity *arg0);
 void func_801A8C14(EffectEntity *arg0);
 void func_801A8C6C(EffectEntity *arg0);
 void func_801A8CBC(EffectEntity *arg0);
+s32 func_801A8CF4(EffectEntity *arg0);
 
 #endif /* EFFECT_EFFECT_022_H */

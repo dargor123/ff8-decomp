@@ -1,7 +1,7 @@
 #ifndef EFFECT_LIB_TINT_H
 #define EFFECT_LIB_TINT_H
 
-#include "effect/lib/particle.h"
+#include "effect.h"
 
 /**
  * @file tint.h
