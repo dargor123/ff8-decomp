@@ -79,7 +79,7 @@ NO_EXPAND_DIV := effect_011 effect_012 effect_017 effect_044 effect_063 effect_0
 
 # Sources whose object expands inside a binary that otherwise does not. Only
 # SLUS_008.92 mixes, so only its sources belong here.
-EXPAND_DIV_SRCS := src/snd_param.c src/snd_note.c
+EXPAND_DIV_SRCS := src/snd_bank.c src/snd_param.c src/snd_note.c
 
 # $(call expand_div,<binary>,<source>): the source override wins, else effect
 # overlays expand unless listed above, and nothing else expands.
