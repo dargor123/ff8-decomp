@@ -1252,7 +1252,7 @@ s32 sndUploadSampleBank(u8 *bank, s32 slot) {
             SpuSetTransferStartAddr(spuAddr);
             sndDmaWriteSpu(bank, desc->spuAddr);
             desc->spuLoadedAddr = spuAddr;
-            func_8001A57C((u32 *)desc, (u32 *)D_80073C38, 0x70);
+            func_8001A57C((u32 *)desc, (u32 *)&D_80073C38, 0x70);
         }
     } else {
         D_80073C58 = 0;
