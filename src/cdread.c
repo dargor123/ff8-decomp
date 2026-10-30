@@ -5,6 +5,7 @@
 #include "sound.h"
 #include "cd.h"
 #include "cdread.h"
+#include "lzs.h"
 
 /* D_8008A3C8 / D_8008A3B8 / D_8008A3DC / D_800853B8 come from cd.h. */
 extern s32 D_80056558;

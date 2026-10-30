@@ -13,6 +13,14 @@ typedef struct {
     u32 offsets[1]; /* variable length */
 } OffsetTable;
 
+typedef struct {
+    /* 0x00 */ u8 *src;
+    /* 0x04 */ u8 pad04[0x24];
+    /* 0x28 */ s32 outputSize;
+} LzssState; /* 0x2C */
+
+extern LzssState D_80039418;
+
 // Public prototypes
 
 /** @brief memset-style clear: zeroes @p size bytes at @p dst. */
