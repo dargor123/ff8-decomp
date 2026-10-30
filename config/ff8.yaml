@@ -1082,13 +1082,25 @@ binaries:
     target_path: original/bin/battle/mag/mag022.ovl
     src_path: src/effect
     symbol_addrs_path: [config/symbols.main.txt, config/symbols.battle.txt, config/symbols.effect_022.txt]
+    section_order: [.text, .rodata, .data, .bss]
   segments:
   - name: effect_022
     type: code
     start: 0x0
     vram: 0x801A0000
     subsegments:
-    - [0x0, c, effect_022]
+    - [0x0, c, effect_022_entry]
+    - [0x184, c, lib/common]
+    - [0x8F4, c, lib/rotz]
+    - [0xA80, c, lib/aim]
+    - [0xBF8, c, lib/scatter]
+    - [0xD00, c, effect_022_0D00]
+    - [0x1F3C, c, lib/entity]
+    - [0x2AAC, c, lib/emit_mode]
+    - [0x49A0, c, lib/tint]
+    - [0x4C7C, c, effect_022_4C7C]
+    - [0x5644, c, lib/step]
+    - [0x568C, c, effect_022]
     - [0x8E58, .rodata, effect_022]
     - [0x8F80, bin, effect_022]
   - [0x43DC8]
