@@ -40,7 +40,6 @@ extern u16 D_801FACE4;
 extern s32 D_801FACE8;
 
 static void func_801F2458(MainMenuCtx *ctx);
-static s32 func_801F2FAC(s32, s32);
 static void func_801F39D0(s32, s32, s32, s32, s32, s32);
 static s32 func_801F3FE8(u8 *, s32, s32, s32);
 static s32 func_801F42A4(u8 *, s32, s32, s32);
@@ -530,7 +529,85 @@ restart:
     }
 }
 
-INCLUDE_ASM("asm/ovl/menumain/nonmatchings/menumain2b", func_801F2FAC);
+DR_AREA *func_801F2FAC(P_TAG *ot, DR_AREA *prim) {
+    u32 oldBrightness;
+    MenuDisplayConfig *cfg;
+    s32 xBase;
+    s32 yBase;
+    s32 x;
+    s32 y;
+    s32 h;
+    s32 i;
+    ST_D_801FAB98 *entry;
+    s32 y1;
+    s32 y2;
+    s32 h1;
+    s32 h2;
+    s32 brightness;
+
+    xBase = 270;
+    yBase = 6;
+
+    if (g_activeDrawEnv->clip.w < 384) {
+        return prim;
+    }
+
+    brightness = D_801FAB28;
+    if (brightness == 0) {
+        return prim;
+    }
+
+    ot++;
+    prim = func_801F03E8(ot, prim);
+    oldBrightness = g_menuBrightness;
+    setMenuBrightness(brightness);
+    
+    cfg = &g_menuDisplayCfg;
+    x = 277;
+    y = 12;
+
+    y1 = D_801FAB31;
+    y2 = (ONE - D_801FAB2A) * 14;
+    y -= (y1 * y2) / 4096;
+
+    entry = D_801FAB2C;
+    if (entry != NULL) {
+        for (i = 0; i < D_801FAB30; i++, entry++) {
+            u32 color = (entry->unk1 != 0) ? DIALOG_COLOR_WHITE : DIALOG_COLOR_GRAY;
+            u8 *text = func_801F6AFC(entry->unk0);
+            if (entry->unk0 == 6 && D_801FAB7C != 0) {
+                s32 w = getFirstLineWidth(text);
+                prim = drawIcon(ot, prim, 213, x + w, y + 1, g_menuTint[MENU_TINT_NORMAL]);
+            }
+            prim = func_801F0FEC(ot, prim, x, y, text, color);
+            y += 14;
+        }
+    }
+
+    h = D_801FAB30 * 14;
+    h1 = h * D_801FAB2A;
+    h2 = (ONE - D_801FAB2A) * 12;
+    h = (h1 + h2) / ONE;
+
+    cfg->x = xBase + 2;
+    cfg->y = yBase + 6;
+    cfg->w = 88;
+    cfg->h = h;
+
+    prim = func_801EF800(ot, prim, cfg);
+    h += 10;
+
+    cfg->iconType = 0;
+    cfg->iconSubType = 0;
+    cfg->x = xBase;
+    cfg->y = yBase;
+    cfg->w = 90;
+    cfg->h = h;
+
+    prim = DrawMenuWindow(ot, prim, ONE, g_menuTint[MENU_TINT_NORMAL]);
+    setMenuBrightness(oldBrightness);
+    return func_801F03E8(ot, prim);
+}
 
 void func_801F3270(void *ot, void *prim, s32 x, s32 y, u32 arg4) {
     u8 buffer[16];
